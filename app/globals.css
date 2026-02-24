@@ -1,0 +1,146 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 210 42% 96%;
+    --foreground: 218 45% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 218 45% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 218 45% 14%;
+    --primary: 214 61% 19%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 41 68% 77%;
+    --secondary-foreground: 218 45% 14%;
+    --muted: 210 34% 92%;
+    --muted-foreground: 217 18% 32%;
+    --accent: 38 82% 56%;
+    --accent-foreground: 218 52% 12%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 216 31% 83%;
+    --input: 216 31% 83%;
+    --ring: 214 61% 19%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-image: radial-gradient(
+        circle at 12% 8%,
+        rgba(13, 38, 79, 0.13),
+        transparent 34%
+      ),
+      radial-gradient(circle at 86% 0%, rgba(212, 166, 86, 0.16), transparent 26%);
+    font-family: "Poppins", "Avenir Next", "Segoe UI", sans-serif;
+  }
+}
+
+@layer utilities {
+  .animate-float-slow {
+    animation: float-slow 7s ease-in-out infinite;
+  }
+
+  .animate-kenburns-slow {
+    animation: kenburns-slow 18s ease-in-out infinite alternate;
+    transform-origin: center;
+  }
+
+  .card-hover-lift {
+    transition: transform 280ms ease, box-shadow 280ms ease;
+  }
+
+  .card-hover-lift:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 22px 45px rgba(7, 19, 41, 0.18);
+  }
+
+  .package-card-hover:hover {
+    box-shadow: 0 12px 28px rgba(7, 19, 41, 0.06);
+  }
+
+  .animate-modal-backdrop-in {
+    animation: modal-backdrop-in 220ms ease-out both;
+  }
+
+  .animate-modal-in {
+    animation: modal-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(20px) scale(0.985);
+    transition:
+      opacity 700ms ease,
+      transform 700ms cubic-bezier(0.22, 1, 0.36, 1);
+    transition-delay: var(--reveal-delay, 0ms);
+    will-change: transform, opacity;
+  }
+
+  .reveal-on-scroll.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+
+  @keyframes float-slow {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes kenburns-slow {
+    0% {
+      transform: scale(1);
+    }
+
+    100% {
+      transform: scale(1.08);
+    }
+  }
+
+  @keyframes modal-backdrop-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes modal-in {
+    from {
+      opacity: 0;
+      transform: translateY(18px) scale(0.97);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .reveal-on-scroll {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
