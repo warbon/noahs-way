@@ -38,6 +38,7 @@ export default function PackageGallery({
   const dragPointerIdRef = useRef<number | null>(null)
   const dragStartXRef = useRef<number | null>(null)
   const dragStartOffsetRef = useRef(0)
+  const pressedCardButtonRef = useRef<HTMLButtonElement | null>(null)
   const didDragCarouselRef = useRef(false)
   const suppressCardClickUntilRef = useRef(0)
   const wheelResumeTimeoutRef = useRef<number | null>(null)
@@ -197,6 +198,7 @@ export default function PackageGallery({
   const renderCard = (pkg: TravelPackage, index: number) => {
     const card = (
       <button
+        data-package-card="true"
         type="button"
         onClick={() => {
           if (Date.now() < suppressCardClickUntilRef.current) return
@@ -261,6 +263,10 @@ export default function PackageGallery({
               if (layout !== "carousel" || carouselLoopDistanceRef.current <= 0) return
               if (event.pointerType === "mouse" && event.button !== 0) return
 
+              pressedCardButtonRef.current =
+                event.target instanceof Element
+                  ? (event.target.closest('button[data-package-card="true"]') as HTMLButtonElement | null)
+                  : null
               dragPointerIdRef.current = event.pointerId
               dragStartXRef.current = event.clientX
               dragStartOffsetRef.current = carouselTrackOffsetRef.current
@@ -288,10 +294,15 @@ export default function PackageGallery({
             onPointerUp={(event) => {
               if (dragPointerIdRef.current !== event.pointerId) return
 
+              const pressedCardButton = pressedCardButtonRef.current
               if (didDragCarouselRef.current) {
                 suppressCardClickUntilRef.current = Date.now() + 250
+              } else if (pressedCardButton && pressedCardButton.isConnected) {
+                // Pointer capture can swallow native click events on some browsers.
+                pressedCardButton.click()
               }
 
+              pressedCardButtonRef.current = null
               dragPointerIdRef.current = null
               dragStartXRef.current = null
               didDragCarouselRef.current = false
@@ -303,6 +314,7 @@ export default function PackageGallery({
             onPointerCancel={(event) => {
               if (dragPointerIdRef.current !== event.pointerId) return
 
+              pressedCardButtonRef.current = null
               dragPointerIdRef.current = null
               dragStartXRef.current = null
               didDragCarouselRef.current = false

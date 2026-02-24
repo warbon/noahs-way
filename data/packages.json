@@ -1,0 +1,348 @@
+{
+  "local": [
+    {
+      "category": "local",
+      "title": "Cebu & Bohol Signature",
+      "details": "5 Days / 4 Nights • City stay • Countryside + marine tour",
+      "previewImage": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
+      "imagePath": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
+      "price": "from PHP 29,800",
+      "id": "local-cebu-bohol-signature-4"
+    },
+    {
+      "category": "local",
+      "title": "Deca Tour",
+      "details": "5 Days / 4 Nights",
+      "price": "24,000.00",
+      "imagePath": "/images/packages/local/deca-tour-1771929787095.jpg",
+      "previewImage": "/images/packages/local/deca-tour-1771929787095.jpg",
+      "id": "local-deca-tour-1"
+    },
+    {
+      "category": "local",
+      "title": "Baguio Highland Weekend",
+      "details": "5 Days / 4 Nights • El Nido lagoons • Private boat day",
+      "previewImage": "/images/packages/local/palawan-premium.jpg",
+      "imagePath": "/images/packages/local/palawan-premium.jpg",
+      "price": "from PHP 32,500",
+      "id": "local-baguio-highland-weekend-6"
+    },
+    {
+      "category": "local",
+      "title": "Vigan Heritage Escape",
+      "details": "5 Days / 4 Nights • City stay • Countryside + marine tour",
+      "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
+      "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
+      "price": "from PHP 29,800",
+      "id": "local-vigan-heritage-escape-7"
+    },
+    {
+      "category": "local",
+      "title": "Davao Mountain & City Blend",
+      "details": "4 Days / 3 Nights • Beachfront resort • Island hopping",
+      "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
+      "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
+      "price": "from PHP 24,900",
+      "id": "local-davao-mountain-city-blend-8"
+    },
+    {
+      "category": "local",
+      "title": "Iloilo-Guimaras Gourmet Trail",
+      "details": "5 Days / 4 Nights • El Nido lagoons • Private boat day",
+      "previewImage": "/images/packages/local/palawan-premium.jpg",
+      "imagePath": "/images/packages/local/palawan-premium.jpg",
+      "price": "from PHP 32,500",
+      "id": "local-iloilo-guimaras-gourmet-trail-9"
+    },
+    {
+      "category": "local",
+      "title": "Batanes Scenic Hideaway",
+      "details": "5 Days / 4 Nights • City stay • Countryside + marine tour",
+      "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
+      "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
+      "price": "from PHP 29,800",
+      "id": "local-batanes-scenic-hideaway-10"
+    },
+    {
+      "category": "local",
+      "title": "Camiguin Island Wellness Stay",
+      "details": "5 Days / 4 Nights • El Nido lagoons • Private boat day",
+      "previewImage": "/images/packages/local/palawan-premium.jpg",
+      "imagePath": "/images/packages/local/palawan-premium.jpg",
+      "price": "from PHP 32,500",
+      "id": "local-camiguin-island-wellness-stay-12"
+    },
+    {
+      "category": "local",
+      "title": "Sagada Pine & Caves Journey",
+      "details": "5 Days / 4 Nights • City stay • Countryside + marine tour",
+      "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
+      "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
+      "price": "from PHP 29,800",
+      "id": "local-sagada-pine-caves-journey-13"
+    },
+    {
+      "category": "local",
+      "title": "La Union Beach Reset",
+      "details": "4 Days / 3 Nights • Beachfront resort • Island hopping",
+      "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
+      "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
+      "price": "from PHP 24,900",
+      "id": "local-la-union-beach-reset-14"
+    },
+    {
+      "category": "local",
+      "title": "Coron Yacht Weekender",
+      "details": "5 Days / 4 Nights • El Nido lagoons • Private boat day",
+      "previewImage": "/images/packages/local/palawan-premium.jpg",
+      "imagePath": "/images/packages/local/palawan-premium.jpg",
+      "price": "from PHP 32,500",
+      "id": "local-coron-yacht-weekender-15"
+    },
+    {
+      "category": "local",
+      "title": "Bohol Family Discovery",
+      "details": "5 Days / 4 Nights • City stay • Countryside + marine tour",
+      "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
+      "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
+      "price": "from PHP 29,800",
+      "id": "local-bohol-family-discovery-16"
+    },
+    {
+      "category": "local",
+      "title": "Bacolod Sugarland Getaway",
+      "details": "4 Days / 3 Nights • Beachfront resort • Island hopping",
+      "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
+      "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
+      "price": "from PHP 24,900",
+      "id": "local-bacolod-sugarland-getaway-17"
+    },
+    {
+      "category": "local",
+      "title": "Cagayan de Oro Adventure Pack",
+      "details": "5 Days / 4 Nights • El Nido lagoons • Private boat day",
+      "previewImage": "/images/packages/local/palawan-premium.jpg",
+      "imagePath": "/images/packages/local/palawan-premium.jpg",
+      "price": "from PHP 32,500",
+      "id": "local-cagayan-de-oro-adventure-pack-18"
+    },
+    {
+      "category": "local",
+      "title": "Dumaguete Apo Island Escape",
+      "details": "5 Days / 4 Nights • City stay • Countryside + marine tour",
+      "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
+      "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
+      "price": "from PHP 29,800",
+      "id": "local-dumaguete-apo-island-escape-19"
+    },
+    {
+      "category": "local",
+      "title": "Zambales Glamping Seaside",
+      "details": "4 Days / 3 Nights • Beachfront resort • Island hopping",
+      "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
+      "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
+      "price": "from PHP 24,900",
+      "id": "local-zambales-glamping-seaside-20"
+    },
+    {
+      "category": "local",
+      "title": "Puerto Princesa Underground River Classic",
+      "details": "5 Days / 4 Nights • El Nido lagoons • Private boat day",
+      "previewImage": "/images/packages/local/palawan-premium.jpg",
+      "imagePath": "/images/packages/local/palawan-premium.jpg",
+      "price": "from PHP 32,500",
+      "id": "local-puerto-princesa-underground-river-classic-21"
+    }
+  ],
+  "international": [
+    {
+      "category": "international",
+      "title": "Korea",
+      "details": "5 Days / 4 Nights • Downtown hotel • Desert safari VIP",
+      "previewImage": "/images/packages/international/korea-1771931931226.jpg",
+      "imagePath": "/images/packages/international/korea-1771931931226.jpg",
+      "price": "from PHP 108,900",
+      "id": "international-dubai-gold-collection-5"
+    },
+    {
+      "category": "international",
+      "title": "Dumlog Tour",
+      "details": "4 Days / 3 Nights with free water.",
+      "price": "60,000.00",
+      "imagePath": "/images/packages/international/dumlog-tour-1771930354227.jpg",
+      "previewImage": "/images/packages/international/dumlog-tour-1771930354227.jpg",
+      "id": "international-dumlog-tour-1"
+    },
+    {
+      "category": "international",
+      "title": "Singapore Adventure",
+      "details": "4 Days / 3 Nights • Marina Bay stay • Private city guide",
+      "previewImage": "/images/packages/international/singapore-adventure.jpg",
+      "imagePath": "/images/packages/international/singapore-adventure.jpg",
+      "price": "from PHP 88,900",
+      "id": "international-singapore-adventure-2"
+    },
+    {
+      "category": "international",
+      "title": "Seoul Discovery",
+      "details": "5 Days / 4 Nights • Palace district tour • Premium food trail",
+      "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
+      "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
+      "price": "from PHP 104,500",
+      "id": "international-seoul-discovery-3"
+    },
+    {
+      "category": "international",
+      "title": "Japan Classic",
+      "details": "6 Days / 5 Nights • Tokyo + Kyoto • Ryokan & fast-rail pass",
+      "previewImage": "/images/packages/international/japan-classic.jpg",
+      "imagePath": "/images/packages/international/japan-classic.jpg",
+      "price": "from PHP 136,000",
+      "id": "international-japan-classic-4"
+    },
+    {
+      "category": "international",
+      "title": "Bangkok City & River Luxe",
+      "details": "4 Days / 3 Nights • Marina Bay stay • Private city guide",
+      "previewImage": "/images/packages/international/singapore-adventure.jpg",
+      "imagePath": "/images/packages/international/singapore-adventure.jpg",
+      "price": "from PHP 88,900",
+      "id": "international-bangkok-city-river-luxe-6"
+    },
+    {
+      "category": "international",
+      "title": "Hong Kong Skyline Escape",
+      "details": "5 Days / 4 Nights • Palace district tour • Premium food trail",
+      "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
+      "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
+      "price": "from PHP 104,500",
+      "id": "international-hong-kong-skyline-escape-7"
+    },
+    {
+      "category": "international",
+      "title": "Bali Villa Indulgence",
+      "details": "6 Days / 5 Nights • Tokyo + Kyoto • Ryokan & fast-rail pass",
+      "previewImage": "/images/packages/international/japan-classic.jpg",
+      "imagePath": "/images/packages/international/japan-classic.jpg",
+      "price": "from PHP 136,000",
+      "id": "international-bali-villa-indulgence-8"
+    },
+    {
+      "category": "international",
+      "title": "Taipei Night Market Discovery",
+      "details": "5 Days / 4 Nights • Downtown hotel • Desert safari VIP",
+      "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
+      "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
+      "price": "from PHP 118,900",
+      "id": "international-taipei-night-market-discovery-9"
+    },
+    {
+      "category": "international",
+      "title": "Istanbul Heritage & Bosphorus",
+      "details": "4 Days / 3 Nights • Marina Bay stay • Private city guide",
+      "previewImage": "/images/packages/international/singapore-adventure.jpg",
+      "imagePath": "/images/packages/international/singapore-adventure.jpg",
+      "price": "from PHP 88,900",
+      "id": "international-istanbul-heritage-bosphorus-10"
+    },
+    {
+      "category": "international",
+      "title": "Paris Landmark Collection",
+      "details": "5 Days / 4 Nights • Palace district tour • Premium food trail",
+      "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
+      "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
+      "price": "from PHP 104,500",
+      "id": "international-paris-landmark-collection-11"
+    },
+    {
+      "category": "international",
+      "title": "Swiss Alpine Panorama",
+      "details": "6 Days / 5 Nights • Tokyo + Kyoto • Ryokan & fast-rail pass",
+      "previewImage": "/images/packages/international/japan-classic.jpg",
+      "imagePath": "/images/packages/international/japan-classic.jpg",
+      "price": "from PHP 136,000",
+      "id": "international-swiss-alpine-panorama-12"
+    },
+    {
+      "category": "international",
+      "title": "London Royal Weekend",
+      "details": "5 Days / 4 Nights • Downtown hotel • Desert safari VIP",
+      "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
+      "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
+      "price": "from PHP 118,900",
+      "id": "international-london-royal-weekend-13"
+    },
+    {
+      "category": "international",
+      "title": "Rome & Florence Art Trail",
+      "details": "4 Days / 3 Nights • Marina Bay stay • Private city guide",
+      "previewImage": "/images/packages/international/singapore-adventure.jpg",
+      "imagePath": "/images/packages/international/singapore-adventure.jpg",
+      "price": "from PHP 88,900",
+      "id": "international-rome-florence-art-trail-14"
+    },
+    {
+      "category": "international",
+      "title": "Sydney Harbor Signature",
+      "details": "5 Days / 4 Nights • Palace district tour • Premium food trail",
+      "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
+      "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
+      "price": "from PHP 104,500",
+      "id": "international-sydney-harbor-signature-15"
+    },
+    {
+      "category": "international",
+      "title": "Auckland Scenic Explorer",
+      "details": "6 Days / 5 Nights • Tokyo + Kyoto • Ryokan & fast-rail pass",
+      "previewImage": "/images/packages/international/japan-classic.jpg",
+      "imagePath": "/images/packages/international/japan-classic.jpg",
+      "price": "from PHP 136,000",
+      "id": "international-auckland-scenic-explorer-16"
+    },
+    {
+      "category": "international",
+      "title": "Barcelona Mediterranean Break",
+      "details": "5 Days / 4 Nights • Downtown hotel • Desert safari VIP",
+      "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
+      "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
+      "price": "from PHP 118,900",
+      "id": "international-barcelona-mediterranean-break-17"
+    },
+    {
+      "category": "international",
+      "title": "Prague Old Town Romance",
+      "details": "4 Days / 3 Nights • Marina Bay stay • Private city guide",
+      "previewImage": "/images/packages/international/singapore-adventure.jpg",
+      "imagePath": "/images/packages/international/singapore-adventure.jpg",
+      "price": "from PHP 88,900",
+      "id": "international-prague-old-town-romance-18"
+    },
+    {
+      "category": "international",
+      "title": "New York City Premium Stay",
+      "details": "5 Days / 4 Nights • Palace district tour • Premium food trail",
+      "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
+      "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
+      "price": "from PHP 104,500",
+      "id": "international-new-york-city-premium-stay-19"
+    },
+    {
+      "category": "international",
+      "title": "Vancouver Mountain & City",
+      "details": "6 Days / 5 Nights • Tokyo + Kyoto • Ryokan & fast-rail pass",
+      "previewImage": "/images/packages/international/japan-classic.jpg",
+      "imagePath": "/images/packages/international/japan-classic.jpg",
+      "price": "from PHP 136,000",
+      "id": "international-vancouver-mountain-city-20"
+    },
+    {
+      "category": "international",
+      "title": "Doha Desert and Downtown Select",
+      "details": "5 Days / 4 Nights • Downtown hotel • Desert safari VIP",
+      "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
+      "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
+      "price": "from PHP 118,900",
+      "id": "international-doha-desert-and-downtown-select-21"
+    }
+  ]
+}

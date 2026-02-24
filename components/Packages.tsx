@@ -1,15 +1,18 @@
-"use client"
-
 import Link from "next/link"
+import { unstable_noStore as noStore } from "next/cache"
 
 import PackageGallery from "@/components/PackageGallery"
 import Reveal from "@/components/Reveal"
-import {
-  internationalPackages,
-  localPhilippinesPackages
-} from "@/lib/package-data"
+import { getPackagesByCategory } from "@/lib/package-repository"
 
-export default function Packages() {
+export default async function Packages() {
+  noStore()
+
+  const [localPhilippinesPackages, internationalPackages] = await Promise.all([
+    getPackagesByCategory("local"),
+    getPackagesByCategory("international")
+  ])
+
   return (
     <section
       id="packages"

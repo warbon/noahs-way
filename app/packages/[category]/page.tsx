@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { unstable_noStore as noStore } from "next/cache"
 import { notFound } from "next/navigation"
 
 import Footer from "@/components/Footer"
@@ -7,10 +8,10 @@ import Navbar from "@/components/Navbar"
 import PackageGallery from "@/components/PackageGallery"
 import {
   PACKAGE_PAGE_SIZE,
-  packageCatalog,
   packageCategoryMeta,
   type PackageCategory
 } from "@/lib/package-data"
+import { getPackagesByCategory } from "@/lib/package-repository"
 
 type PageProps = {
   params: {
@@ -33,18 +34,24 @@ function getPageNumber(rawPage: string | string[] | undefined, totalPages: numbe
   return Math.min(parsed, Math.max(totalPages, 1))
 }
 
-export default function CategoryPackagesPage({ params, searchParams }: PageProps) {
+export default async function CategoryPackagesPage({ params, searchParams }: PageProps) {
+  noStore()
+
   if (!isPackageCategory(params.category)) {
     notFound()
   }
 
   const category = params.category
-  const packages = packageCatalog[category]
+  const packages = await getPackagesByCategory(category)
   const meta = packageCategoryMeta[category]
   const totalPages = Math.ceil(packages.length / PACKAGE_PAGE_SIZE)
   const currentPage = getPageNumber(searchParams?.page, totalPages)
   const startIndex = (currentPage - 1) * PACKAGE_PAGE_SIZE
   const visiblePackages = packages.slice(startIndex, startIndex + PACKAGE_PAGE_SIZE)
+  const totalPagesDisplay = Math.max(totalPages, 1)
+  const hasPackages = packages.length > 0
+  const showingStart = hasPackages ? startIndex + 1 : 0
+  const showingEnd = hasPackages ? startIndex + visiblePackages.length : 0
 
   return (
     <main>
@@ -93,11 +100,10 @@ export default function CategoryPackagesPage({ params, searchParams }: PageProps
 
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
             <span>
-              Showing {startIndex + 1}-{startIndex + visiblePackages.length} of {packages.length}{" "}
-              packages
+              Showing {showingStart}-{showingEnd} of {packages.length} packages
             </span>
             <span>
-              Page {currentPage} of {totalPages}
+              Page {currentPage} of {totalPagesDisplay}
             </span>
           </div>
 
@@ -124,7 +130,7 @@ export default function CategoryPackagesPage({ params, searchParams }: PageProps
               Previous
             </Link>
 
-            {Array.from({ length: totalPages }, (_, index) => {
+            {Array.from({ length: totalPagesDisplay }, (_, index) => {
               const page = index + 1
               const isActive = page === currentPage
 
@@ -145,10 +151,10 @@ export default function CategoryPackagesPage({ params, searchParams }: PageProps
             })}
 
             <Link
-              href={`/packages/${category}?page=${Math.min(currentPage + 1, totalPages)}`}
-              aria-disabled={currentPage === totalPages}
+              href={`/packages/${category}?page=${Math.min(currentPage + 1, totalPagesDisplay)}`}
+              aria-disabled={currentPage === totalPagesDisplay}
               className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                currentPage === totalPages
+                currentPage === totalPagesDisplay
                   ? "cursor-not-allowed border border-primary/10 bg-white/70 text-primary/40"
                   : "border border-primary/15 bg-white text-primary hover:bg-primary hover:text-white"
               }`}
