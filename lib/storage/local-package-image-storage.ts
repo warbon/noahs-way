@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises"
+import { mkdir, unlink, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import type { PackageCategory } from "@/lib/package-data"
@@ -37,4 +37,15 @@ export async function savePackageImageLocally({
   await writeFile(filePath, Buffer.from(arrayBuffer))
 
   return { publicImagePath }
+}
+
+export async function deletePackageImageLocally(publicImagePath: string): Promise<void> {
+  const relative = publicImagePath.replace(/^\/+/, "")
+  const filePath = path.join(process.cwd(), "public", relative)
+
+  try {
+    await unlink(filePath)
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException)?.code !== "ENOENT") throw error
+  }
 }

@@ -38,6 +38,12 @@ export default async function AdminLoginPage({ searchParams }: LoginPageProps) {
             </p>
           ) : null}
 
+          {error === "ratelimited" ? (
+            <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              Too many attempts. Please wait a minute and try again.
+            </p>
+          ) : null}
+
           {error === "config" ? (
             <p className="mt-4 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-700">
               Admin login is not configured. Set `ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET`.

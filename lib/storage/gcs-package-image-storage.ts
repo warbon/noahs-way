@@ -7,6 +7,7 @@ type StorageLike = {
   bucket(name: string): {
     file(path: string): {
       save(data: Buffer, options?: { resumable?: boolean; metadata?: { contentType?: string } }): Promise<void>
+      delete(options?: { ignoreNotFound?: boolean }): Promise<unknown>
     }
   }
 }
@@ -83,5 +84,24 @@ export async function savePackageImageToGcs({
   return {
     publicImagePath: `${publicBase}/${objectPath}`
   }
+}
+
+export async function deletePackageImageFromGcs(imagePath: string): Promise<void> {
+  const bucketName = getBucketName()
+
+  let objectPath = imagePath
+  try {
+    const url = new URL(imagePath)
+    objectPath = url.pathname.replace(/^\/+/, "")
+    // storage.googleapis.com/<bucket>/<object> → strip the bucket segment
+    if (url.hostname === "storage.googleapis.com" && objectPath.startsWith(`${bucketName}/`)) {
+      objectPath = objectPath.slice(bucketName.length + 1)
+    }
+  } catch {
+    // Not a URL; treat imagePath as the object path directly.
+  }
+
+  const storage = await getStorage()
+  await storage.bucket(bucketName).file(objectPath).delete({ ignoreNotFound: true })
 }
 

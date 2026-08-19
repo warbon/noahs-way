@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob"
+import { del, put } from "@vercel/blob"
 
 import type {
   SavePackageImageParams,
@@ -39,4 +39,8 @@ export async function savePackageImageToBlob({
   })
 
   return { publicImagePath: blob.url }
+}
+
+export async function deletePackageImageFromBlob(imagePath: string): Promise<void> {
+  await del(imagePath)
 }

@@ -14,6 +14,8 @@
   "dependencies": {
     "@google-cloud/firestore": "^7.11.0",
     "@google-cloud/storage": "^7.16.0",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.2",
     "@vercel/blob": "^2.8.0",
     "@vercel/kv": "^3.0.0",
     "class-variance-authority": "^0.7.0",

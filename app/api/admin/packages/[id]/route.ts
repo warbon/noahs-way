@@ -2,9 +2,13 @@ import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 
 import { isAdminRequestAuthenticated } from "@/lib/admin-auth"
-import { savePackageImage } from "@/lib/package-image-storage"
+import { deletePackageImage, savePackageImage } from "@/lib/package-image-storage"
 import type { PackageCategory } from "@/lib/package-data"
-import { deletePackageRecord, updatePackageRecord } from "@/lib/package-repository"
+import {
+  deletePackageRecord,
+  getAllPackagesForAdmin,
+  updatePackageRecord
+} from "@/lib/package-repository"
 
 const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024
 
@@ -140,9 +144,24 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     return errorResponse("No changes provided", 400)
   }
 
+  // When a new image replaces an old one, capture the old path first so we can
+  // clean it up after a successful update.
+  let previousImagePath: string | undefined
+  if (updates.imagePath) {
+    const catalog = await getAllPackagesForAdmin()
+    const existing = [...catalog.local, ...catalog.international].find(
+      (pkg) => pkg.id === packageId
+    )
+    previousImagePath = existing?.imagePath
+  }
+
   const updated = await updatePackageRecord(packageId, updates)
   if (!updated) {
     return errorResponse("Package not found", 404)
+  }
+
+  if (previousImagePath && previousImagePath !== updated.imagePath) {
+    await deletePackageImage(previousImagePath)
   }
 
   revalidatePath("/")
@@ -165,6 +184,12 @@ export async function DELETE(request: NextRequest, { params }: RouteContext) {
   const deleted = await deletePackageRecord(packageId)
   if (!deleted) {
     return errorResponse("Package not found", 404)
+  }
+
+  // Best-effort cleanup of the stored image so deletes don't orphan assets.
+  await deletePackageImage(deleted.imagePath)
+  if (deleted.previewImage && deleted.previewImage !== deleted.imagePath) {
+    await deletePackageImage(deleted.previewImage)
   }
 
   revalidatePath("/")
