@@ -3,10 +3,6 @@ import {
   savePackageImageToBlob
 } from "@/lib/storage/vercel-blob-package-image-storage"
 import {
-  deletePackageImageFromGcs,
-  savePackageImageToGcs
-} from "@/lib/storage/gcs-package-image-storage"
-import {
   deletePackageImageLocally,
   savePackageImageLocally
 } from "@/lib/storage/local-package-image-storage"
@@ -21,21 +17,15 @@ function getImageStoreMode() {
   const value = process.env.IMAGE_STORE?.trim().toLowerCase()
 
   if (value === "blob") return "blob"
-  if (value === "gcs") return "gcs"
   return "local"
 }
 
 export async function savePackageImage(
   params: SavePackageImageParams
 ): Promise<SavePackageImageResult> {
-  switch (getImageStoreMode()) {
-    case "blob":
-      return savePackageImageToBlob(params)
-    case "gcs":
-      return savePackageImageToGcs(params)
-    default:
-      return savePackageImageLocally(params)
-  }
+  return getImageStoreMode() === "blob"
+    ? savePackageImageToBlob(params)
+    : savePackageImageLocally(params)
 }
 
 /**
@@ -48,12 +38,8 @@ export async function deletePackageImage(imagePath: string | undefined): Promise
   if (!imagePath) return
 
   try {
-    if (/^https?:\/\//i.test(imagePath)) {
-      if (imagePath.includes(".blob.vercel-storage.com")) {
-        await deletePackageImageFromBlob(imagePath)
-      } else {
-        await deletePackageImageFromGcs(imagePath)
-      }
+    if (imagePath.includes(".blob.vercel-storage.com")) {
+      await deletePackageImageFromBlob(imagePath)
     } else if (imagePath.startsWith("/images/packages/")) {
       await deletePackageImageLocally(imagePath)
     }

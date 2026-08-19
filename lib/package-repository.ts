@@ -1,6 +1,5 @@
 import type { PackageCategory } from "@/lib/package-data"
 import { filePackageRepository } from "@/lib/repositories/file-package-repository"
-import { firestorePackageRepository } from "@/lib/repositories/firestore-package-repository"
 import { kvPackageRepository } from "@/lib/repositories/kv-package-repository"
 import type {
   CreatePackagePayload,
@@ -16,19 +15,11 @@ function getRepositoryMode() {
   const value = process.env.PACKAGE_STORE?.trim().toLowerCase()
 
   if (value === "kv") return "kv"
-  if (value === "firestore") return "firestore"
   return "file"
 }
 
 function getRepository(): PackageRepository {
-  switch (getRepositoryMode()) {
-    case "kv":
-      return kvPackageRepository
-    case "firestore":
-      return firestorePackageRepository
-    default:
-      return filePackageRepository
-  }
+  return getRepositoryMode() === "kv" ? kvPackageRepository : filePackageRepository
 }
 
 export async function getPackagesByCategory(category: PackageCategory) {
