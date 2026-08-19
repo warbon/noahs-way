@@ -1,13 +1,13 @@
 import { redirect } from "next/navigation"
 
+import AdminInquiryInbox from "@/components/AdminInquiryInbox"
 import AdminNav from "@/components/AdminNav"
-import AdminPackageManagerPanel from "@/components/AdminPackageManagerPanel"
 import { Button } from "@/components/ui/button"
 import { isAdminAuthenticated } from "@/lib/admin-auth-server"
 
-import { logoutAction } from "./actions"
+import { logoutAction } from "../packages/actions"
 
-export default async function AdminPackagesPage() {
+export default async function AdminInquiriesPage() {
   if (!(await isAdminAuthenticated())) {
     redirect("/admin/login")
   }
@@ -20,9 +20,9 @@ export default async function AdminPackagesPage() {
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/70">
               Admin
             </p>
-            <h1 className="mt-2 text-3xl font-bold text-primary">Package Manager</h1>
+            <h1 className="mt-2 text-3xl font-bold text-primary">Customer Inquiries</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Protected admin page for uploading package data and images.
+              Every inquiry submitted from the website lands here.
             </p>
             <div className="mt-4">
               <AdminNav />
@@ -36,7 +36,7 @@ export default async function AdminPackagesPage() {
           </form>
         </header>
 
-        <AdminPackageManagerPanel />
+        <AdminInquiryInbox />
       </div>
     </main>
   )

@@ -3,18 +3,23 @@
 import { useEffect, useRef, useState } from "react"
 import type { CSSProperties, ReactNode } from "react"
 
+/** Direction the element travels from as it reveals. */
+export type RevealVariant = "up" | "left" | "right" | "scale"
+
 type RevealProps = {
   children: ReactNode
   className?: string
   delay?: number
   once?: boolean
+  variant?: RevealVariant
 }
 
 export default function Reveal({
   children,
   className,
   delay = 0,
-  once = true
+  once = true,
+  variant = "up"
 }: RevealProps) {
   const ref = useRef<HTMLDivElement | null>(null)
   const [isVisible, setIsVisible] = useState(false)
@@ -46,6 +51,7 @@ export default function Reveal({
   return (
     <div
       ref={ref}
+      data-variant={variant}
       className={`reveal-on-scroll ${isVisible ? "is-visible" : ""} ${className ?? ""}`}
       style={{ "--reveal-delay": `${delay}ms` } as CSSProperties}
     >

@@ -1,10 +1,12 @@
 "use client"
 
+import { Pause, Play } from "lucide-react"
 import { useEffect, useState } from "react"
 
 import BrandLogo from "@/components/BrandLogo"
 import Reveal from "@/components/Reveal"
 import { Button } from "@/components/ui/button"
+import { siteConfig } from "@/lib/site-config"
 
 const heroSlides = [
   {
@@ -44,15 +46,40 @@ const heroSlides = [
 
 export default function Hero() {
   const [activeIndex, setActiveIndex] = useState(0)
+  const [isPaused, setIsPaused] = useState(false)
+  const [isManuallyPaused, setIsManuallyPaused] = useState(false)
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
   const activeSlide = heroSlides[activeIndex]
 
+  // Start paused when the visitor asked for reduced motion.
   useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const apply = () => {
+      setPrefersReducedMotion(query.matches)
+      if (query.matches) setIsPaused(true)
+    }
+    apply()
+    query.addEventListener("change", apply)
+    return () => query.removeEventListener("change", apply)
+  }, [])
+
+  useEffect(() => {
+    // WCAG 2.2.2: auto-advancing content must be pausable, and must not move
+    // while the visitor is hovering or tabbing through it.
+    if (isPaused || prefersReducedMotion) return
+
     const intervalId = window.setInterval(() => {
       setActiveIndex((current) => (current + 1) % heroSlides.length)
     }, 6500)
 
     return () => window.clearInterval(intervalId)
-  }, [])
+  }, [isPaused, prefersReducedMotion])
+
+  // Resume only when the visitor hasn't asked for reduced motion, and only if
+  // they didn't explicitly pause via the control (that stays sticky until toggled).
+  const resumeUnlessReducedMotion = () => {
+    if (!prefersReducedMotion && !isManuallyPaused) setIsPaused(false)
+  }
 
   const goToPrev = () => {
     setActiveIndex((current) => (current - 1 + heroSlides.length) % heroSlides.length)
@@ -63,7 +90,15 @@ export default function Hero() {
   }
 
   return (
-    <section className="relative isolate min-h-[78vh] overflow-hidden">
+    <section
+      className="relative isolate min-h-[78vh] overflow-hidden"
+      aria-roledescription="carousel"
+      aria-label="Featured journeys"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={resumeUnlessReducedMotion}
+      onFocusCapture={() => setIsPaused(true)}
+      onBlurCapture={resumeUnlessReducedMotion}
+    >
       {heroSlides.map((slide, index) => (
         <div
           key={slide.image}
@@ -89,11 +124,17 @@ export default function Hero() {
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-secondary">
             {activeSlide.eyebrow}
           </p>
-          <h2 className="mt-4 max-w-3xl text-4xl font-extrabold leading-tight text-white md:text-6xl">
+          <h1 className="sr-only">
+            {siteConfig.name} — {siteConfig.tagline}
+          </h1>
+          <p
+            aria-live="polite"
+            className="mt-4 max-w-3xl text-4xl font-extrabold leading-tight text-white md:text-6xl"
+          >
             {activeSlide.title}
             <br />
             {activeSlide.subtitle}
-          </h2>
+          </p>
           <p className="mt-6 max-w-2xl text-lg text-white/80 md:text-xl">
             {activeSlide.description}
           </p>
@@ -137,6 +178,17 @@ export default function Hero() {
               className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
             >
               <span aria-hidden="true">→</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setIsManuallyPaused((paused) => !paused)
+                setIsPaused((paused) => !paused)
+              }}
+              aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
+              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
+            >
+              {isPaused ? <Play className="h-4 w-4" aria-hidden="true" /> : <Pause className="h-4 w-4" aria-hidden="true" />}
             </button>
             <div className="ml-1 flex items-center gap-2">
               {heroSlides.map((slide, index) => (

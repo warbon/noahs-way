@@ -30,6 +30,27 @@
     @apply border-border;
   }
 
+  /*
+    Tailwind's preflight removes default outlines. Only the shadcn primitives
+    restore a focus ring, so raw <a>/<button> elements (package cards,
+    pagination) had no visible keyboard focus at all.
+  */
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  html {
+    /* Sticky header would otherwise cover anchor targets and scrolled headings. */
+    scroll-padding-top: 5.5rem;
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-background text-foreground;
     background-image: radial-gradient(
@@ -38,7 +59,7 @@
         transparent 34%
       ),
       radial-gradient(circle at 86% 0%, rgba(212, 166, 86, 0.16), transparent 26%);
-    font-family: "Poppins", "Avenir Next", "Segoe UI", sans-serif;
+    font-family: var(--font-poppins), "Avenir Next", "Segoe UI", sans-serif;
   }
 }
 
@@ -73,6 +94,218 @@
     animation: modal-in 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  /* --- Side panel / drawer -------------------------------------------- */
+
+  /*
+    Keyframe animations, not transitions. A transition needs the browser to have
+    painted the "closed" state first, but React commits the mount and the state
+    flip within a single frame, so that start state is never painted and the
+    panel just appears. An animation plays from its own keyframes the moment the
+    attribute is set, which makes the entrance deterministic.
+  */
+  .panel-backdrop[data-state="open"] {
+    animation: panel-fade-in 260ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .panel-backdrop[data-state="closed"] {
+    animation: panel-fade-out 260ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  }
+
+  .panel-sheet[data-state="open"] {
+    animation: panel-slide-in 340ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  .panel-sheet[data-state="closed"] {
+    animation: panel-slide-out 300ms cubic-bezier(0.32, 0.72, 0, 1) both;
+  }
+
+  @keyframes panel-fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes panel-fade-out {
+    from {
+      opacity: 1;
+    }
+
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes panel-slide-in {
+    from {
+      transform: translateX(100%);
+    }
+
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes panel-slide-out {
+    from {
+      transform: translateX(0);
+    }
+
+    to {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Contents lift in just behind the sheet, for a sense of depth. */
+  .panel-sheet[data-state="open"] .panel-stagger > * {
+    animation: panel-content-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: 130ms;
+  }
+
+  @keyframes panel-content-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* --- Media ----------------------------------------------------------- */
+
+  /*
+    Images fade in on mount. Deliberately a keyframe animation rather than an
+    onLoad-gated opacity: a cached image can finish loading before React attaches
+    the handler, which would strand it invisible. `both` + a one-shot animation
+    always ends at opacity 1.
+  */
+  .media-fade {
+    animation: media-in 480ms ease-out both;
+  }
+
+  @keyframes media-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* --- Header ---------------------------------------------------------- */
+
+  .site-header {
+    transition:
+      box-shadow 300ms ease,
+      background-color 300ms ease,
+      padding 300ms ease;
+  }
+
+  .site-header[data-scrolled="true"] {
+    box-shadow: 0 6px 24px -12px rgba(7, 19, 41, 0.35);
+  }
+
+  /* --- Admin list motion ------------------------------------------------ */
+
+  /* Rows enter in sequence so a loaded list reads as arriving, not blinking in.
+     --row-index is set per row; the cap keeps long lists from crawling. */
+  .admin-row-in {
+    animation: admin-row-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: calc(min(var(--row-index, 0) * 45ms, 450ms));
+  }
+
+  @keyframes admin-row-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Shimmering placeholder shown while a list loads. */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background-color: hsl(var(--muted));
+  }
+
+  .skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--background) / 0.65),
+      transparent
+    );
+    animation: skeleton-sweep 1.4s ease-in-out infinite;
+  }
+
+  @keyframes skeleton-sweep {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  /* Inline status messages slide down rather than shifting layout abruptly. */
+  .notice-in {
+    animation: notice-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes notice-in {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Draws the eye when the unread count changes. */
+  .badge-pop {
+    animation: badge-pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  @keyframes badge-pop {
+    0% {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+
+    60% {
+      transform: scale(1.15);
+    }
+
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  /* --- Scroll progress -------------------------------------------------- */
+
+  .scroll-progress {
+    transform-origin: 0 50%;
+    transform: scaleX(var(--progress, 0));
+    transition: transform 120ms linear;
+  }
+
   .reveal-on-scroll {
     opacity: 0;
     transform: translateY(20px) scale(0.985);
@@ -86,6 +319,24 @@
   .reveal-on-scroll.is-visible {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+
+  .reveal-on-scroll[data-variant="left"] {
+    transform: translateX(-28px);
+  }
+
+  .reveal-on-scroll[data-variant="right"] {
+    transform: translateX(28px);
+  }
+
+  .reveal-on-scroll[data-variant="scale"] {
+    transform: scale(0.94);
+  }
+
+  .reveal-on-scroll[data-variant="left"].is-visible,
+  .reveal-on-scroll[data-variant="right"].is-visible,
+  .reveal-on-scroll[data-variant="scale"].is-visible {
+    transform: none;
   }
 
   @keyframes float-slow {
@@ -139,8 +390,44 @@
     transition-duration: 0.01ms !important;
   }
 
-  .reveal-on-scroll {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .reveal-on-scroll,
+  .panel-stagger > * {
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  .panel-sheet,
+  .panel-backdrop,
+  .panel-sheet .panel-stagger > * {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .media-fade,
+  .admin-row-in,
+  .notice-in,
+  .badge-pop {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .skeleton::after {
+    animation: none !important;
+  }
+}
+
+@layer components {
+  .skip-link {
+    @apply sr-only;
+  }
+
+  .skip-link:focus {
+    @apply not-sr-only fixed left-4 top-4 z-[100] rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground;
   }
 }

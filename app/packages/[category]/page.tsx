@@ -1,9 +1,11 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { unstable_noStore as noStore } from "next/cache"
 import { notFound } from "next/navigation"
 
 import Footer from "@/components/Footer"
-import MessengerChat from "@/components/MessengerChat"
+import BackToTop from "@/components/BackToTop"
+import ContactFab from "@/components/ContactFab"
 import Navbar from "@/components/Navbar"
 import PackageGallery from "@/components/PackageGallery"
 import {
@@ -12,6 +14,27 @@ import {
   type PackageCategory
 } from "@/lib/package-data"
 import { getPackagesByCategory } from "@/lib/package-repository"
+
+/**
+ * Renders at most seven slots: first, last, the current page and its
+ * neighbours, with ellipses for the gaps. Without this every page number is
+ * rendered, which grows unbounded as the catalog does.
+ */
+function buildPageWindow(current: number, total: number): (number | "ellipsis")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1)
+
+  const pages = new Set([1, total, current, current - 1, current + 1])
+  const sorted = Array.from(pages).filter((page) => page >= 1 && page <= total).sort((a, b) => a - b)
+
+  const result: (number | "ellipsis")[] = []
+  let previous = 0
+  for (const page of sorted) {
+    if (previous && page - previous > 1) result.push("ellipsis")
+    result.push(page)
+    previous = page
+  }
+  return result
+}
 
 type PageProps = {
   params: {
@@ -32,6 +55,22 @@ function getPageNumber(rawPage: string | string[] | undefined, totalPages: numbe
 
   if (!Number.isFinite(parsed) || parsed < 1) return 1
   return Math.min(parsed, Math.max(totalPages, 1))
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  if (!isPackageCategory(params.category)) return { title: "Packages" }
+
+  const meta = packageCategoryMeta[params.category]
+  return {
+    title: meta.title,
+    description: meta.description,
+    alternates: { canonical: `/packages/${params.category}` },
+    openGraph: {
+      title: meta.title,
+      description: meta.description,
+      url: `/packages/${params.category}`
+    }
+  }
 }
 
 export default async function CategoryPackagesPage({ params, searchParams }: PageProps) {
@@ -118,20 +157,32 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
             aria-label={`${meta.shortLabel} package pagination`}
             className="mt-10 flex flex-wrap items-center justify-center gap-2"
           >
-            <Link
-              href={`/packages/${category}?page=${Math.max(currentPage - 1, 1)}`}
-              aria-disabled={currentPage === 1}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                currentPage === 1
-                  ? "cursor-not-allowed border border-primary/10 bg-white/70 text-primary/40"
-                  : "border border-primary/15 bg-white text-primary hover:bg-primary hover:text-white"
-              }`}
-            >
-              Previous
-            </Link>
+            {currentPage === 1 ? (
+              <span
+                aria-disabled="true"
+                className="cursor-not-allowed rounded-full border border-primary/10 bg-white/70 px-4 py-2 text-sm font-semibold text-primary/40"
+              >
+                Previous
+              </span>
+            ) : (
+              <Link
+                href={`/packages/${category}?page=${currentPage - 1}`}
+                rel="prev"
+                className="rounded-full border border-primary/15 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
+              >
+                Previous
+              </Link>
+            )}
 
-            {Array.from({ length: totalPagesDisplay }, (_, index) => {
-              const page = index + 1
+            {buildPageWindow(currentPage, totalPagesDisplay).map((page, index) => {
+              if (page === "ellipsis") {
+                return (
+                  <span key={`gap-${index}`} aria-hidden="true" className="px-1 text-primary/50">
+                    …
+                  </span>
+                )
+              }
+
               const isActive = page === currentPage
 
               return (
@@ -150,23 +201,29 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
               )
             })}
 
-            <Link
-              href={`/packages/${category}?page=${Math.min(currentPage + 1, totalPagesDisplay)}`}
-              aria-disabled={currentPage === totalPagesDisplay}
-              className={`rounded-full px-4 py-2 text-sm font-semibold transition ${
-                currentPage === totalPagesDisplay
-                  ? "cursor-not-allowed border border-primary/10 bg-white/70 text-primary/40"
-                  : "border border-primary/15 bg-white text-primary hover:bg-primary hover:text-white"
-              }`}
-            >
-              Next
-            </Link>
+            {currentPage === totalPagesDisplay ? (
+              <span
+                aria-disabled="true"
+                className="cursor-not-allowed rounded-full border border-primary/10 bg-white/70 px-4 py-2 text-sm font-semibold text-primary/40"
+              >
+                Next
+              </span>
+            ) : (
+              <Link
+                href={`/packages/${category}?page=${currentPage + 1}`}
+                rel="next"
+                className="rounded-full border border-primary/15 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
+              >
+                Next
+              </Link>
+            )}
           </nav>
         </div>
       </section>
 
       <Footer />
-      <MessengerChat />
+      <ContactFab />
+      <BackToTop />
     </main>
   )
 }

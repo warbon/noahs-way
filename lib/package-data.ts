@@ -1,5 +1,19 @@
 export type PackageCategory = "local" | "international"
 
+export type ItineraryDay = {
+  day: number
+  title: string
+  description?: string
+  activities?: string[]
+}
+
+export type PackageStatus = "published" | "draft"
+
+/**
+ * The original seven fields stay required so all existing records keep
+ * validating. Everything added since is optional — a record missing them is
+ * incomplete, never invalid.
+ */
 export type TravelPackage = {
   category: PackageCategory
   title: string
@@ -7,6 +21,22 @@ export type TravelPackage = {
   previewImage: string
   imagePath: string
   price: string
+  // Structured fields. Absent on legacy records; filled in via the admin editor.
+  slug?: string
+  /** Absent means "published" — legacy records stay visible by default. */
+  status?: PackageStatus
+  destination?: string
+  summary?: string
+  priceAmount?: number
+  currency?: string
+  durationDays?: number
+  durationNights?: number
+  highlights?: string[]
+  itinerary?: ItineraryDay[]
+  inclusions?: string[]
+  exclusions?: string[]
+  imageAlt?: string
+  updatedAt?: string
 }
 
 export const PACKAGE_PAGE_SIZE = 6

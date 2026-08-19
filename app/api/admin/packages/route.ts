@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server"
 
 import { isAdminRequestAuthenticated } from "@/lib/admin-auth"
 import { savePackageImage } from "@/lib/package-image-storage"
+import { readStructuredFields } from "@/lib/package-form-fields"
 import type { PackageCategory } from "@/lib/package-data"
 import { createPackageRecord, getAllPackagesForAdmin } from "@/lib/package-repository"
 
@@ -90,11 +91,15 @@ export async function POST(request: NextRequest) {
     details,
     price,
     imagePath: publicImagePath,
-    previewImage: publicImagePath
+    previewImage: publicImagePath,
+    ...readStructuredFields(formData)
   })
 
   revalidatePath("/")
+  revalidatePath("/packages")
   revalidatePath(`/packages/${category}`)
+  revalidatePath(`/packages/${category}/${createdPackage.slug ?? ""}`)
+  revalidatePath("/sitemap.xml")
   revalidatePath("/admin/packages")
 
   return NextResponse.json({ package: createdPackage }, { status: 201 })

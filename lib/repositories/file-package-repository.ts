@@ -8,6 +8,7 @@ import {
 } from "@/lib/package-data"
 import type {
   CreatePackagePayload,
+  GetPackagesOptions,
   PackageCatalogStore,
   PackageRecord,
   PackageRepository,
@@ -145,9 +146,17 @@ async function getPackageCatalogStore() {
   return seededCatalog
 }
 
-async function getPackagesByCategory(category: PackageCategory) {
+function isPublished(pkg: PackageRecord) {
+  // Absent status means published, so legacy records stay visible.
+  return pkg.status !== "draft"
+}
+
+async function getPackagesByCategory(
+  category: PackageCategory,
+  options: GetPackagesOptions = {}
+) {
   const catalog = await getPackageCatalogStore()
-  return catalog[category]
+  return options.includeDrafts ? catalog[category] : catalog[category].filter(isPublished)
 }
 
 async function getAllPackagesForAdmin() {

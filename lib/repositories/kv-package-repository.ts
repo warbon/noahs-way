@@ -3,6 +3,7 @@ import { kv } from "@vercel/kv"
 import type { PackageCategory } from "@/lib/package-data"
 import type {
   CreatePackagePayload,
+  GetPackagesOptions,
   PackageCatalogStore,
   PackageRecord,
   PackageRepository,
@@ -66,9 +67,17 @@ async function writeCatalog(catalog: PackageCatalogStore) {
   await kv.set(getCatalogKey(), catalog)
 }
 
-async function getPackagesByCategory(category: PackageCategory): Promise<PackageRecord[]> {
+function isPublished(pkg: PackageRecord) {
+  // Absent status means published, so legacy records stay visible.
+  return pkg.status !== "draft"
+}
+
+async function getPackagesByCategory(
+  category: PackageCategory,
+  options: GetPackagesOptions = {}
+): Promise<PackageRecord[]> {
   const catalog = await readCatalog()
-  return catalog[category]
+  return options.includeDrafts ? catalog[category] : catalog[category].filter(isPublished)
 }
 
 async function getAllPackagesForAdmin(): Promise<PackageCatalogStore> {

@@ -1,7 +1,6 @@
+import InquiryForm from "@/components/InquiryForm"
 import Reveal from "@/components/Reveal"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { emailHref, messengerHref, phoneHref, siteConfig } from "@/lib/site-config"
 
 export default function Contact() {
   return (
@@ -11,22 +10,35 @@ export default function Contact() {
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(18,46,93,0.1),transparent_40%)]" />
           <div className="relative">
             <h3 className="text-3xl font-bold text-primary md:text-4xl">
-              Plan Your Next Escape
+              Book Your Next Escape
             </h3>
             <p className="mt-3 text-sm text-muted-foreground">
-              Share your dates, preferred destination, and budget range in PHP.
+              Tell us where you&apos;re headed, when, and who&apos;s travelling.
               We&apos;ll send tailored options within 24 hours.
             </p>
 
-            <div className="mt-8 space-y-4">
-              <Input placeholder="Full Name" />
-              <Input type="email" placeholder="Email Address" />
-              <Input placeholder="Target Budget (PHP)" />
-              <Textarea placeholder="Destination, travel dates, and preferred activities" />
-              <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                Send Inquiry
-              </Button>
-            </div>
+            <InquiryForm />
+
+            <p className="mt-6 text-sm text-muted-foreground">
+              Prefer to talk first? Call{" "}
+              <a href={phoneHref} className="font-semibold text-primary underline">
+                {siteConfig.phone}
+              </a>
+              , email{" "}
+              <a href={emailHref} className="font-semibold text-primary underline">
+                {siteConfig.email}
+              </a>
+              , or{" "}
+              <a
+                href={messengerHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary underline"
+              >
+                message us on Messenger
+              </a>
+              .
+            </p>
           </div>
         </Reveal>
 

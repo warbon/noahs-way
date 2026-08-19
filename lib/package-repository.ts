@@ -3,6 +3,7 @@ import { filePackageRepository } from "@/lib/repositories/file-package-repositor
 import { kvPackageRepository } from "@/lib/repositories/kv-package-repository"
 import type {
   CreatePackagePayload,
+  GetPackagesOptions,
   PackageCatalogStore,
   PackageRecord,
   PackageRepository,
@@ -22,8 +23,11 @@ function getRepository(): PackageRepository {
   return getRepositoryMode() === "kv" ? kvPackageRepository : filePackageRepository
 }
 
-export async function getPackagesByCategory(category: PackageCategory) {
-  return getRepository().getPackagesByCategory(category)
+export async function getPackagesByCategory(
+  category: PackageCategory,
+  options?: GetPackagesOptions
+) {
+  return getRepository().getPackagesByCategory(category, options)
 }
 
 export async function getAllPackagesForAdmin(): Promise<PackageCatalogStore> {

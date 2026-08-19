@@ -1,8 +1,10 @@
+import type { UpdatePackagePayload } from "@/lib/package-repository-types"
 import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 
 import { isAdminRequestAuthenticated } from "@/lib/admin-auth"
 import { deletePackageImage, savePackageImage } from "@/lib/package-image-storage"
+import { readStructuredFields } from "@/lib/package-form-fields"
 import type { PackageCategory } from "@/lib/package-data"
 import {
   deletePackageRecord,
@@ -46,14 +48,7 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
     return errorResponse("Package id is required", 400)
   }
 
-  const updates: {
-    category?: PackageCategory
-    title?: string
-    details?: string
-    price?: string
-    imagePath?: string
-    previewImage?: string
-  } = {}
+  const updates: UpdatePackagePayload = {}
 
   const contentType = request.headers.get("content-type") ?? ""
 
@@ -105,6 +100,8 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       updates.imagePath = publicImagePath
       updates.previewImage = publicImagePath
     }
+
+    Object.assign(updates, readStructuredFields(formData))
   } else {
     const body = (await request.json().catch(() => null)) as Record<string, unknown> | null
     if (!body) {
@@ -165,7 +162,10 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
   }
 
   revalidatePath("/")
+  revalidatePath("/packages")
   revalidatePath(`/packages/${updated.category}`)
+  revalidatePath(`/packages/${updated.category}/${updated.slug ?? ""}`)
+  revalidatePath("/sitemap.xml")
   revalidatePath("/admin/packages")
 
   return NextResponse.json({ package: updated })

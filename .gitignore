@@ -16,3 +16,8 @@ pnpm-debug.log*
 
 certificates
 .env*
+# ...but the template carries no secrets and documents required config.
+!.env.example
+
+# Customer inquiry submissions (PII) — never commit
+/data/inquiries.json

@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 
 import Reveal from "@/components/Reveal"
 import { cn } from "@/lib/utils"
 import type { TravelPackage } from "@/lib/package-data"
+import { buildPackageHref, derivePackageSlug } from "@/lib/package-slug"
+import { formatPackagePrice } from "@/lib/price"
 
 type PackageGalleryProps = {
   packages: TravelPackage[]
@@ -24,10 +27,7 @@ export default function PackageGallery({
   gridClassName,
   carouselItemClassName
 }: PackageGalleryProps) {
-  const [selectedPackage, setSelectedPackage] = useState<TravelPackage | null>(null)
-  const [zoomLevel, setZoomLevel] = useState(1)
   const [carouselViewportWidth, setCarouselViewportWidth] = useState(0)
-  const imageViewportRef = useRef<HTMLDivElement | null>(null)
   const carouselViewportRef = useRef<HTMLDivElement | null>(null)
   const carouselTrackRef = useRef<HTMLDivElement | null>(null)
   const carouselSequenceRef = useRef<HTMLDivElement | null>(null)
@@ -38,26 +38,10 @@ export default function PackageGallery({
   const dragPointerIdRef = useRef<number | null>(null)
   const dragStartXRef = useRef<number | null>(null)
   const dragStartOffsetRef = useRef(0)
-  const pressedCardButtonRef = useRef<HTMLButtonElement | null>(null)
+  const pressedCardLinkRef = useRef<HTMLAnchorElement | null>(null)
   const didDragCarouselRef = useRef(false)
   const suppressCardClickUntilRef = useRef(0)
   const wheelResumeTimeoutRef = useRef<number | null>(null)
-
-  useEffect(() => {
-    const onEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setSelectedPackage(null)
-    }
-
-    if (selectedPackage) {
-      document.body.style.overflow = "hidden"
-      window.addEventListener("keydown", onEscape)
-    }
-
-    return () => {
-      document.body.style.overflow = ""
-      window.removeEventListener("keydown", onEscape)
-    }
-  }, [selectedPackage])
 
   useEffect(() => {
     return () => {
@@ -66,24 +50,6 @@ export default function PackageGallery({
       }
     }
   }, [])
-
-  useEffect(() => {
-    if (selectedPackage) setZoomLevel(1)
-  }, [selectedPackage])
-
-  useEffect(() => {
-    const viewport = imageViewportRef.current
-    if (!viewport || !selectedPackage) return
-
-    const centerScrollLeft = Math.max((viewport.scrollWidth - viewport.clientWidth) / 2, 0)
-    const centerScrollTop = Math.max((viewport.scrollHeight - viewport.clientHeight) / 2, 0)
-
-    viewport.scrollTo({ left: centerScrollLeft, top: centerScrollTop })
-  }, [zoomLevel, selectedPackage])
-
-  const zoomIn = () => setZoomLevel((prev) => Math.min(prev + 0.2, 3))
-  const zoomOut = () => setZoomLevel((prev) => Math.max(prev - 0.2, 1))
-  const resetZoom = () => setZoomLevel(1)
 
   const desktopPercent = carouselItemClassName?.includes("lg:min-w-[24%]") ? 24 : 32
   const itemPercent =
@@ -196,42 +162,50 @@ export default function PackageGallery({
   }, [autoScrollDirection, layout, packages.length])
 
   const renderCard = (pkg: TravelPackage, index: number) => {
+    const slug = derivePackageSlug(pkg)
+    const href = buildPackageHref(pkg.category, slug)
+
     const card = (
-      <button
+      <Link
         data-package-card="true"
-        type="button"
-        onClick={() => {
-          if (Date.now() < suppressCardClickUntilRef.current) return
-          setSelectedPackage(pkg)
+        href={href}
+        onClick={(event) => {
+          // Suppress the navigation that follows a carousel drag.
+          if (Date.now() < suppressCardClickUntilRef.current) event.preventDefault()
         }}
-        className="card-hover-lift package-card-hover group relative block w-full overflow-hidden rounded-[26px] border border-primary/10 bg-background text-left shadow-lg shadow-primary/5"
-        aria-label={`Open image preview for ${pkg.title}`}
+        className="card-hover-lift package-card-hover group relative block w-full overflow-hidden rounded-[26px] border border-primary/10 bg-background text-left shadow-lg shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <div
-          className="h-72 bg-cover bg-center transition duration-700 group-hover:scale-105"
-          style={{
-            backgroundColor: "#10203b",
-            backgroundImage: `url('${pkg.previewImage}'), url('/images/noahs-way-logo.jpg')`
-          }}
-        />
+        <div className="relative h-72 overflow-hidden">
+          <Image
+            src={pkg.previewImage}
+            alt={pkg.imageAlt ?? `${pkg.title} package poster`}
+            fill
+            sizes={
+              layout === "carousel"
+                ? "(max-width: 640px) 85vw, (max-width: 1024px) 47vw, 32vw"
+                : "(max-width: 768px) 100vw, 50vw"
+            }
+            className="media-fade object-cover transition-transform duration-700 group-hover:scale-105"
+          />
+        </div>
         <div className="absolute inset-x-0 top-0 h-28 bg-[linear-gradient(180deg,rgba(6,12,24,0.45),transparent)]" />
         <span className="absolute left-4 top-4 rounded-full border border-white/50 bg-black/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-white">
-          {pkg.price}
+          {formatPackagePrice(pkg)}
         </span>
         <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(6,12,24,0.62)_40%,rgba(6,12,24,0.78))] p-6 text-white">
-          <h5 className="text-2xl font-bold leading-tight">{pkg.title}</h5>
+          <h3 className="text-2xl font-bold leading-tight">{pkg.title}</h3>
           <p className="mt-3 text-sm text-white/80">{pkg.details}</p>
           <span className="mt-5 inline-flex text-sm font-semibold uppercase tracking-[0.14em] text-secondary transition group-hover:text-accent">
-            Open Image Preview
+            View package details
           </span>
         </div>
-      </button>
+      </Link>
     )
 
     if (!reveal) return card
 
     return (
-      <Reveal key={pkg.title} delay={index * 120}>
+      <Reveal key={`${pkg.category}-${slug}`} delay={index * 120}>
         {card}
       </Reveal>
     )
@@ -263,9 +237,9 @@ export default function PackageGallery({
               if (layout !== "carousel" || carouselLoopDistanceRef.current <= 0) return
               if (event.pointerType === "mouse" && event.button !== 0) return
 
-              pressedCardButtonRef.current =
+              pressedCardLinkRef.current =
                 event.target instanceof Element
-                  ? (event.target.closest('button[data-package-card="true"]') as HTMLButtonElement | null)
+                  ? (event.target.closest('a[data-package-card="true"]') as HTMLAnchorElement | null)
                   : null
               dragPointerIdRef.current = event.pointerId
               dragStartXRef.current = event.clientX
@@ -294,15 +268,15 @@ export default function PackageGallery({
             onPointerUp={(event) => {
               if (dragPointerIdRef.current !== event.pointerId) return
 
-              const pressedCardButton = pressedCardButtonRef.current
+              const pressedCardLink = pressedCardLinkRef.current
               if (didDragCarouselRef.current) {
                 suppressCardClickUntilRef.current = Date.now() + 250
-              } else if (pressedCardButton && pressedCardButton.isConnected) {
+              } else if (pressedCardLink && pressedCardLink.isConnected) {
                 // Pointer capture can swallow native click events on some browsers.
-                pressedCardButton.click()
+                pressedCardLink.click()
               }
 
-              pressedCardButtonRef.current = null
+              pressedCardLinkRef.current = null
               dragPointerIdRef.current = null
               dragStartXRef.current = null
               didDragCarouselRef.current = false
@@ -314,7 +288,7 @@ export default function PackageGallery({
             onPointerCancel={(event) => {
               if (dragPointerIdRef.current !== event.pointerId) return
 
-              pressedCardButtonRef.current = null
+              pressedCardLinkRef.current = null
               dragPointerIdRef.current = null
               dragStartXRef.current = null
               didDragCarouselRef.current = false
@@ -325,7 +299,6 @@ export default function PackageGallery({
             }}
             onWheel={(event) => {
               if (layout !== "carousel" || carouselLoopDistanceRef.current <= 0) return
-              if (selectedPackage) return
 
               const horizontalIntent =
                 Math.abs(event.deltaX) > 0 || (event.shiftKey && Math.abs(event.deltaY) > 0)
@@ -381,89 +354,11 @@ export default function PackageGallery({
       ) : (
         <div className={cn("grid gap-7 md:grid-cols-2", gridClassName)}>
           {packages.map((pkg, index) => (
-            <div key={pkg.title}>{renderCard(pkg, index)}</div>
+            <div key={`${pkg.category}-${derivePackageSlug(pkg)}`}>{renderCard(pkg, index)}</div>
           ))}
         </div>
       )}
 
-      {selectedPackage && (
-        <div
-          className="animate-modal-backdrop-in fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
-          onClick={() => setSelectedPackage(null)}
-        >
-          <article
-            role="dialog"
-            aria-modal="true"
-            className="animate-modal-in w-full max-w-[96vw] rounded-3xl bg-white p-5 shadow-2xl md:max-w-6xl md:p-6"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <h5 className="text-xl font-bold text-primary md:text-2xl">{selectedPackage.title}</h5>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  className="rounded-full border border-primary/20 px-3 py-1 text-sm font-semibold text-primary hover:bg-primary/5"
-                  onClick={zoomOut}
-                  aria-label="Zoom out"
-                >
-                  -
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full border border-primary/20 px-3 py-1 text-sm font-semibold text-primary hover:bg-primary/5"
-                  onClick={zoomIn}
-                  aria-label="Zoom in"
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full border border-primary/20 px-3 py-1 text-sm font-semibold text-primary hover:bg-primary/5"
-                  onClick={resetZoom}
-                >
-                  {Math.round(zoomLevel * 100)}%
-                </button>
-                <button
-                  type="button"
-                  className="rounded-full border border-primary/20 px-3 py-1 text-sm font-semibold text-primary hover:bg-primary/5"
-                  onClick={() => setSelectedPackage(null)}
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-
-            <div
-              ref={imageViewportRef}
-              className="h-[78vh] w-full overflow-auto rounded-2xl bg-muted/30"
-              onWheel={(event) => {
-                if (!(event.ctrlKey || event.metaKey)) return
-
-                event.preventDefault()
-                if (event.deltaY < 0) zoomIn()
-                if (event.deltaY > 0) zoomOut()
-              }}
-            >
-              <div
-                className="relative min-h-full min-w-full"
-                style={{
-                  width: `${zoomLevel * 100}%`,
-                  height: `${zoomLevel * 100}%`,
-                  transition: "width 160ms ease-out, height 160ms ease-out"
-                }}
-              >
-                <Image
-                  src={selectedPackage.imagePath}
-                  alt={`${selectedPackage.title} package image`}
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 80vw"
-                />
-              </div>
-            </div>
-          </article>
-        </div>
-      )}
     </>
   )
 }

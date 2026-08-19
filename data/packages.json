@@ -7,7 +7,13 @@
       "previewImage": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
       "imagePath": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
       "price": "from PHP 29,800",
-      "id": "local-cebu-bohol-signature-4"
+      "id": "local-cebu-bohol-signature-4",
+      "slug": "cebu-bohol-signature",
+      "priceAmount": 29800,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "Cebu & Bohol Signature package poster"
     },
     {
       "category": "local",
@@ -16,7 +22,11 @@
       "price": "24,000.00",
       "imagePath": "/images/packages/local/deca-tour-1771929787095.jpg",
       "previewImage": "/images/packages/local/deca-tour-1771929787095.jpg",
-      "id": "local-deca-tour-1"
+      "id": "local-deca-tour-1",
+      "slug": "deca-tour",
+      "priceAmount": 24000,
+      "currency": "PHP",
+      "imageAlt": "Deca Tour package poster"
     },
     {
       "category": "local",
@@ -25,7 +35,14 @@
       "previewImage": "/images/packages/local/palawan-premium.jpg",
       "imagePath": "/images/packages/local/palawan-premium.jpg",
       "price": "from PHP 32,500",
-      "id": "local-baguio-highland-weekend-6"
+      "id": "local-baguio-highland-weekend-6",
+      "slug": "baguio-highland-weekend",
+      "priceAmount": 32500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Baguio Highland Weekend package poster"
     },
     {
       "category": "local",
@@ -34,7 +51,14 @@
       "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
       "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
       "price": "from PHP 29,800",
-      "id": "local-vigan-heritage-escape-7"
+      "id": "local-vigan-heritage-escape-7",
+      "slug": "vigan-heritage-escape",
+      "priceAmount": 29800,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Vigan Heritage Escape package poster"
     },
     {
       "category": "local",
@@ -43,7 +67,14 @@
       "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
       "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
       "price": "from PHP 24,900",
-      "id": "local-davao-mountain-city-blend-8"
+      "id": "local-davao-mountain-city-blend-8",
+      "slug": "davao-mountain-city-blend",
+      "priceAmount": 24900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Davao Mountain & City Blend package poster"
     },
     {
       "category": "local",
@@ -52,7 +83,14 @@
       "previewImage": "/images/packages/local/palawan-premium.jpg",
       "imagePath": "/images/packages/local/palawan-premium.jpg",
       "price": "from PHP 32,500",
-      "id": "local-iloilo-guimaras-gourmet-trail-9"
+      "id": "local-iloilo-guimaras-gourmet-trail-9",
+      "slug": "iloilo-guimaras-gourmet-trail",
+      "priceAmount": 32500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Iloilo-Guimaras Gourmet Trail package poster"
     },
     {
       "category": "local",
@@ -61,7 +99,14 @@
       "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
       "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
       "price": "from PHP 29,800",
-      "id": "local-batanes-scenic-hideaway-10"
+      "id": "local-batanes-scenic-hideaway-10",
+      "slug": "batanes-scenic-hideaway",
+      "priceAmount": 29800,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Batanes Scenic Hideaway package poster"
     },
     {
       "category": "local",
@@ -70,7 +115,14 @@
       "previewImage": "/images/packages/local/palawan-premium.jpg",
       "imagePath": "/images/packages/local/palawan-premium.jpg",
       "price": "from PHP 32,500",
-      "id": "local-camiguin-island-wellness-stay-12"
+      "id": "local-camiguin-island-wellness-stay-12",
+      "slug": "camiguin-island-wellness-stay",
+      "priceAmount": 32500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Camiguin Island Wellness Stay package poster"
     },
     {
       "category": "local",
@@ -79,7 +131,14 @@
       "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
       "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
       "price": "from PHP 29,800",
-      "id": "local-sagada-pine-caves-journey-13"
+      "id": "local-sagada-pine-caves-journey-13",
+      "slug": "sagada-pine-caves-journey",
+      "priceAmount": 29800,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Sagada Pine & Caves Journey package poster"
     },
     {
       "category": "local",
@@ -88,7 +147,14 @@
       "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
       "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
       "price": "from PHP 24,900",
-      "id": "local-la-union-beach-reset-14"
+      "id": "local-la-union-beach-reset-14",
+      "slug": "la-union-beach-reset",
+      "priceAmount": 24900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "La Union Beach Reset package poster"
     },
     {
       "category": "local",
@@ -97,7 +163,14 @@
       "previewImage": "/images/packages/local/palawan-premium.jpg",
       "imagePath": "/images/packages/local/palawan-premium.jpg",
       "price": "from PHP 32,500",
-      "id": "local-coron-yacht-weekender-15"
+      "id": "local-coron-yacht-weekender-15",
+      "slug": "coron-yacht-weekender",
+      "priceAmount": 32500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Coron Yacht Weekender package poster"
     },
     {
       "category": "local",
@@ -106,7 +179,14 @@
       "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
       "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
       "price": "from PHP 29,800",
-      "id": "local-bohol-family-discovery-16"
+      "id": "local-bohol-family-discovery-16",
+      "slug": "bohol-family-discovery",
+      "priceAmount": 29800,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Bohol Family Discovery package poster"
     },
     {
       "category": "local",
@@ -115,7 +195,14 @@
       "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
       "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
       "price": "from PHP 24,900",
-      "id": "local-bacolod-sugarland-getaway-17"
+      "id": "local-bacolod-sugarland-getaway-17",
+      "slug": "bacolod-sugarland-getaway",
+      "priceAmount": 24900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Bacolod Sugarland Getaway package poster"
     },
     {
       "category": "local",
@@ -124,7 +211,14 @@
       "previewImage": "/images/packages/local/palawan-premium.jpg",
       "imagePath": "/images/packages/local/palawan-premium.jpg",
       "price": "from PHP 32,500",
-      "id": "local-cagayan-de-oro-adventure-pack-18"
+      "id": "local-cagayan-de-oro-adventure-pack-18",
+      "slug": "cagayan-de-oro-adventure-pack",
+      "priceAmount": 32500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Cagayan de Oro Adventure Pack package poster"
     },
     {
       "category": "local",
@@ -133,7 +227,14 @@
       "previewImage": "/images/packages/local/cebu-bohol-signature.jpg",
       "imagePath": "/images/packages/local/cebu-bohol-signature.jpg",
       "price": "from PHP 29,800",
-      "id": "local-dumaguete-apo-island-escape-19"
+      "id": "local-dumaguete-apo-island-escape-19",
+      "slug": "dumaguete-apo-island-escape",
+      "priceAmount": 29800,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Dumaguete Apo Island Escape package poster"
     },
     {
       "category": "local",
@@ -142,7 +243,14 @@
       "previewImage": "/images/packages/local/boracay-luxe-escape.jpg",
       "imagePath": "/images/packages/local/boracay-luxe-escape.jpg",
       "price": "from PHP 24,900",
-      "id": "local-zambales-glamping-seaside-20"
+      "id": "local-zambales-glamping-seaside-20",
+      "slug": "zambales-glamping-seaside",
+      "priceAmount": 24900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Zambales Glamping Seaside package poster"
     },
     {
       "category": "local",
@@ -151,7 +259,14 @@
       "previewImage": "/images/packages/local/palawan-premium.jpg",
       "imagePath": "/images/packages/local/palawan-premium.jpg",
       "price": "from PHP 32,500",
-      "id": "local-puerto-princesa-underground-river-classic-21"
+      "id": "local-puerto-princesa-underground-river-classic-21",
+      "slug": "puerto-princesa-underground-river-classic",
+      "priceAmount": 32500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Puerto Princesa Underground River Classic package poster"
     }
   ],
   "international": [
@@ -162,7 +277,13 @@
       "previewImage": "/images/packages/international/korea-1771931931226.jpg",
       "imagePath": "/images/packages/international/korea-1771931931226.jpg",
       "price": "from PHP 108,900",
-      "id": "international-dubai-gold-collection-5"
+      "id": "international-dubai-gold-collection-5",
+      "slug": "korea",
+      "priceAmount": 108900,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "Korea package poster"
     },
     {
       "category": "international",
@@ -171,7 +292,13 @@
       "price": "60,000.00",
       "imagePath": "/images/packages/international/dumlog-tour-1771930354227.jpg",
       "previewImage": "/images/packages/international/dumlog-tour-1771930354227.jpg",
-      "id": "international-dumlog-tour-1"
+      "id": "international-dumlog-tour-1",
+      "slug": "dumlog-tour",
+      "priceAmount": 60000,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "imageAlt": "Dumlog Tour package poster"
     },
     {
       "category": "international",
@@ -180,7 +307,14 @@
       "previewImage": "/images/packages/international/singapore-adventure.jpg",
       "imagePath": "/images/packages/international/singapore-adventure.jpg",
       "price": "from PHP 88,900",
-      "id": "international-singapore-adventure-2"
+      "id": "international-singapore-adventure-2",
+      "slug": "singapore-adventure",
+      "priceAmount": 88900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Singapore Adventure package poster"
     },
     {
       "category": "international",
@@ -189,7 +323,13 @@
       "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
       "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
       "price": "from PHP 104,500",
-      "id": "international-seoul-discovery-3"
+      "id": "international-seoul-discovery-3",
+      "slug": "seoul-discovery",
+      "priceAmount": 104500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "Seoul Discovery package poster"
     },
     {
       "category": "international",
@@ -198,7 +338,14 @@
       "previewImage": "/images/packages/international/japan-classic.jpg",
       "imagePath": "/images/packages/international/japan-classic.jpg",
       "price": "from PHP 136,000",
-      "id": "international-japan-classic-4"
+      "id": "international-japan-classic-4",
+      "slug": "japan-classic",
+      "priceAmount": 136000,
+      "currency": "PHP",
+      "durationDays": 6,
+      "durationNights": 5,
+      "status": "draft",
+      "imageAlt": "Japan Classic package poster"
     },
     {
       "category": "international",
@@ -207,7 +354,14 @@
       "previewImage": "/images/packages/international/singapore-adventure.jpg",
       "imagePath": "/images/packages/international/singapore-adventure.jpg",
       "price": "from PHP 88,900",
-      "id": "international-bangkok-city-river-luxe-6"
+      "id": "international-bangkok-city-river-luxe-6",
+      "slug": "bangkok-city-river-luxe",
+      "priceAmount": 88900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Bangkok City & River Luxe package poster"
     },
     {
       "category": "international",
@@ -216,7 +370,13 @@
       "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
       "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
       "price": "from PHP 104,500",
-      "id": "international-hong-kong-skyline-escape-7"
+      "id": "international-hong-kong-skyline-escape-7",
+      "slug": "hong-kong-skyline-escape",
+      "priceAmount": 104500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "Hong Kong Skyline Escape package poster"
     },
     {
       "category": "international",
@@ -225,7 +385,14 @@
       "previewImage": "/images/packages/international/japan-classic.jpg",
       "imagePath": "/images/packages/international/japan-classic.jpg",
       "price": "from PHP 136,000",
-      "id": "international-bali-villa-indulgence-8"
+      "id": "international-bali-villa-indulgence-8",
+      "slug": "bali-villa-indulgence",
+      "priceAmount": 136000,
+      "currency": "PHP",
+      "durationDays": 6,
+      "durationNights": 5,
+      "status": "draft",
+      "imageAlt": "Bali Villa Indulgence package poster"
     },
     {
       "category": "international",
@@ -234,7 +401,14 @@
       "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
       "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
       "price": "from PHP 118,900",
-      "id": "international-taipei-night-market-discovery-9"
+      "id": "international-taipei-night-market-discovery-9",
+      "slug": "taipei-night-market-discovery",
+      "priceAmount": 118900,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Taipei Night Market Discovery package poster"
     },
     {
       "category": "international",
@@ -243,7 +417,14 @@
       "previewImage": "/images/packages/international/singapore-adventure.jpg",
       "imagePath": "/images/packages/international/singapore-adventure.jpg",
       "price": "from PHP 88,900",
-      "id": "international-istanbul-heritage-bosphorus-10"
+      "id": "international-istanbul-heritage-bosphorus-10",
+      "slug": "istanbul-heritage-bosphorus",
+      "priceAmount": 88900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Istanbul Heritage & Bosphorus package poster"
     },
     {
       "category": "international",
@@ -252,7 +433,13 @@
       "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
       "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
       "price": "from PHP 104,500",
-      "id": "international-paris-landmark-collection-11"
+      "id": "international-paris-landmark-collection-11",
+      "slug": "paris-landmark-collection",
+      "priceAmount": 104500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "Paris Landmark Collection package poster"
     },
     {
       "category": "international",
@@ -261,7 +448,14 @@
       "previewImage": "/images/packages/international/japan-classic.jpg",
       "imagePath": "/images/packages/international/japan-classic.jpg",
       "price": "from PHP 136,000",
-      "id": "international-swiss-alpine-panorama-12"
+      "id": "international-swiss-alpine-panorama-12",
+      "slug": "swiss-alpine-panorama",
+      "priceAmount": 136000,
+      "currency": "PHP",
+      "durationDays": 6,
+      "durationNights": 5,
+      "status": "draft",
+      "imageAlt": "Swiss Alpine Panorama package poster"
     },
     {
       "category": "international",
@@ -270,7 +464,14 @@
       "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
       "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
       "price": "from PHP 118,900",
-      "id": "international-london-royal-weekend-13"
+      "id": "international-london-royal-weekend-13",
+      "slug": "london-royal-weekend",
+      "priceAmount": 118900,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "London Royal Weekend package poster"
     },
     {
       "category": "international",
@@ -279,7 +480,14 @@
       "previewImage": "/images/packages/international/singapore-adventure.jpg",
       "imagePath": "/images/packages/international/singapore-adventure.jpg",
       "price": "from PHP 88,900",
-      "id": "international-rome-florence-art-trail-14"
+      "id": "international-rome-florence-art-trail-14",
+      "slug": "rome-florence-art-trail",
+      "priceAmount": 88900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Rome & Florence Art Trail package poster"
     },
     {
       "category": "international",
@@ -288,7 +496,13 @@
       "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
       "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
       "price": "from PHP 104,500",
-      "id": "international-sydney-harbor-signature-15"
+      "id": "international-sydney-harbor-signature-15",
+      "slug": "sydney-harbor-signature",
+      "priceAmount": 104500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "Sydney Harbor Signature package poster"
     },
     {
       "category": "international",
@@ -297,7 +511,14 @@
       "previewImage": "/images/packages/international/japan-classic.jpg",
       "imagePath": "/images/packages/international/japan-classic.jpg",
       "price": "from PHP 136,000",
-      "id": "international-auckland-scenic-explorer-16"
+      "id": "international-auckland-scenic-explorer-16",
+      "slug": "auckland-scenic-explorer",
+      "priceAmount": 136000,
+      "currency": "PHP",
+      "durationDays": 6,
+      "durationNights": 5,
+      "status": "draft",
+      "imageAlt": "Auckland Scenic Explorer package poster"
     },
     {
       "category": "international",
@@ -306,7 +527,14 @@
       "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
       "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
       "price": "from PHP 118,900",
-      "id": "international-barcelona-mediterranean-break-17"
+      "id": "international-barcelona-mediterranean-break-17",
+      "slug": "barcelona-mediterranean-break",
+      "priceAmount": 118900,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Barcelona Mediterranean Break package poster"
     },
     {
       "category": "international",
@@ -315,7 +543,14 @@
       "previewImage": "/images/packages/international/singapore-adventure.jpg",
       "imagePath": "/images/packages/international/singapore-adventure.jpg",
       "price": "from PHP 88,900",
-      "id": "international-prague-old-town-romance-18"
+      "id": "international-prague-old-town-romance-18",
+      "slug": "prague-old-town-romance",
+      "priceAmount": 88900,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "status": "draft",
+      "imageAlt": "Prague Old Town Romance package poster"
     },
     {
       "category": "international",
@@ -324,7 +559,13 @@
       "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
       "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
       "price": "from PHP 104,500",
-      "id": "international-new-york-city-premium-stay-19"
+      "id": "international-new-york-city-premium-stay-19",
+      "slug": "new-york-city-premium-stay",
+      "priceAmount": 104500,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "New York City Premium Stay package poster"
     },
     {
       "category": "international",
@@ -333,7 +574,14 @@
       "previewImage": "/images/packages/international/japan-classic.jpg",
       "imagePath": "/images/packages/international/japan-classic.jpg",
       "price": "from PHP 136,000",
-      "id": "international-vancouver-mountain-city-20"
+      "id": "international-vancouver-mountain-city-20",
+      "slug": "vancouver-mountain-city",
+      "priceAmount": 136000,
+      "currency": "PHP",
+      "durationDays": 6,
+      "durationNights": 5,
+      "status": "draft",
+      "imageAlt": "Vancouver Mountain & City package poster"
     },
     {
       "category": "international",
@@ -342,7 +590,14 @@
       "previewImage": "/images/packages/international/dubai-gold-collection.jpg",
       "imagePath": "/images/packages/international/dubai-gold-collection.jpg",
       "price": "from PHP 118,900",
-      "id": "international-doha-desert-and-downtown-select-21"
+      "id": "international-doha-desert-and-downtown-select-21",
+      "slug": "doha-desert-and-downtown-select",
+      "priceAmount": 118900,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "status": "draft",
+      "imageAlt": "Doha Desert and Downtown Select package poster"
     }
   ]
 }
