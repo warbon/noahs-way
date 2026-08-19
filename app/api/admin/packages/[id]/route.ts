@@ -1,15 +1,10 @@
-import { writeFile } from "node:fs/promises"
-import path from "node:path"
 import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 
 import { isAdminRequestAuthenticated } from "@/lib/admin-auth"
+import { savePackageImage } from "@/lib/package-image-storage"
 import type { PackageCategory } from "@/lib/package-data"
-import {
-  deletePackageRecord,
-  ensurePackageImageDirectory,
-  updatePackageRecord
-} from "@/lib/package-repository"
+import { deletePackageRecord, updatePackageRecord } from "@/lib/package-repository"
 
 const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024
 
@@ -25,15 +20,6 @@ function isPackageCategory(value: string): value is PackageCategory {
 
 function sanitizeText(value: string) {
   return value.trim().replace(/\s+/g, " ")
-}
-
-function slugify(value: string) {
-  const slug = value
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-
-  return slug || "package"
 }
 
 function errorResponse(message: string, status: number) {
@@ -105,13 +91,12 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
         return errorResponse("Unsupported image type. Use JPG, PNG, or WEBP.", 400)
       }
 
-      const imageDirectory = await ensurePackageImageDirectory(categoryValue)
-      const filename = `${slugify(title)}-${Date.now()}${extension}`
-      const filePath = path.join(imageDirectory, filename)
-      const publicImagePath = `/images/packages/${categoryValue}/${filename}`
-
-      const arrayBuffer = await imageValue.arrayBuffer()
-      await writeFile(filePath, Buffer.from(arrayBuffer))
+      const { publicImagePath } = await savePackageImage({
+        category: categoryValue,
+        title,
+        file: imageValue,
+        extension
+      })
 
       updates.imagePath = publicImagePath
       updates.previewImage = publicImagePath

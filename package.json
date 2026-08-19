@@ -7,9 +7,15 @@
     "dev:https": "next dev --hostname 127.0.0.1 --port 3000 --experimental-https",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed:firestore": "node scripts/seed-firestore-from-json.mjs",
+    "seed:kv": "node --env-file=.env.local scripts/seed-kv-from-json.mjs"
   },
   "dependencies": {
+    "@google-cloud/firestore": "^7.11.0",
+    "@google-cloud/storage": "^7.16.0",
+    "@vercel/blob": "^2.8.0",
+    "@vercel/kv": "^3.0.0",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",

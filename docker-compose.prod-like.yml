@@ -1,0 +1,71 @@
+services:
+  gcs-init:
+    image: alpine:3.20
+    command: >
+      sh -lc 'mkdir -p /data/${GCS_BUCKET_NAME:-noahs-way-local-assets}'
+    volumes:
+      - gcs-data:/data
+
+  gcs:
+    image: fsouza/fake-gcs-server:latest
+    depends_on:
+      gcs-init:
+        condition: service_completed_successfully
+    command:
+      - -scheme
+      - http
+      - -port
+      - "4443"
+      - -external-url
+      - http://localhost:4443
+      - -data
+      - /data
+    ports:
+      - "4443:4443"
+    volumes:
+      - gcs-data:/data
+
+  firestore:
+    build:
+      context: .
+      dockerfile: docker/firestore-emulator/Dockerfile
+    working_dir: /workspace
+    command:
+      - sh
+      - -lc
+      - firebase emulators:start --only firestore --project ${FIRESTORE_PROJECT_ID:-demo-noahs-way} --config /workspace/firebase.json
+    ports:
+      - "8081:8080"
+      - "4000:4000"
+    volumes:
+      - ./:/workspace
+      - firestore-cache:/root/.cache
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - firestore
+      - gcs
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      NODE_ENV: production
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-change-me-local-password}
+      ADMIN_SESSION_SECRET: ${ADMIN_SESSION_SECRET:-replace-with-a-long-random-secret-string}
+      PACKAGE_STORE: firestore
+      IMAGE_STORE: gcs
+      FIRESTORE_PROJECT_ID: ${FIRESTORE_PROJECT_ID:-demo-noahs-way}
+      FIRESTORE_PACKAGES_COLLECTION: ${FIRESTORE_PACKAGES_COLLECTION:-packages}
+      FIRESTORE_EMULATOR_HOST: firestore:8080
+      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-noahs-way-local-assets}
+      GCS_PACKAGE_IMAGE_PREFIX: ${GCS_PACKAGE_IMAGE_PREFIX:-packages}
+      STORAGE_EMULATOR_HOST: http://gcs:4443
+      PUBLIC_ASSET_BASE_URL: http://localhost:4443/${GCS_BUCKET_NAME:-noahs-way-local-assets}
+
+volumes:
+  gcs-data:
+  firestore-cache:
+
