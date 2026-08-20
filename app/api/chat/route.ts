@@ -4,12 +4,11 @@ import { buildSystemPrompt } from "@/lib/ai/agent"
 import { findCatalogEntry, toChatPackageSummary } from "@/lib/ai/catalog"
 import {
   CHAT_COOKIE_NAME,
-  bumpTurnCount,
+  claimTurn,
   createSessionId,
   getChatTtlSeconds,
   isValidSessionId,
   readTranscript,
-  readTurnCount,
   writeBookingDraft,
   writeTranscript
 } from "@/lib/ai/chat-store"
@@ -21,6 +20,7 @@ import type {
 } from "@/lib/ai/genui-types"
 import {
   GUARDRAIL_LEAK_REPLY,
+  LEAK_GUARD_BUFFER_CHARS,
   MAX_SESSION_TURNS,
   looksLikeLeakedInstructions,
   screenVisitorMessage,
@@ -375,18 +375,22 @@ export async function POST(request: NextRequest) {
   const existingSessionId = request.cookies.get(CHAT_COOKIE_NAME)?.value
   const sessionId = isValidSessionId(existingSessionId) ? existingSessionId : createSessionId()
 
-  const turnCount = await readTurnCount(sessionId)
+  // Screened before the turn is claimed, so a refused message does not spend
+  // one of the session's allowance.
+  const screening = screenVisitorMessage(userText)
+  if (!screening.allowed) {
+    console.warn(`[chat] guardrail "${screening.reason}" declined a turn`)
+    return respondWithoutModel(sessionId, screening.reply)
+  }
 
-  // Both guards answer without a model call, so a refused turn costs nothing.
-  const verdict =
-    turnCount >= MAX_SESSION_TURNS ? sessionLimitVerdict() : screenVisitorMessage(userText)
-
-  if (!verdict.allowed) {
+  // Claim and check in one atomic step — see claimTurn for why this is not a
+  // read followed by a write.
+  const turnNumber = await claimTurn(sessionId)
+  if (turnNumber > MAX_SESSION_TURNS) {
+    const verdict = sessionLimitVerdict()
     console.warn(`[chat] guardrail "${verdict.reason}" declined a turn`)
     return respondWithoutModel(sessionId, verdict.reply)
   }
-
-  await bumpTurnCount(sessionId, turnCount)
 
   const provider = getAgentProvider()
   const system = buildSystemPrompt()
@@ -436,6 +440,8 @@ export async function POST(request: NextRequest) {
 
           let text = ""
           let leaked = false
+          /** How much of `text` has actually been sent to the client. */
+          let released = 0
           const toolCalls: AgentToolCallPart[] = []
 
           for await (const event of provider.streamTurn({
@@ -448,14 +454,26 @@ export async function POST(request: NextRequest) {
               if (!text) send({ t: "status", v: "" })
               text += event.text
 
+              if (leaked) continue
+
               // Checked on the accumulated text, since a marker can straddle
-              // two deltas. Once tripped, the rest of the turn is suppressed.
-              if (!leaked && looksLikeLeakedInstructions(text)) {
+              // two deltas.
+              if (looksLikeLeakedInstructions(text)) {
                 leaked = true
+                // Nothing has been released yet while under the buffer, so
+                // the refusal is all the visitor ever sees.
                 send({ t: "text", v: GUARDRAIL_LEAK_REPLY })
+                continue
               }
 
-              if (!leaked) send({ t: "text", v: event.text })
+              // The opening is withheld until it is longer than any marker
+              // could be, then released in one go; after that the stream runs
+              // delta by delta as normal.
+              if (released < text.length) {
+                if (text.length < LEAK_GUARD_BUFFER_CHARS) continue
+                send({ t: "text", v: text.slice(released) })
+                released = text.length
+              }
             } else if (event.type === "tool_call") {
               toolCalls.push({
                 type: "tool_call",
@@ -475,6 +493,12 @@ export async function POST(request: NextRequest) {
                 send({ t: "error", v: AGENT_FALLBACK_MESSAGE })
               }
             }
+          }
+
+          // Short replies finish without ever crossing the buffer threshold.
+          if (!leaked && released < text.length) {
+            send({ t: "text", v: text.slice(released) })
+            released = text.length
           }
 
           if (leaked) {

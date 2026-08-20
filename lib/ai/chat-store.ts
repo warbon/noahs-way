@@ -142,18 +142,39 @@ function turnCountKey(sessionId: string) {
 }
 
 /**
- * Total model-backed turns this session has spent.
+ * Claims one turn for this session and returns the new total.
+ *
+ * Deliberately a single atomic INCR rather than a read, a check and a write.
+ * Read-modify-write is bypassable by concurrency: parallel requests on one
+ * cookie would all read the same count, all pass the ceiling check, and all
+ * write the same increment — which defeats the one guardrail whose entire job
+ * is to bound what a single session can spend.
  *
  * Separate from the transcript, which is trimmed to a window and so cannot be
  * used to measure lifetime usage.
  */
-export async function readTurnCount(sessionId: string) {
-  const stored = await readKey<number>(turnCountKey(sessionId))
-  return typeof stored === "number" && Number.isFinite(stored) ? stored : 0
-}
+export async function claimTurn(sessionId: string): Promise<number> {
+  const key = turnCountKey(sessionId)
 
-export async function bumpTurnCount(sessionId: string, current: number) {
-  await writeKey(turnCountKey(sessionId), current + 1)
+  if (!isKvMode()) {
+    const next = (memoryGet<number>(key) ?? 0) + 1
+    memorySet(key, next, getChatTtlSeconds())
+    return next
+  }
+
+  try {
+    const next = await kv.incr(key)
+    // INCR creates the key without a TTL, so the expiry is set alongside it.
+    // Refreshed each turn, which is what keeps an active session alive.
+    await kv.expire(key, getChatTtlSeconds())
+    return next
+  } catch (error) {
+    // Fails open, matching how the transcript degrades: a KV outage must not
+    // take the assistant down. The per-IP limiter still bounds abuse, and it
+    // fails closed.
+    console.error(`[chat] could not claim a turn for ${sessionId}`, error)
+    return 0
+  }
 }
 
 export async function readBookingDraft(sessionId: string) {

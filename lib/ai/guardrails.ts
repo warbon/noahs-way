@@ -1,3 +1,4 @@
+import { PROMPT_SECTION_HEADINGS } from "@/lib/ai/prompt-sections"
 import { messengerHref, siteConfig } from "@/lib/site-config"
 
 /**
@@ -20,9 +21,9 @@ export type GuardrailReason =
   | "code-request"
   | "session-limit"
 
-export type GuardrailVerdict =
-  | { allowed: true }
-  | { allowed: false; reason: GuardrailReason; reply: string }
+export type GuardrailRefusal = { allowed: false; reason: GuardrailReason; reply: string }
+
+export type GuardrailVerdict = { allowed: true } | GuardrailRefusal
 
 const OFF_TOPIC_REPLY =
   `I only help with Noah's Way trips — finding a package and putting together a booking request. ` +
@@ -92,7 +93,7 @@ export function screenVisitorMessage(text: string): GuardrailVerdict {
  */
 export const MAX_SESSION_TURNS = 60
 
-export function sessionLimitVerdict(): GuardrailVerdict {
+export function sessionLimitVerdict(): GuardrailRefusal {
   return { allowed: false, reason: "session-limit", reply: SESSION_LIMIT_REPLY }
 }
 
@@ -104,13 +105,17 @@ export function sessionLimitVerdict(): GuardrailVerdict {
  * ("a consultant will reply within 24 hours"), but no ordinary reply contains
  * "## Grounding rules".
  */
-const LEAKED_PROMPT_MARKERS = [
-  "## What you do",
-  "## Grounding rules",
-  "## Using the interface",
-  "## Completing a booking",
-  "## Tone and escalation"
-]
+const LEAKED_PROMPT_MARKERS = PROMPT_SECTION_HEADINGS
+
+/**
+ * How much text to hold back before releasing any of it.
+ *
+ * The guard can only fire once a marker has fully arrived, so streaming every
+ * delta immediately meant the words before the marker were already on screen
+ * and could not be recalled. Buffering the opening costs an imperceptible
+ * delay and makes suppression actually suppress.
+ */
+export const LEAK_GUARD_BUFFER_CHARS = 120
 
 export function looksLikeLeakedInstructions(text: string) {
   return LEAKED_PROMPT_MARKERS.some((marker) => text.includes(marker))
