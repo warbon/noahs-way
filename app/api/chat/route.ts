@@ -4,10 +4,12 @@ import { buildSystemPrompt } from "@/lib/ai/agent"
 import { findCatalogEntry, toChatPackageSummary } from "@/lib/ai/catalog"
 import {
   CHAT_COOKIE_NAME,
+  bumpTurnCount,
   createSessionId,
   getChatTtlSeconds,
   isValidSessionId,
   readTranscript,
+  readTurnCount,
   writeBookingDraft,
   writeTranscript
 } from "@/lib/ai/chat-store"
@@ -17,6 +19,13 @@ import type {
   GenUiToolName,
   GenUiPayloadMap
 } from "@/lib/ai/genui-types"
+import {
+  GUARDRAIL_LEAK_REPLY,
+  MAX_SESSION_TURNS,
+  looksLikeLeakedInstructions,
+  screenVisitorMessage,
+  sessionLimitVerdict
+} from "@/lib/ai/guardrails"
 import { getAgentProvider, isAgentConfigured } from "@/lib/ai/provider"
 import {
   AGENT_FALLBACK_MESSAGE,
@@ -269,8 +278,14 @@ function describeWidgetResult(tool: string, value: Record<string, unknown>) {
     }
     case "show_contact_form":
       return `[The visitor gave their contact details — name: ${readString(value.name, 120) ?? "?"}, mobile: ${readString(value.mobile, 40) ?? "?"}, email: ${readString(value.email, 200) ?? "?"}.]`
-    case "show_quick_replies":
-      return readString(value.choice, 400) ?? ""
+    case "show_quick_replies": {
+      // The only widget result that is free text rather than a shaped value —
+      // a crafted request could put anything here, so it is screened exactly
+      // like a typed message rather than trusted because it arrived as a
+      // "widget answer".
+      const choice = readString(value.choice, 400) ?? ""
+      return screenVisitorMessage(choice).allowed ? choice : ""
+    }
     case "show_booking_summary":
       return value.confirmed === true
         ? `[The visitor confirmed the booking. Reference: ${readString(value.reference) ?? "unknown"}. It is now with a consultant.]`
@@ -292,6 +307,40 @@ function readTurnInput(body: Record<string, unknown>) {
   }
 
   return readString(body.message, MAX_MESSAGE_LENGTH)
+}
+
+/**
+ * Streams a fixed reply in the same NDJSON shape as a real turn, so a declined
+ * message renders as an ordinary assistant message rather than as an error.
+ * Deliberately not recorded in the transcript: a refusal is not conversation.
+ */
+function respondWithoutModel(sessionId: string, reply: string) {
+  const encoder = new TextEncoder()
+  const body = [{ t: "text", v: reply }, { t: "done" }]
+    .map((event) => `${JSON.stringify(event)}\n`)
+    .join("")
+
+  const response = new NextResponse(encoder.encode(body), {
+    headers: {
+      "Content-Type": "application/x-ndjson; charset=utf-8",
+      "Cache-Control": "no-store"
+    }
+  })
+
+  setChatCookie(response, sessionId)
+  return response
+}
+
+function setChatCookie(response: NextResponse, sessionId: string) {
+  response.cookies.set({
+    name: CHAT_COOKIE_NAME,
+    value: sessionId,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: getChatTtlSeconds()
+  })
 }
 
 export async function POST(request: NextRequest) {
@@ -325,6 +374,19 @@ export async function POST(request: NextRequest) {
 
   const existingSessionId = request.cookies.get(CHAT_COOKIE_NAME)?.value
   const sessionId = isValidSessionId(existingSessionId) ? existingSessionId : createSessionId()
+
+  const turnCount = await readTurnCount(sessionId)
+
+  // Both guards answer without a model call, so a refused turn costs nothing.
+  const verdict =
+    turnCount >= MAX_SESSION_TURNS ? sessionLimitVerdict() : screenVisitorMessage(userText)
+
+  if (!verdict.allowed) {
+    console.warn(`[chat] guardrail "${verdict.reason}" declined a turn`)
+    return respondWithoutModel(sessionId, verdict.reply)
+  }
+
+  await bumpTurnCount(sessionId, turnCount)
 
   const provider = getAgentProvider()
   const system = buildSystemPrompt()
@@ -364,6 +426,7 @@ export async function POST(request: NextRequest) {
           }
 
           let text = ""
+          let leaked = false
           const toolCalls: AgentToolCallPart[] = []
 
           for await (const event of provider.streamTurn({
@@ -375,7 +438,15 @@ export async function POST(request: NextRequest) {
             if (event.type === "text_delta") {
               if (!text) send({ t: "status", v: "" })
               text += event.text
-              send({ t: "text", v: event.text })
+
+              // Checked on the accumulated text, since a marker can straddle
+              // two deltas. Once tripped, the rest of the turn is suppressed.
+              if (!leaked && looksLikeLeakedInstructions(text)) {
+                leaked = true
+                send({ t: "text", v: GUARDRAIL_LEAK_REPLY })
+              }
+
+              if (!leaked) send({ t: "text", v: event.text })
             } else if (event.type === "tool_call") {
               toolCalls.push({
                 type: "tool_call",
@@ -386,6 +457,12 @@ export async function POST(request: NextRequest) {
             } else if (event.type === "done" && event.stopReason === "refusal") {
               send({ t: "error", v: AGENT_FALLBACK_MESSAGE })
             }
+          }
+
+          if (leaked) {
+            console.warn("[chat] guardrail suppressed a reply containing instruction markers")
+            settled = true
+            break
           }
 
           const assistantParts: AgentPart[] = []
@@ -472,15 +549,7 @@ export async function POST(request: NextRequest) {
     }
   })
 
-  response.cookies.set({
-    name: CHAT_COOKIE_NAME,
-    value: sessionId,
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: getChatTtlSeconds()
-  })
+  setChatCookie(response, sessionId)
 
   return response
 }

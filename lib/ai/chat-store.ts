@@ -137,6 +137,25 @@ export async function writeTranscript(sessionId: string, messages: AgentMessage[
   await writeKey(transcriptKey(sessionId), messages)
 }
 
+function turnCountKey(sessionId: string) {
+  return `chat:${sessionId}:turns`
+}
+
+/**
+ * Total model-backed turns this session has spent.
+ *
+ * Separate from the transcript, which is trimmed to a window and so cannot be
+ * used to measure lifetime usage.
+ */
+export async function readTurnCount(sessionId: string) {
+  const stored = await readKey<number>(turnCountKey(sessionId))
+  return typeof stored === "number" && Number.isFinite(stored) ? stored : 0
+}
+
+export async function bumpTurnCount(sessionId: string, current: number) {
+  await writeKey(turnCountKey(sessionId), current + 1)
+}
+
 export async function readBookingDraft(sessionId: string) {
   return readKey<ChatBookingDraft>(draftKey(sessionId))
 }
