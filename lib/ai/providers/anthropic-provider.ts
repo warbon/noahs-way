@@ -118,7 +118,16 @@ export function createAnthropicProvider(): AgentProvider {
         }
       }
 
-      yield { type: "done", stopReason: toStopReason(message.stop_reason) }
+      yield {
+        type: "done",
+        stopReason: toStopReason(message.stop_reason),
+        usage: {
+          inputTokens: message.usage.input_tokens,
+          outputTokens: message.usage.output_tokens,
+          cacheReadTokens: message.usage.cache_read_input_tokens ?? undefined,
+          cacheWriteTokens: message.usage.cache_creation_input_tokens ?? undefined
+        }
+      }
     } catch (error) {
       throw wrapError(error)
     }

@@ -412,6 +412,9 @@ export async function POST(request: NextRequest) {
       }
 
       const startedAt = Date.now()
+      // Aggregated across every model call in the turn, so the log line
+      // reflects what the turn actually cost rather than one request.
+      const spend = { calls: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 }
       let ranOutOfTime = false
       // Set on any iteration that ends the turn deliberately, so an exhausted
       // loop can be told apart from a finished one.
@@ -454,8 +457,16 @@ export async function POST(request: NextRequest) {
                 name: event.name,
                 input: event.input
               })
-            } else if (event.type === "done" && event.stopReason === "refusal") {
-              send({ t: "error", v: AGENT_FALLBACK_MESSAGE })
+            } else if (event.type === "done") {
+              if (event.usage) {
+                spend.calls += 1
+                spend.inputTokens += event.usage.inputTokens
+                spend.outputTokens += event.usage.outputTokens
+                spend.cacheReadTokens += event.usage.cacheReadTokens ?? 0
+              }
+              if (event.stopReason === "refusal") {
+                send({ t: "error", v: AGENT_FALLBACK_MESSAGE })
+              }
             }
           }
 
@@ -512,6 +523,12 @@ export async function POST(request: NextRequest) {
             break
           }
         }
+
+        console.info(
+          `[chat] turn used ${spend.calls} call(s), ${spend.inputTokens} in / ${spend.outputTokens} out` +
+            (spend.cacheReadTokens ? `, ${spend.cacheReadTokens} cached` : "") +
+            ` on ${provider.name}:${provider.model} in ${Date.now() - startedAt}ms`
+        )
 
         send({ t: "status", v: "" })
         // An exhausted iteration cap is as much a dead end as a spent budget;

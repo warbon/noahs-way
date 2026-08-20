@@ -116,6 +116,8 @@ export function createOpenAiProvider(): AgentProvider {
         {
           model,
           stream: true,
+          // Streaming responses omit usage unless it is explicitly requested.
+          stream_options: { include_usage: true },
           messages: toOpenAiMessages(params.system, params.messages),
           tools: toOpenAiTools(params.tools)
         },
@@ -126,8 +128,17 @@ export function createOpenAiProvider(): AgentProvider {
       // accumulated here and parsed once the stream is complete.
       const pending = new Map<number, PendingCall>()
       let finishReason: string | null | undefined
+      let usage: { inputTokens: number; outputTokens: number } | undefined
 
       for await (const chunk of stream) {
+        // The usage-bearing chunk carries no choices, so it is read first.
+        if (chunk.usage) {
+          usage = {
+            inputTokens: chunk.usage.prompt_tokens,
+            outputTokens: chunk.usage.completion_tokens
+          }
+        }
+
         const choice = chunk.choices[0]
         if (!choice) continue
 
@@ -163,7 +174,7 @@ export function createOpenAiProvider(): AgentProvider {
         yield { type: "tool_call", id: call.id || `call_${call.name}`, name: call.name, input }
       }
 
-      yield { type: "done", stopReason: toStopReason(finishReason) }
+      yield { type: "done", stopReason: toStopReason(finishReason), usage }
     } catch (error) {
       throw wrapError(error)
     }

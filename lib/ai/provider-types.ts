@@ -54,10 +54,19 @@ export type AgentToolDefinition = {
 
 export type AgentStopReason = "end_turn" | "tool_use" | "max_tokens" | "refusal"
 
+/** Per-request token counts, for cost visibility. Providers report what they can. */
+export type AgentUsage = {
+  inputTokens: number
+  outputTokens: number
+  /** Anthropic only, and only once prompt caching is enabled. */
+  cacheReadTokens?: number
+  cacheWriteTokens?: number
+}
+
 export type AgentStreamEvent =
   | { type: "text_delta"; text: string }
   | { type: "tool_call"; id: string; name: string; input: Record<string, unknown> }
-  | { type: "done"; stopReason: AgentStopReason }
+  | { type: "done"; stopReason: AgentStopReason; usage?: AgentUsage }
 
 export type AgentTurnParams = {
   system: string
