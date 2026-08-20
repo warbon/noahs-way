@@ -102,7 +102,27 @@ export function createAnthropicProvider(): AgentProvider {
           // A booking conversation is short-horizon; low effort keeps replies
           // quick and cheap without giving up tool-use reliability.
           output_config: { effort: "low" },
-          system: params.system,
+          // Caching is a prefix match over tools -> system -> messages, so a
+          // breakpoint on the system block caches both the tool definitions
+          // and the prompt: ~3.5-4K tokens that are byte-identical on every
+          // call and, before this, were paid for in full every time.
+          //
+          // The messages array is deliberately left uncached. It grows each
+          // turn, so it would need a breakpoint that moves with the
+          // conversation — worth doing only if turns get much longer than the
+          // handful a booking takes.
+          //
+          // The one thing that invalidates this prefix is the date in the
+          // system prompt rolling over at UTC midnight, which costs a single
+          // cache write per day. That is why buildSystemPrompt() keeps the
+          // date at day granularity rather than including a timestamp.
+          system: [
+            {
+              type: "text",
+              text: params.system,
+              cache_control: { type: "ephemeral" }
+            }
+          ],
           tools: toAnthropicTools(params.tools),
           messages: toAnthropicMessages(params.messages)
         },

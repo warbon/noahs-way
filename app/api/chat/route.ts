@@ -414,7 +414,13 @@ export async function POST(request: NextRequest) {
       const startedAt = Date.now()
       // Aggregated across every model call in the turn, so the log line
       // reflects what the turn actually cost rather than one request.
-      const spend = { calls: 0, inputTokens: 0, outputTokens: 0, cacheReadTokens: 0 }
+      const spend = {
+        calls: 0,
+        inputTokens: 0,
+        outputTokens: 0,
+        cacheReadTokens: 0,
+        cacheWriteTokens: 0
+      }
       let ranOutOfTime = false
       // Set on any iteration that ends the turn deliberately, so an exhausted
       // loop can be told apart from a finished one.
@@ -463,6 +469,7 @@ export async function POST(request: NextRequest) {
                 spend.inputTokens += event.usage.inputTokens
                 spend.outputTokens += event.usage.outputTokens
                 spend.cacheReadTokens += event.usage.cacheReadTokens ?? 0
+                spend.cacheWriteTokens += event.usage.cacheWriteTokens ?? 0
               }
               if (event.stopReason === "refusal") {
                 send({ t: "error", v: AGENT_FALLBACK_MESSAGE })
@@ -526,7 +533,11 @@ export async function POST(request: NextRequest) {
 
         console.info(
           `[chat] turn used ${spend.calls} call(s), ${spend.inputTokens} in / ${spend.outputTokens} out` +
-            (spend.cacheReadTokens ? `, ${spend.cacheReadTokens} cached` : "") +
+            // Reads bill at ~0.1x and writes at ~1.25x, so they are reported
+            // separately — a turn that only ever writes the cache costs more,
+            // not less, and lumping them together would hide that.
+            (spend.cacheReadTokens ? `, ${spend.cacheReadTokens} cache-read` : "") +
+            (spend.cacheWriteTokens ? `, ${spend.cacheWriteTokens} cache-write` : "") +
             ` on ${provider.name}:${provider.model} in ${Date.now() - startedAt}ms`
         )
 
