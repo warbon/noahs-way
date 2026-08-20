@@ -49,7 +49,7 @@ const MAX_TOOL_ITERATIONS = 4
  */
 const TURN_BUDGET_MS = 40_000
 
-/** Shown when the budget runs out mid-turn. */
+/** Shown when the budget or the iteration cap runs out mid-turn. */
 const SLOW_TURN_MESSAGE =
   "That one is taking me longer than it should. Could you narrow it down a little — a destination or a rough budget? Or message us on Messenger and a consultant will pick it up."
 
@@ -106,6 +106,29 @@ function trimTranscript(messages: AgentMessage[]): AgentMessage[] {
   }
 
   return trimmed
+}
+
+/**
+ * Drops a trailing assistant turn whose tool calls never received results.
+ *
+ * A turn that throws part-way can leave `tool_use` blocks with no matching
+ * `tool_result`, which both providers reject on the next request. Persisting
+ * that would poison the conversation permanently, so the incomplete tail is
+ * trimmed and any text the assistant did manage to say is kept.
+ */
+function dropUnansweredToolCalls(messages: AgentMessage[]): AgentMessage[] {
+  if (messages.length === 0) return messages
+
+  const last = messages[messages.length - 1]
+  if (last.role !== "assistant") return messages
+
+  const hasToolCalls = last.parts.some((part) => part.type === "tool_call")
+  if (!hasToolCalls) return messages
+
+  const textOnly = last.parts.filter((part) => part.type === "text")
+  return textOnly.length > 0
+    ? [...messages.slice(0, -1), { role: "assistant" as const, parts: textOnly }]
+    : messages.slice(0, -1)
 }
 
 function draftFromToolInput(input: Record<string, unknown>): ChatBookingDraft | undefined {
@@ -313,12 +336,24 @@ export async function POST(request: NextRequest) {
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
+      // Once the client disconnects the controller is errored, and enqueueing
+      // throws. That throw used to happen inside the catch below, escaping
+      // start() unhandled on every aborted turn.
+      let closed = false
       function send(event: StreamEvent) {
-        controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
+        if (closed) return
+        try {
+          controller.enqueue(encoder.encode(`${JSON.stringify(event)}\n`))
+        } catch {
+          closed = true
+        }
       }
 
       const startedAt = Date.now()
       let ranOutOfTime = false
+      // Set on any iteration that ends the turn deliberately, so an exhausted
+      // loop can be told apart from a finished one.
+      let settled = false
 
       try {
         for (let iteration = 0; iteration < MAX_TOOL_ITERATIONS; iteration += 1) {
@@ -358,7 +393,10 @@ export async function POST(request: NextRequest) {
           assistantParts.push(...toolCalls)
           if (assistantParts.length > 0) messages.push({ role: "assistant", parts: assistantParts })
 
-          if (toolCalls.length === 0) break
+          if (toolCalls.length === 0) {
+            settled = true
+            break
+          }
 
           const toolResults: AgentToolResultPart[] = []
           let waitingOnVisitor = false
@@ -392,20 +430,37 @@ export async function POST(request: NextRequest) {
 
           // A widget is a question. Calling the model again now would have it
           // talk over a control the visitor has not answered yet.
-          if (waitingOnVisitor) break
+          if (waitingOnVisitor) {
+            settled = true
+            break
+          }
         }
 
-        await writeTranscript(sessionId, trimTranscript(messages))
-
         send({ t: "status", v: "" })
-        if (ranOutOfTime) send({ t: "error", v: SLOW_TURN_MESSAGE })
+        // An exhausted iteration cap is as much a dead end as a spent budget;
+        // without this the turn ends with no reply and no explanation at all.
+        if (ranOutOfTime || !settled) send({ t: "error", v: SLOW_TURN_MESSAGE })
         send({ t: "done" })
       } catch (error) {
         const code = error instanceof AgentError ? error.code : "unknown"
         console.error(`[chat] turn failed (${code})`, error)
+        send({ t: "status", v: "" })
         send({ t: "error", v: AGENT_FALLBACK_MESSAGE })
       } finally {
-        controller.close()
+        // Persisted on the failure path too: the visitor can see their message
+        // on screen, so a server-side history without it would leave the model
+        // answering their follow-up with no idea what they first asked.
+        try {
+          await writeTranscript(sessionId, dropUnansweredToolCalls(trimTranscript(messages)))
+        } catch (error) {
+          console.error("[chat] could not persist transcript", error)
+        }
+
+        try {
+          controller.close()
+        } catch {
+          /* already closed by the disconnect that got us here */
+        }
       }
     }
   })

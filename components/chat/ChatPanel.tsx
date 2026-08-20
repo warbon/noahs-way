@@ -28,6 +28,15 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
   const [isRendered, setIsRendered] = useState(open)
   const [isClosing, setIsClosing] = useState(false)
   const inputRef = useRef<HTMLTextAreaElement | null>(null)
+  const panelRef = useRef<HTMLDivElement | null>(null)
+  /**
+   * Below the sm breakpoint the panel fills the viewport and genuinely is
+   * modal. Above it, it is a corner popover and the page behind stays usable —
+   * so aria-modal, the focus trap and the scroll lock all apply only there.
+   * Declaring aria-modal on the desktop layout would tell a screen reader the
+   * rest of the page is hidden when it is not.
+   */
+  const [isFullScreen, setIsFullScreen] = useState(false)
 
   useEffect(() => {
     setIsMounted(true)
@@ -52,20 +61,74 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
   }, [open, isRendered])
 
   useEffect(() => {
+    const query = window.matchMedia("(max-width: 639px)")
+    const update = () => setIsFullScreen(query.matches)
+
+    update()
+    query.addEventListener("change", update)
+    return () => query.removeEventListener("change", update)
+  }, [])
+
+  /**
+   * Focus in on open, and back to whatever opened it on close.
+   *
+   * Depends on isRendered as well as open: the panel returns null until the
+   * mount effect flips it, so on the `open` render alone inputRef is still
+   * null and the focus call silently does nothing.
+   */
+  useEffect(() => {
+    if (!open || !isRendered) return
+
+    const opener = document.activeElement as HTMLElement | null
+    inputRef.current?.focus()
+
+    return () => opener?.focus()
+  }, [open, isRendered])
+
+  useEffect(() => {
     if (!open) return
 
-    inputRef.current?.focus()
+    if (isFullScreen) document.body.style.overflow = "hidden"
+
+    const focusables = () =>
+      Array.from(
+        panelRef.current?.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ) ?? []
+      ).filter((element) => element.offsetParent !== null)
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.stopPropagation()
         onClose()
+        return
+      }
+
+      // Only trapped while the panel actually covers the page.
+      if (!isFullScreen || event.key !== "Tab") return
+
+      const items = focusables()
+      if (items.length === 0) return
+
+      const first = items[0]
+      const last = items[items.length - 1]
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault()
+        first.focus()
       }
     }
 
     document.addEventListener("keydown", onKeyDown)
-    return () => document.removeEventListener("keydown", onKeyDown)
-  }, [open, onClose])
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown)
+      document.body.style.overflow = ""
+    }
+  }, [open, onClose, isFullScreen])
 
   if (!isRendered || !isMounted) return null
 
@@ -79,8 +142,9 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
 
   return createPortal(
     <div
+      ref={panelRef}
       role="dialog"
-      aria-modal="true"
+      aria-modal={isFullScreen ? "true" : undefined}
       aria-label={`${siteConfig.shortName} booking assistant`}
       data-state={isClosing ? "closed" : "open"}
       className="assistant-panel assistant-glass assistant-sheen fixed inset-0 z-50 flex origin-bottom-right flex-col overflow-hidden sm:inset-auto sm:bottom-24 sm:right-5 sm:h-[min(620px,calc(100vh-8rem))] sm:w-[min(480px,calc(100vw-2.5rem))] sm:rounded-3xl"
