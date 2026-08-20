@@ -14,6 +14,7 @@ import type { AdminPackageRecord } from "@/lib/admin-package-types"
 import {
   INQUIRY_STATUSES,
   type InquiryRecord,
+  type InquirySource,
   type InquiryStatus
 } from "@/lib/inquiry-types"
 import { buildPackageHref, derivePackageSlug } from "@/lib/package-slug"
@@ -25,6 +26,13 @@ const statusLabels: Record<InquiryStatus, string> = {
   read: "Read",
   responded: "Responded",
   archived: "Archived"
+}
+
+/** Which channel produced the lead — the chat assistant is one of three. */
+const sourceLabels: Record<InquirySource, string> = {
+  "contact-form": "Contact form",
+  "package-cta": "Package page",
+  "chat-agent": "AI assistant"
 }
 
 const statusStyles: Record<InquiryStatus, string> = {
@@ -423,6 +431,10 @@ export default function AdminInquiryInbox() {
                 <div className="flex gap-2">
                   <dt className="w-28 shrink-0 text-muted-foreground">Status</dt>
                   <dd>{statusLabels[selected.status]}</dd>
+                </div>
+                <div className="flex gap-2">
+                  <dt className="w-28 shrink-0 text-muted-foreground">Came from</dt>
+                  <dd>{sourceLabels[selected.source] ?? selected.source}</dd>
                 </div>
               </dl>
             </section>

@@ -88,3 +88,17 @@ export const checkInquiryRateLimit = createLimiterFactory({
   prefix: "ratelimit:inquiry",
   onError: "open"
 })
+
+/**
+ * 30 assistant turns per IP per 10 minutes.
+ *
+ * Fails CLOSED, unlike the two limiters above. Every turn here costs money at
+ * an LLM provider, so a Redis outage must not leave an unmetered endpoint open;
+ * a visitor who hits this still has the Messenger and phone links in the widget.
+ */
+export const checkChatRateLimit = createLimiterFactory({
+  attempts: 30,
+  window: "600 s",
+  prefix: "ratelimit:chat",
+  onError: "closed"
+})

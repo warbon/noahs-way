@@ -205,11 +205,8 @@
     transition:
       box-shadow 300ms ease,
       background-color 300ms ease,
+      backdrop-filter 300ms ease,
       padding 300ms ease;
-  }
-
-  .site-header[data-scrolled="true"] {
-    box-shadow: 0 6px 24px -12px rgba(7, 19, 41, 0.35);
   }
 
   /* --- Admin list motion ------------------------------------------------ */
@@ -381,6 +378,283 @@
       transform: translateY(0) scale(1);
     }
   }
+
+  /* --- AI booking assistant -------------------------------------------- */
+
+  /*
+    Same keyframe-not-transition reasoning as the side panel above: React
+    commits the mount and the open state in one frame, so a transition's start
+    state is never painted.
+  */
+
+  /*
+    Gold, not navy. The launcher sits over whatever the page happens to show —
+    package posters are frequently near-black, and the original navy button
+    vanished into them. Gold is the one brand colour that separates from both a
+    dark photo and the near-white page background, and it is already the site's
+    CTA colour. The white rim guarantees an edge even against gold-ish artwork.
+  */
+  .assistant-launcher {
+    background-image: linear-gradient(
+      140deg,
+      hsl(41 92% 62%) 0%,
+      hsl(var(--accent)) 52%,
+      hsl(32 78% 46%) 100%
+    );
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 0.92),
+      0 10px 26px -6px hsl(214 61% 12% / 0.55);
+    transition: transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+      box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .assistant-launcher:hover {
+    transform: translateY(-3px) scale(1.06);
+    box-shadow:
+      0 0 0 3px rgba(255, 255, 255, 1),
+      0 16px 34px -8px hsl(214 61% 12% / 0.65);
+  }
+
+  /* The composer's send button keeps the navy identity. */
+  .assistant-send {
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(214 55% 30%) 100%
+    );
+  }
+
+  .assistant-launcher:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+
+  /*
+    A slow halo that draws the eye to a control most visitors have never seen on
+    a travel site. It sits behind the button and is purely decorative, so it is
+    aria-hidden and pauses while the panel is open — once you are in the
+    conversation it has done its job.
+  */
+  .assistant-halo {
+    animation: assistant-halo 3.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* --- Bot character ---------------------------------------------------- */
+
+  /* A slow idle bob, so the button looks alive rather than parked. */
+  .bot-avatar {
+    animation: bot-bob 3.4s ease-in-out infinite;
+  }
+
+  @keyframes bot-bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-1.5px);
+    }
+  }
+
+  /*
+    transform-box: fill-box is what makes transform-origin resolve against the
+    ellipse itself rather than the SVG viewport — without it the eyes fly off
+    instead of blinking.
+  */
+  .bot-eye {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bot-blink 5.2s ease-in-out infinite;
+  }
+
+  /* Held open most of the cycle: a blink is an event, not a rhythm. */
+  @keyframes bot-blink {
+    0%,
+    91%,
+    97%,
+    100% {
+      transform: scaleY(1);
+    }
+
+    94% {
+      transform: scaleY(0.12);
+    }
+  }
+
+  .bot-antenna {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: bot-antenna 2.1s ease-in-out infinite;
+  }
+
+  @keyframes bot-antenna {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scale(0.82);
+    }
+
+    50% {
+      opacity: 1;
+      transform: scale(1.1);
+    }
+  }
+
+  /* It perks up when you reach for it. */
+  .assistant-launcher:hover .bot-antenna {
+    animation-duration: 0.9s;
+  }
+
+  .assistant-launcher[data-open="true"] + .assistant-halo,
+  .assistant-launcher:hover + .assistant-halo {
+    animation-play-state: paused;
+    opacity: 0;
+  }
+
+  @keyframes assistant-halo {
+    0% {
+      opacity: 0.55;
+      transform: scale(1);
+    }
+
+    70% {
+      opacity: 0;
+      transform: scale(1.75);
+    }
+
+    100% {
+      opacity: 0;
+      transform: scale(1.75);
+    }
+  }
+
+  /* Icon crossfade: sparkle rotates out, close rotates in. */
+  .assistant-icon {
+    transition: opacity 200ms ease, transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .assistant-icon[data-visible="false"] {
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.5);
+  }
+
+  .assistant-icon[data-visible="true"] {
+    opacity: 1;
+    transform: rotate(0deg) scale(1);
+  }
+
+  /* The panel grows out of the launcher rather than just appearing. */
+  .assistant-panel[data-state="open"] {
+    animation: assistant-panel-in 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .assistant-panel[data-state="closed"] {
+    animation: assistant-panel-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
+  }
+
+  @keyframes assistant-panel-in {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.94);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes assistant-panel-out {
+    from {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    to {
+      opacity: 0;
+      transform: translateY(12px) scale(0.96);
+    }
+  }
+
+  /* Full-screen on mobile, so it rises from the bottom instead of shrinking. */
+  @media (max-width: 639px) {
+    @keyframes assistant-panel-in {
+      from {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes assistant-panel-out {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      to {
+        opacity: 0;
+        transform: translateY(100%);
+      }
+    }
+  }
+
+  /* Each turn lifts in, so a streamed reply reads as arriving. */
+  .assistant-entry {
+    animation: assistant-entry-in 300ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes assistant-entry-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Widgets carry more weight than a message, so they scale in as well. */
+  .assistant-widget-in {
+    animation: assistant-widget-in 380ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  @keyframes assistant-widget-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px) scale(0.97);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .assistant-typing-dot {
+    animation: assistant-typing 1.25s ease-in-out infinite;
+  }
+
+  @keyframes assistant-typing {
+    0%,
+    60%,
+    100% {
+      opacity: 0.25;
+      transform: translateY(0);
+    }
+
+    30% {
+      opacity: 1;
+      transform: translateY(-3px);
+    }
+  }
+
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -411,10 +685,47 @@
   .media-fade,
   .admin-row-in,
   .notice-in,
-  .badge-pop {
+  .badge-pop,
+  .assistant-panel,
+  .assistant-entry,
+  .assistant-widget-in {
     animation: none !important;
     opacity: 1 !important;
     transform: none !important;
+  }
+
+  /* Decorative only — nothing is lost by dropping them entirely. */
+  .assistant-halo,
+  .assistant-typing-dot,
+  .assistant-sheen::before,
+  .bot-avatar,
+  .bot-eye,
+  .bot-antenna {
+    animation: none !important;
+  }
+
+  /* Eyes open, antenna lit — the character is intact, just still. */
+  .bot-eye,
+  .bot-antenna {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+
+  .assistant-sheen::before {
+    display: none !important;
+  }
+
+  .assistant-halo {
+    display: none !important;
+  }
+
+  .assistant-launcher:hover,
+  .assistant-launcher:active {
+    transform: none !important;
+  }
+
+  .assistant-icon {
+    transition: none !important;
   }
 
   .skeleton::after {
@@ -429,5 +740,234 @@
 
   .skip-link:focus {
     @apply not-sr-only fixed left-4 top-4 z-[100] rounded-md bg-primary px-4 py-2 font-semibold text-primary-foreground;
+  }
+}
+
+/* --- Liquid glass surfaces (assistant) ---------------------------------- */
+
+/*
+  Deliberately outside @layer utilities. Tailwind treats custom classes in that
+  layer as utilities and tree-shakes them, and a nested @supports block does not
+  survive that pass — the rules were dropped from the build entirely. Plain
+  top-level CSS, like the reduced-motion block above, is not touched.
+
+  Glass only works while the layer stays translucent, so nothing here may set an
+  opaque background. Legibility is the constraint that shapes the numbers: this
+  panel carries a booking form over a busy hero image, so the white veil is
+  heavier than purely decorative glass would need, and the saturate() boost
+  keeps the photo behind it from going grey.
+*/
+.assistant-glass {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.74) 0%,
+    rgba(255, 255, 255, 0.6) 45%,
+    rgba(238, 244, 252, 0.64) 100%
+  );
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 24px 60px -18px hsl(var(--primary) / 0.45),
+    0 2px 10px -4px hsl(var(--primary) / 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+/* Navy glass, for the header band. */
+.assistant-glass-dark {
+  background: linear-gradient(
+    140deg,
+    hsl(var(--primary) / 0.88) 0%,
+    hsl(214 55% 30% / 0.82) 100%
+  );
+  backdrop-filter: blur(18px) saturate(160%);
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.14);
+}
+
+/* Frosted chip, for bubbles, widgets and the composer. */
+.assistant-glass-soft {
+  background: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.assistant-glass-tinted {
+  background: linear-gradient(
+    140deg,
+    hsl(var(--primary) / 0.92) 0%,
+    hsl(214 55% 28% / 0.88) 100%
+  );
+  backdrop-filter: blur(12px) saturate(150%);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/*
+  The "liquid" part: a wide, very low-contrast highlight that drifts across the
+  pane, the way light moves over a curved glass surface. Decorative and
+  pointer-transparent — it never sits between a visitor and a control.
+*/
+.assistant-sheen::before {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 38%,
+    rgba(255, 255, 255, 0.55) 48%,
+    rgba(255, 255, 255, 0.16) 55%,
+    transparent 64%
+  );
+  animation: assistant-sheen 9s ease-in-out infinite;
+}
+
+@keyframes assistant-sheen {
+  0% {
+    transform: translateX(-38%) rotate(2deg);
+    opacity: 0;
+  }
+
+  18% {
+    opacity: 1;
+  }
+
+  52% {
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateX(38%) rotate(2deg);
+    opacity: 0;
+  }
+}
+
+/*
+  Safari before 18 and Firefox without the flag ignore backdrop-filter, which
+  would leave near-transparent panes with unreadable text. Fall back to solid
+  surfaces rather than pretty-but-illegible ones.
+*/
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .assistant-glass {
+    background: hsl(var(--background));
+  }
+
+  .assistant-glass-dark {
+    background: hsl(var(--primary));
+  }
+
+  .assistant-glass-soft {
+    background: hsl(var(--card));
+  }
+
+  .assistant-glass-tinted {
+    background: hsl(var(--primary));
+  }
+
+  .assistant-sheen::before {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-sheen::before {
+    display: none !important;
+  }
+}
+
+/* --- Glass navigation header --------------------------------------------- */
+
+/*
+  Same glass vocabulary as the assistant panel, and outside @layer utilities for
+  the same reason — the @supports fallback does not survive Tailwind's
+  utility tree-shaking.
+
+  A solid rgba background-color rather than a gradient, so the existing
+  background-color transition between the scrolled states still interpolates.
+
+  The opacity floor is set by contrast, not taste: the header sits over a dark
+  hero photo at the top of the homepage, and the nav links are navy. At 0.68 the
+  composite stays light enough to clear WCAG AA for small text; going more
+  transparent looks better and fails.
+*/
+.site-header {
+  background-color: rgba(255, 255, 255, 0.68);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+/* Denser and lifted once it starts overlapping content. */
+.site-header[data-scrolled="true"] {
+  background-color: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border-bottom-color: rgba(255, 255, 255, 0.68);
+  box-shadow:
+    0 8px 30px -14px hsl(214 61% 12% / 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .site-header,
+  .site-header[data-scrolled="true"] {
+    background-color: hsl(var(--background));
+    border-bottom-color: hsl(var(--border));
+  }
+}
+
+/* --- The bot's invite bubble --------------------------------------------- */
+
+.assistant-invite {
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(16px) saturate(170%);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 12px 30px -10px hsl(214 61% 12% / 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  animation: assistant-invite-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* The tail, pointing back at the bot that "said" it. */
+.assistant-invite::after {
+  content: "";
+  position: absolute;
+  right: -5px;
+  top: 50%;
+  width: 12px;
+  height: 12px;
+  transform: translateY(-50%) rotate(45deg);
+  background: rgba(255, 255, 255, 0.86);
+  border-right: 1px solid rgba(255, 255, 255, 0.7);
+  border-top: 1px solid rgba(255, 255, 255, 0.7);
+}
+
+@keyframes assistant-invite-in {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(14px) scale(0.9);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0) scale(1);
+  }
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .assistant-invite,
+  .assistant-invite::after {
+    background: hsl(var(--card));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assistant-invite {
+    animation: none !important;
   }
 }

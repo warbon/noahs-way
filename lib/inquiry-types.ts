@@ -1,6 +1,6 @@
 export type InquiryStatus = "new" | "read" | "responded" | "archived"
 
-export type InquirySource = "contact-form" | "package-cta"
+export type InquirySource = "contact-form" | "package-cta" | "chat-agent"
 
 export type TravelType = "leisure" | "honeymoon" | "family" | "group" | "corporate"
 

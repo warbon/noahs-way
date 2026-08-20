@@ -7,13 +7,7 @@ import { redirect } from "next/navigation"
 
 import { getAdminPassword, setAdminSessionCookie } from "@/lib/admin-auth-server"
 import { checkAdminLoginRateLimit } from "@/lib/admin-rate-limit"
-
-function getClientIp() {
-  const requestHeaders = headers()
-  const forwardedFor = requestHeaders.get("x-forwarded-for")
-  if (forwardedFor) return forwardedFor.split(",")[0].trim()
-  return requestHeaders.get("x-real-ip")?.trim() || "unknown"
-}
+import { getClientIp } from "@/lib/request-ip"
 
 function constantTimeEquals(a: string, b: string) {
   // Hash both first so timingSafeEqual gets equal-length buffers and the
@@ -24,7 +18,7 @@ function constantTimeEquals(a: string, b: string) {
 }
 
 export async function loginAction(formData: FormData) {
-  const allowed = await checkAdminLoginRateLimit(getClientIp())
+  const allowed = await checkAdminLoginRateLimit(getClientIp(headers()))
   if (!allowed) {
     redirect("/admin/login?error=ratelimited")
   }

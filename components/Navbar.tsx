@@ -49,7 +49,7 @@ export default function Navbar() {
   return (
     <header
       data-scrolled={isScrolled}
-      className="site-header sticky top-0 z-40 flex items-center justify-between border-b bg-background/90 px-5 py-3 backdrop-blur md:px-8"
+      className="site-header sticky top-0 z-40 flex items-center justify-between px-5 py-3 md:px-8"
     >
       <Link href="/" className="shrink-0" aria-label="Noah's Way Travel — home">
         <BrandLogo compact />

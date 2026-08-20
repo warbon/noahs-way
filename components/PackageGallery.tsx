@@ -42,6 +42,12 @@ export default function PackageGallery({
   const didDragCarouselRef = useRef(false)
   const suppressCardClickUntilRef = useRef(0)
   const wheelResumeTimeoutRef = useRef<number | null>(null)
+  /**
+   * Holds the current wheel logic so the listener below can be registered once.
+   * The handler reads only refs, but it is re-created every render, and putting
+   * it in the effect's dependencies would re-bind the listener each time.
+   */
+  const wheelHandlerRef = useRef<(event: WheelEvent) => void>(() => {})
 
   useEffect(() => {
     return () => {
@@ -86,6 +92,48 @@ export default function PackageGallery({
     carouselTrackOffsetRef.current = normalizeCarouselOffset(carouselTrackOffsetRef.current - deltaX)
     setCarouselTrackTransform(carouselTrackOffsetRef.current)
   }
+
+  useEffect(() => {
+    wheelHandlerRef.current = (event: WheelEvent) => {
+      if (layout !== "carousel" || carouselLoopDistanceRef.current <= 0) return
+
+      const horizontalIntent =
+        Math.abs(event.deltaX) > 0 || (event.shiftKey && Math.abs(event.deltaY) > 0)
+      if (!horizontalIntent) return
+
+      event.preventDefault()
+      isCarouselPausedRef.current = true
+
+      const deltaX = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY
+      applyCarouselScrollDelta(deltaX)
+
+      if (wheelResumeTimeoutRef.current !== null) {
+        window.clearTimeout(wheelResumeTimeoutRef.current)
+      }
+      wheelResumeTimeoutRef.current = window.setTimeout(() => {
+        isCarouselPausedRef.current = false
+      }, 140)
+    }
+  })
+
+  /**
+   * Registered natively with { passive: false } rather than via React's onWheel.
+   * React attaches wheel listeners passively, so preventDefault() inside one is
+   * ignored — the page kept scrolling underneath and the browser logged
+   * "Unable to preventDefault inside passive event listener invocation" on every
+   * wheel event. Only a native non-passive listener can hold the gesture.
+   */
+  useEffect(() => {
+    if (layout !== "carousel") return
+
+    const viewport = carouselViewportRef.current
+    if (!viewport) return
+
+    const onWheel = (event: WheelEvent) => wheelHandlerRef.current(event)
+    viewport.addEventListener("wheel", onWheel, { passive: false })
+
+    return () => viewport.removeEventListener("wheel", onWheel)
+  }, [layout])
 
   useEffect(() => {
     if (layout !== "carousel") return
@@ -296,26 +344,6 @@ export default function PackageGallery({
               if (event.currentTarget.hasPointerCapture(event.pointerId)) {
                 event.currentTarget.releasePointerCapture(event.pointerId)
               }
-            }}
-            onWheel={(event) => {
-              if (layout !== "carousel" || carouselLoopDistanceRef.current <= 0) return
-
-              const horizontalIntent =
-                Math.abs(event.deltaX) > 0 || (event.shiftKey && Math.abs(event.deltaY) > 0)
-              if (!horizontalIntent) return
-
-              event.preventDefault()
-              isCarouselPausedRef.current = true
-
-              const deltaX = Math.abs(event.deltaX) > 0 ? event.deltaX : event.deltaY
-              applyCarouselScrollDelta(deltaX)
-
-              if (wheelResumeTimeoutRef.current !== null) {
-                window.clearTimeout(wheelResumeTimeoutRef.current)
-              }
-              wheelResumeTimeoutRef.current = window.setTimeout(() => {
-                isCarouselPausedRef.current = false
-              }, 140)
             }}
           >
             <div ref={carouselTrackRef} className="flex w-max gap-7 will-change-transform">

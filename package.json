@@ -12,6 +12,7 @@
     "reset:inquiries": "node --env-file=.env.local scripts/reset-inquiries.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.118.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.2",
     "@vercel/blob": "^2.8.0",
@@ -20,6 +21,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
     "next": "^14.2.0",
+    "openai": "^7.5.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.5.5"
