@@ -26,7 +26,8 @@ import {
   screenVisitorMessage,
   sessionLimitVerdict
 } from "@/lib/ai/guardrails"
-import { getAgentProvider, isAgentConfigured } from "@/lib/ai/provider"
+import { resolveAgentConfig } from "@/lib/ai/config"
+import { getAgentProvider } from "@/lib/ai/provider"
 import {
   AGENT_FALLBACK_MESSAGE,
   AgentError,
@@ -344,7 +345,11 @@ function setChatCookie(response: NextResponse, sessionId: string) {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAgentConfigured()) {
+  // Resolved once per turn and threaded through, so an admin toggling the
+  // assistant mid-conversation takes effect on the next message rather than
+  // whenever a warm instance happens to be recycled.
+  const agentConfig = await resolveAgentConfig()
+  if (!agentConfig.available) {
     return NextResponse.json({ error: "The assistant is not available." }, { status: 503 })
   }
 
@@ -392,7 +397,7 @@ export async function POST(request: NextRequest) {
     return respondWithoutModel(sessionId, verdict.reply)
   }
 
-  const provider = getAgentProvider()
+  const provider = getAgentProvider(agentConfig)
   const system = buildSystemPrompt()
 
   const messages = trimTranscript(await readTranscript(sessionId))

@@ -1,7 +1,7 @@
 import { MessageCircle, Phone } from "lucide-react"
 
 import ChatLauncher from "@/components/chat/ChatLauncher"
-import { isAgentConfigured } from "@/lib/ai/provider"
+import { isAgentAvailable } from "@/lib/ai/config"
 import { messengerHref, phoneHref } from "@/lib/site-config"
 
 /**
@@ -15,11 +15,12 @@ import { messengerHref, phoneHref } from "@/lib/site-config"
  * rather than sitting beside it — two chat bubbles in one corner is a choice
  * nobody wants to make. Messenger is not lost: the assistant panel's footer
  * links to it and to the phone number, so the human escape hatch is one tap
- * away from inside the conversation. With no provider key set, this falls back
- * to the original Messenger button.
+ * away from inside the conversation. With the assistant switched off in the
+ * admin panel, or with no provider key set anywhere, this falls back to the
+ * original Messenger button.
  */
-export default function ContactFab() {
-  const assistantAvailable = isAgentConfigured()
+export default async function ContactFab() {
+  const assistantAvailable = await isAgentAvailable()
 
   return (
     <div className="fixed bottom-5 right-5 z-40 flex flex-col gap-3">

@@ -21,3 +21,6 @@ certificates
 
 # Customer inquiry submissions (PII) — never commit
 /data/inquiries.json
+
+# Admin-managed assistant settings (encrypted API keys) — never commit
+/data/ai-settings.json

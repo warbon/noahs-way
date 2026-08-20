@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk"
 
+import type { AgentProviderOptions } from "@/lib/ai/provider-options"
 import {
   AgentError,
   type AgentMessage,
@@ -9,20 +10,6 @@ import {
   type AgentToolDefinition,
   type AgentTurnParams
 } from "@/lib/ai/provider-types"
-
-/**
- * Sonnet 5 rather than Opus, measured rather than assumed.
- *
- * On a four-turn booking funnel it produced the same widget sequence and the
- * same grounded answers, ran faster, and cost ~38% less at list price. This
- * workload is short turns over a small catalog with well-specified tools, not
- * the kind of long-horizon reasoning that pays for an Opus-tier model.
- *
- * Set AI_MODEL to override — claude-opus-5 if a future change makes the
- * assistant reason harder, claude-haiku-4-5 if cost becomes the binding
- * constraint (test tool-use reliability first).
- */
-const DEFAULT_MODEL = "claude-sonnet-5"
 
 /**
  * Streaming is required rather than optional: `max_tokens` this large would
@@ -81,14 +68,13 @@ function wrapError(error: unknown): AgentError {
   return new AgentError("unknown", "Anthropic request failed", { cause: error })
 }
 
-export function createAnthropicProvider(): AgentProvider {
-  const model = process.env.AI_MODEL?.trim() || DEFAULT_MODEL
-
-  // Constructed lazily so importing this module without a key is harmless —
-  // `isAgentConfigured()` is what gates the feature.
+export function createAnthropicProvider({ apiKey, model }: AgentProviderOptions): AgentProvider {
+  // Constructed lazily so building a provider never reaches the network; the
+  // key is passed explicitly rather than picked up from ANTHROPIC_API_KEY,
+  // since the admin panel is what decides it.
   let client: Anthropic | undefined
   function getClient() {
-    if (!client) client = new Anthropic()
+    if (!client) client = new Anthropic({ apiKey })
     return client
   }
 
@@ -123,7 +109,7 @@ export function createAnthropicProvider(): AgentProvider {
               cache_control: { type: "ephemeral" }
             }
           ],
-          tools: toAnthropicTools(params.tools),
+          ...(params.tools.length > 0 ? { tools: toAnthropicTools(params.tools) } : {}),
           messages: toAnthropicMessages(params.messages)
         },
         { signal: params.signal }

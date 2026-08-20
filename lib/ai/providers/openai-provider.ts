@@ -1,6 +1,7 @@
 import OpenAI from "openai"
 import type { ChatCompletionMessageParam, ChatCompletionTool } from "openai/resources/chat/completions"
 
+import type { AgentProviderOptions } from "@/lib/ai/provider-options"
 import {
   AgentError,
   type AgentMessage,
@@ -10,8 +11,6 @@ import {
   type AgentToolDefinition,
   type AgentTurnParams
 } from "@/lib/ai/provider-types"
-
-const DEFAULT_MODEL = "gpt-4.1"
 
 /**
  * Flattens the neutral message shape onto OpenAI's chat format.
@@ -101,12 +100,10 @@ function wrapError(error: unknown): AgentError {
 
 type PendingCall = { id: string; name: string; args: string }
 
-export function createOpenAiProvider(): AgentProvider {
-  const model = process.env.AI_MODEL?.trim() || DEFAULT_MODEL
-
+export function createOpenAiProvider({ apiKey, model }: AgentProviderOptions): AgentProvider {
   let client: OpenAI | undefined
   function getClient() {
-    if (!client) client = new OpenAI()
+    if (!client) client = new OpenAI({ apiKey })
     return client
   }
 
@@ -119,7 +116,9 @@ export function createOpenAiProvider(): AgentProvider {
           // Streaming responses omit usage unless it is explicitly requested.
           stream_options: { include_usage: true },
           messages: toOpenAiMessages(params.system, params.messages),
-          tools: toOpenAiTools(params.tools)
+          // An empty `tools` array is rejected by the API, so it is omitted
+          // rather than sent — the connection test runs with no tools at all.
+          ...(params.tools.length > 0 ? { tools: toOpenAiTools(params.tools) } : {})
         },
         { signal: params.signal }
       )

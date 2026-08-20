@@ -1,50 +1,48 @@
+import crypto from "node:crypto"
+
+import type { ResolvedAgentConfig } from "@/lib/ai/config"
 import { createAnthropicProvider } from "@/lib/ai/providers/anthropic-provider"
 import { createOpenAiProvider } from "@/lib/ai/providers/openai-provider"
 import { AgentError, type AgentProvider } from "@/lib/ai/provider-types"
 
-export type AgentProviderName = "anthropic" | "openai"
+export type { AiProviderName as AgentProviderName } from "@/lib/ai/models"
 
 /**
- * Mirrors `getRepository()` in lib/inquiry-repository.ts: one env var picks the
- * implementation, and an unset var falls back to whichever key is present so a
- * developer with only one account does not have to configure two things.
+ * Adapters are handed their credentials rather than reading the environment,
+ * because the environment is no longer the source of truth — Admin → AI
+ * Assistant is, and a key can change between two requests to the same warm
+ * instance.
  */
-export function getAgentProviderName(): AgentProviderName {
-  const configured = process.env.AI_PROVIDER?.trim().toLowerCase()
-  if (configured === "openai") return "openai"
-  if (configured === "anthropic") return "anthropic"
+let cached: { key: string; provider: AgentProvider } | undefined
 
-  if (process.env.ANTHROPIC_API_KEY?.trim()) return "anthropic"
-  if (process.env.OPENAI_API_KEY?.trim()) return "openai"
-  return "anthropic"
+/** Identifies a credential set without keeping the key itself in a cache key. */
+function cacheKeyFor(config: ResolvedAgentConfig, apiKey: string) {
+  const fingerprint = crypto.createHash("sha256").update(apiKey).digest("hex").slice(0, 16)
+  return `${config.provider}:${config.model}:${fingerprint}`
 }
 
-/**
- * Whether the assistant can actually run. The UI gates the launcher on this so
- * a deployment without keys ships a site that is unchanged rather than broken.
- */
-export function isAgentConfigured() {
-  return getAgentProviderName() === "openai"
-    ? Boolean(process.env.OPENAI_API_KEY?.trim())
-    : Boolean(process.env.ANTHROPIC_API_KEY?.trim())
-}
+export function getAgentProvider(config: ResolvedAgentConfig): AgentProvider {
+  if (!config.enabled) {
+    throw new AgentError("unconfigured", "The assistant is switched off in the admin panel")
+  }
 
-let cached: { name: AgentProviderName; provider: AgentProvider } | undefined
-
-export function getAgentProvider(): AgentProvider {
-  const name = getAgentProviderName()
-
-  if (!isAgentConfigured()) {
+  if (!config.apiKey) {
     throw new AgentError(
       "unconfigured",
-      `No API key configured for the "${name}" assistant provider`
+      `No API key configured for the "${config.provider}" assistant provider`
     )
   }
 
-  if (cached?.name !== name) {
+  const key = cacheKeyFor(config, config.apiKey)
+
+  if (cached?.key !== key) {
+    const options = { apiKey: config.apiKey, model: config.model }
     cached = {
-      name,
-      provider: name === "openai" ? createOpenAiProvider() : createAnthropicProvider()
+      key,
+      provider:
+        config.provider === "openai"
+          ? createOpenAiProvider(options)
+          : createAnthropicProvider(options)
     }
   }
 
