@@ -10,7 +10,19 @@ import {
   type AgentTurnParams
 } from "@/lib/ai/provider-types"
 
-const DEFAULT_MODEL = "claude-opus-5"
+/**
+ * Sonnet 5 rather than Opus, measured rather than assumed.
+ *
+ * On a four-turn booking funnel it produced the same widget sequence and the
+ * same grounded answers, ran faster, and cost ~38% less at list price. This
+ * workload is short turns over a small catalog with well-specified tools, not
+ * the kind of long-horizon reasoning that pays for an Opus-tier model.
+ *
+ * Set AI_MODEL to override — claude-opus-5 if a future change makes the
+ * assistant reason harder, claude-haiku-4-5 if cost becomes the binding
+ * constraint (test tool-use reliability first).
+ */
+const DEFAULT_MODEL = "claude-sonnet-5"
 
 /**
  * Streaming is required rather than optional: `max_tokens` this large would
