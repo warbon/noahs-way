@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Poppins } from "next/font/google"
 
 import { siteConfig } from "@/lib/site-config"
@@ -37,6 +37,15 @@ export const metadata: Metadata = {
     description: siteConfig.description
   },
   robots: { index: true, follow: true }
+}
+
+// viewport-fit=cover lets the page paint into the notch and home-indicator
+// areas; the env(safe-area-inset-*) paddings below it are what keep content
+// out of them. Without cover those insets resolve to 0 and do nothing.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover"
 }
 
 export default function RootLayout({

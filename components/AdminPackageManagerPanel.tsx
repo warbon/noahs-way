@@ -308,9 +308,12 @@ export default function AdminPackageManagerPanel() {
                     />
                   </div>
 
-                  <div className="min-w-0 flex-1">
+                  {/* 7rem is the thumbnail (w-24) plus the row gap (gap-4): claiming
+                      the rest of the line forces the actions below it on phones.
+                      flex-1 would not work here — its 0 basis never triggers the wrap. */}
+                  <div className="min-w-0 grow basis-[calc(100%-7rem)] sm:basis-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <p className="truncate font-semibold text-foreground">{pkg.title}</p>
+                      <p className="font-semibold text-foreground sm:truncate">{pkg.title}</p>
                       {isDraft(pkg) ? (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900">
                           Draft

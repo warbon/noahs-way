@@ -150,7 +150,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
       className="assistant-panel assistant-glass assistant-sheen fixed inset-0 z-50 flex origin-bottom-right flex-col overflow-hidden sm:inset-auto sm:bottom-24 sm:right-5 sm:h-[min(620px,calc(100vh-8rem))] sm:w-[min(480px,calc(100vw-2.5rem))] sm:rounded-3xl"
     >
       {/* Gradient header, matching the launcher it grew out of. */}
-      <header className="assistant-glass-dark relative z-10 flex items-start justify-between gap-3 px-4 py-3 text-primary-foreground">
+      <header className="assistant-glass-dark relative z-10 flex items-start justify-between gap-3 px-4 py-3 pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] pt-[calc(0.75rem+env(safe-area-inset-top))] text-primary-foreground sm:px-4 sm:pt-3">
         <div className="flex min-w-0 items-start gap-2.5">
           <span
             className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent/20 text-accent"
@@ -185,7 +185,7 @@ export default function ChatPanel({ open, onClose }: { open: boolean; onClose: (
         }
       />
 
-      <footer className="relative z-10 border-t border-white/40 bg-white/25 px-4 py-3 backdrop-blur-md">
+      <footer className="relative z-10 border-t border-white/40 bg-white/25 px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pl-[calc(1rem+env(safe-area-inset-left))] pr-[calc(1rem+env(safe-area-inset-right))] backdrop-blur-md sm:px-4 sm:pb-3">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}

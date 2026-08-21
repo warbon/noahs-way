@@ -118,7 +118,7 @@ export default function MobileNav({ links }: { links: NavLink[] }) {
         aria-modal="true"
         aria-label="Site menu"
         data-state={isClosing ? "closed" : "open"}
-        className="panel-sheet absolute right-0 top-0 flex h-full w-[85%] max-w-sm flex-col overflow-y-auto bg-background p-6 shadow-2xl"
+        className="panel-sheet absolute right-0 top-0 flex h-full w-[85%] max-w-sm flex-col overflow-y-auto bg-background p-6 pb-[calc(1.5rem+env(safe-area-inset-bottom))] pr-[calc(1.5rem+env(safe-area-inset-right))] pt-[calc(1.5rem+env(safe-area-inset-top))] shadow-2xl"
       >
         <div className="mb-4 flex justify-end">
           <button

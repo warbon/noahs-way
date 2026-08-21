@@ -41,7 +41,7 @@ export default function BackToTop() {
       aria-label="Back to top"
       tabIndex={isVisible ? 0 : -1}
       aria-hidden={!isVisible}
-      className={`fixed bottom-5 left-5 z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary/15 bg-background text-primary shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+      className={`fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] left-[calc(1.25rem+env(safe-area-inset-left))] z-40 inline-flex h-11 w-11 items-center justify-center rounded-full border border-primary/15 bg-background text-primary shadow-lg transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
         isVisible ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-3 opacity-0"
       }`}
     >

@@ -12,7 +12,7 @@ function Row({ label, value }: { label: string; value?: string }) {
       <dt className="w-28 shrink-0 text-xs uppercase tracking-wide text-muted-foreground">
         {label}
       </dt>
-      <dd className="min-w-0 flex-1 text-foreground">{value}</dd>
+      <dd className="min-w-0 flex-1 break-words text-foreground">{value}</dd>
     </div>
   )
 }
@@ -69,11 +69,13 @@ export default function BookingSummary({
         availability and the final price within 24 hours.
       </p>
 
-      <div className="mt-3 flex gap-2">
+      {/* Buttons carry whitespace-nowrap, so they cannot shrink to fit: without an
+          explicit basis to wrap on, the second one runs off the panel on phones. */}
+      <div className="mt-3 flex flex-wrap gap-2">
         <Button
           type="button"
           size="sm"
-          className="flex-1"
+          className="flex-1 basis-48"
           disabled={locked}
           onClick={() => onSubmit({ confirmed: true })}
         >
@@ -83,6 +85,7 @@ export default function BookingSummary({
           type="button"
           size="sm"
           variant="outline"
+          className="flex-1 basis-48"
           disabled={locked}
           onClick={() => onSubmit({ confirmed: false })}
         >

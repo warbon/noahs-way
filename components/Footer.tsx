@@ -87,7 +87,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-primary-foreground/15 px-5 py-6 text-center text-xs text-primary-foreground/70 md:px-8">
+      <div className="border-t border-primary-foreground/15 px-5 pb-[calc(9rem+env(safe-area-inset-bottom))] pt-6 text-center text-xs text-primary-foreground/70 md:px-8 md:pb-6">
         © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
       </div>
     </footer>
