@@ -223,7 +223,13 @@ export default function PackageGallery({
         }}
         className="card-hover-lift package-card-hover group relative block w-full overflow-hidden rounded-[26px] border border-primary/10 bg-background text-left shadow-lg shadow-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
       >
-        <div className="relative h-72 overflow-hidden">
+        {/*
+          The frame carries a dark ground rather than inheriting the card's
+          light one. Every label on this card is white, so a transparent frame
+          meant the title, details and CTA were white-on-near-white for as long
+          as the lazy image took to paint — invisible on first view of any row.
+        */}
+        <div className="relative h-72 overflow-hidden bg-primary">
           <Image
             src={pkg.previewImage}
             alt={pkg.imageAlt ?? `${pkg.title} package poster`}

@@ -369,17 +369,16 @@
       "durationDays": 6,
       "durationNights": 4,
       "travelPeriods": [
-        "May 07–12",
-        "May 16–21",
-        "Jun 16–21",
-        "Jun 24–28",
-        "Jul 09–14",
-        "Jul 18–23",
-        "Aug 08–13",
-        "Aug 25–30",
-        "Sept 08–13",
-        "Sept 12–17",
-        "All departures +₱6,000"
+        "May 07–12 (+₱6,000/pax)",
+        "May 16–21 (+₱6,000/pax)",
+        "Jun 16–21 (+₱6,000/pax)",
+        "Jun 24–28 (+₱6,000/pax)",
+        "Jul 09–14 (+₱6,000/pax)",
+        "Jul 18–23 (+₱6,000/pax)",
+        "Aug 08–13 (+₱6,000/pax)",
+        "Aug 25–30 (+₱6,000/pax)",
+        "Sept 08–13 (+₱6,000/pax)",
+        "Sept 12–17 (+₱6,000/pax)"
       ],
       "highlights": [
         "Nami Island day tour",
@@ -480,7 +479,7 @@
         "Personal expenses such as laundry, telephone and drinks"
       ],
       "status": "published",
-      "updatedAt": "2026-08-21T06:46:23.914Z"
+      "updatedAt": "2026-08-22T03:40:59.707Z"
     },
     {
       "category": "international",

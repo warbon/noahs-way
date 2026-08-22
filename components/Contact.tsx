@@ -1,6 +1,14 @@
+import Link from "next/link"
+
 import InquiryForm from "@/components/InquiryForm"
 import Reveal from "@/components/Reveal"
-import { emailHref, messengerHref, phoneHref, siteConfig } from "@/lib/site-config"
+import {
+  emailHref,
+  messengerHref,
+  paymentMethods,
+  phoneHref,
+  siteConfig
+} from "@/lib/site-config"
 
 export default function Contact() {
   return (
@@ -70,6 +78,32 @@ export default function Contact() {
                   Luxury-level experiences with transparent PHP pricing.
                 </p>
               </article>
+            </div>
+
+            {/*
+              Fills the run-off below the three cards, and does it with the
+              question people actually stall on at this point in the page. The
+              form beside it asks for their details; this answers "how would I
+              even pay you" without making them go and find the policy page.
+            */}
+            <div className="mt-8 border-t border-white/20 pt-6">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-secondary">
+                How you can pay
+              </p>
+              <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/85">
+                {paymentMethods.map((method) => (
+                  <li key={method.name}>{method.name}</li>
+                ))}
+              </ul>
+              <p className="mt-4 text-xs text-white/70">
+                Reserve with a deposit, settle the balance before departure.{" "}
+                <Link
+                  href="/policies"
+                  className="underline underline-offset-4 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+                >
+                  Payment &amp; cancellation policy
+                </Link>
+              </p>
             </div>
           </div>
         </Reveal>

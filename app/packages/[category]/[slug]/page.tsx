@@ -198,9 +198,20 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   {pkg.inclusions?.length ? (
                     <div>
                       <h3 className="font-bold text-primary">Inclusions</h3>
+                      {/*
+                        Colour carries the distinction, not just the glyph. The
+                        two lists sat in near-identical greys, so the eye had to
+                        read each line to tell what was covered from what costs
+                        extra — the one comparison this section exists for.
+                      */}
                       <ul className="mt-3 space-y-2 text-sm">
                         {pkg.inclusions.map((item) => (
-                          <li key={item}>✓ {item}</li>
+                          <li key={item} className="flex gap-2">
+                            <span aria-hidden="true" className="font-bold text-emerald-600">
+                              ✓
+                            </span>
+                            <span>{item}</span>
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -210,7 +221,12 @@ export default async function PackageDetailPage({ params }: PageProps) {
                       <h3 className="font-bold text-primary">Not included</h3>
                       <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
                         {pkg.exclusions.map((item) => (
-                          <li key={item}>✕ {item}</li>
+                          <li key={item} className="flex gap-2">
+                            <span aria-hidden="true" className="font-bold text-destructive">
+                              ✕
+                            </span>
+                            <span>{item}</span>
+                          </li>
                         ))}
                       </ul>
                     </div>
@@ -240,17 +256,38 @@ export default async function PackageDetailPage({ params }: PageProps) {
                     The original poster
                   </figcaption>
                   <p className="mb-4 mt-2 text-sm text-muted-foreground">
-                    Everything on it is written out above. Tap to zoom if you want to read the
-                    fine print as printed.
+                    Everything on it is written out above.{" "}
+                    <a
+                      href={pkg.imagePath}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    >
+                      Open it full size
+                    </a>{" "}
+                    to read the fine print as printed.
                   </p>
-                  <Image
-                    src={pkg.imagePath}
-                    alt={pkg.imageAlt ?? `${pkg.title} package poster`}
-                    width={1200}
-                    height={1700}
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    className="h-auto w-full rounded-2xl border border-border"
-                  />
+                  {/*
+                    The caption used to say "tap to zoom" while the image was not
+                    a link — true on a phone, where pinch-zoom is native, but on a
+                    desktop there was no way to enlarge it at all. Now the poster
+                    itself opens full size on every device.
+                  */}
+                  <a
+                    href={pkg.imagePath}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  >
+                    <Image
+                      src={pkg.imagePath}
+                      alt={pkg.imageAlt ?? `${pkg.title} package poster`}
+                      width={1200}
+                      height={1700}
+                      sizes="(max-width: 1024px) 100vw, 60vw"
+                      className="h-auto w-full rounded-2xl border border-border"
+                    />
+                  </a>
                 </figure>
               ) : null}
             </div>

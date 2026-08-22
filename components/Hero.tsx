@@ -104,7 +104,7 @@ export default function Hero({ packages }: { packages: PackageRecord[] }) {
       <div className="absolute left-[7%] top-[16%] h-16 w-16 animate-float-slow rounded-full border border-white/20 bg-white/5 blur-[1px]" />
       <div className="absolute bottom-[16%] right-[8%] h-24 w-24 animate-float-slow rounded-full border border-secondary/35 bg-secondary/10 [animation-delay:1.2s]" />
 
-      <div className="relative mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 md:px-8 md:py-24 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="relative mx-auto grid max-w-6xl items-center gap-8 md:gap-12 px-5 py-10 md:px-8 md:py-24 lg:grid-cols-[1.05fr_0.95fr]">
         <Reveal>
           <p className="text-sm font-semibold uppercase tracking-[0.28em] text-secondary">
             {eyebrow}
@@ -120,7 +120,7 @@ export default function Hero({ packages }: { packages: PackageRecord[] }) {
             destination itself, instead of the whole hero re-announcing every
             seven seconds.
           */}
-          <p aria-live="polite" className="mt-6 max-w-xl text-lg text-white/85 md:text-xl">
+          <p aria-live="polite" className="mt-5 max-w-xl text-base text-white/85 md:mt-6 md:text-xl">
             {active.summary ?? active.details}
           </p>
 
@@ -144,61 +144,12 @@ export default function Hero({ packages }: { packages: PackageRecord[] }) {
             </Link>
           </div>
 
-          <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-2 text-sm text-white/85">
+          <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-1.5 text-sm text-white/85 md:mt-10">
             <li>Roundtrip airfare included</li>
             <li>English-speaking guide</li>
             <li>Full itinerary published</li>
           </ul>
 
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={goToPrev}
-              aria-label="Previous package"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
-            >
-              <span aria-hidden="true">←</span>
-            </button>
-            <button
-              type="button"
-              onClick={goToNext}
-              aria-label="Next package"
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
-            >
-              <span aria-hidden="true">→</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setIsManuallyPaused((paused) => !paused)
-                setIsPaused((paused) => !paused)
-              }}
-              aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
-              className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
-            >
-              {isPaused ? (
-                <Play className="h-4 w-4" aria-hidden="true" />
-              ) : (
-                <Pause className="h-4 w-4" aria-hidden="true" />
-              )}
-            </button>
-            <div className="ml-1 flex items-center gap-2">
-              {slides.map((slide, index) => (
-                <button
-                  key={slide.id}
-                  type="button"
-                  onClick={() => setActiveIndex(index)}
-                  aria-label={`Show ${slide.title}`}
-                  aria-current={index === activeIndex ? "true" : undefined}
-                  className={`h-2.5 rounded-full transition ${
-                    index === activeIndex
-                      ? "w-8 bg-secondary"
-                      : "w-2.5 bg-white/45 hover:bg-white/70"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
         </Reveal>
 
         {/*
@@ -212,23 +163,28 @@ export default function Hero({ packages }: { packages: PackageRecord[] }) {
             className="group block w-[min(340px,80vw)] rounded-3xl border border-white/25 bg-white/10 p-4 backdrop-blur-sm transition hover:-translate-y-1 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary focus-visible:ring-offset-2 focus-visible:ring-offset-primary"
           >
             {/*
-              Only the active poster is rendered. Cross-fading a stack of them
-              meant the outgoing poster was still visible while the title and
-              price had already switched — on this site that reads as the wrong
-              poster on the wrong package, which is precisely the failure this
-              catalog was fixed to remove. A key on the id restarts the fade so
-              the swap still feels deliberate.
+              Every poster stays mounted and the active one is simply shown.
+              Two failure modes had to be avoided at once: cross-fading the
+              stack left the outgoing poster visible while the title and price
+              had already changed — the wrong poster on the wrong package, the
+              exact defect this catalogue was cleaned up to remove — while
+              rendering only the active one refetched on each rotation and left
+              the frame empty mid-swap. Mounted, with no transition, the image
+              changes in the same commit as the text and is already cached.
             */}
-            <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-black/20">
-              <Image
-                key={active.id}
-                src={active.previewImage}
-                alt={active.imageAlt ?? `${active.title} package poster`}
-                fill
-                sizes="(max-width: 1024px) 80vw, 340px"
-                priority
-                className="media-fade object-cover"
-              />
+            <div className="relative aspect-[2/3] overflow-hidden rounded-2xl bg-primary">
+              {slides.map((slide, index) => (
+                <Image
+                  key={slide.id}
+                  src={slide.previewImage}
+                  alt={index === activeIndex ? slide.imageAlt ?? `${slide.title} package poster` : ""}
+                  fill
+                  sizes="(max-width: 1024px) 80vw, 340px"
+                  priority={index === 0}
+                  aria-hidden={index !== activeIndex}
+                  className={`object-cover ${index === activeIndex ? "opacity-100" : "opacity-0"}`}
+                />
+              ))}
             </div>
             <div className="px-2 pb-1 pt-4 text-white">
               <p className="text-xs uppercase tracking-[0.2em] text-white/70">
@@ -249,6 +205,60 @@ export default function Hero({ packages }: { packages: PackageRecord[] }) {
             </div>
           </Link>
         </Reveal>
+        {/*
+          Their own row rather than tucked under the copy: stacked on a phone the
+          controls used to sit between the pitch and the card that answers it,
+          splitting one message in two and pushing the product further down.
+        */}
+          <div className="flex flex-wrap items-center gap-3 lg:col-span-2">
+          <button
+            type="button"
+            onClick={goToPrev}
+            aria-label="Previous package"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
+          >
+            <span aria-hidden="true">←</span>
+          </button>
+          <button
+            type="button"
+            onClick={goToNext}
+            aria-label="Next package"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
+          >
+            <span aria-hidden="true">→</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setIsManuallyPaused((paused) => !paused)
+              setIsPaused((paused) => !paused)
+            }}
+            aria-label={isPaused ? "Play slideshow" : "Pause slideshow"}
+            className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/40 bg-white/10 text-white transition hover:bg-white/20"
+          >
+            {isPaused ? (
+              <Play className="h-4 w-4" aria-hidden="true" />
+            ) : (
+              <Pause className="h-4 w-4" aria-hidden="true" />
+            )}
+          </button>
+          <div className="ml-1 flex items-center gap-2">
+            {slides.map((slide, index) => (
+              <button
+                key={slide.id}
+                type="button"
+                onClick={() => setActiveIndex(index)}
+                aria-label={`Show ${slide.title}`}
+                aria-current={index === activeIndex ? "true" : undefined}
+                className={`h-2.5 rounded-full transition ${
+                  index === activeIndex
+                    ? "w-8 bg-secondary"
+                    : "w-2.5 bg-white/45 hover:bg-white/70"
+                }`}
+              />
+            ))}
+          </div>
+        </div>
       </div>
 
       <p className="sr-only">
