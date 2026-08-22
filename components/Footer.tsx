@@ -12,6 +12,7 @@ const exploreLinks = [
   { href: "/packages", label: "All Packages" },
   { href: "/packages/local", label: "Local Philippines Packages" },
   { href: "/packages/international", label: "International Packages" },
+  { href: "/destinations", label: "Destinations" },
   { href: "/guides", label: "Travel Guides" },
   { href: "/about", label: "About Us" },
   { href: "/#contact", label: "Plan Your Trip" },

@@ -16,6 +16,7 @@ const navLinks: NavLink[] = [
   { href: "/packages", label: "Packages" },
   { href: "/packages/local", label: "Local" },
   { href: "/packages/international", label: "International" },
+  { href: "/destinations", label: "Destinations" },
   { href: "/guides", label: "Guides" },
   { href: "/about", label: "About" },
   { href: "/#contact", label: "Contact" }
