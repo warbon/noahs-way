@@ -403,6 +403,262 @@ export const guides: Guide[] = [
         text: "Whoever you book with, ask what the travel tax treatment is before you pay a deposit, and whether children in your group have been declared at the right age."
       }
     ]
+  },
+
+  {
+    slug: "philippine-passport-renewal",
+    title: "Renewing your Philippine passport without the panic",
+    question: "How do I renew my passport, and how long will it take?",
+    summary:
+      "Appointments are free and mandatory, renewal costs ₱950 or ₱1,200 expedited, and processing runs 15–20 working days. Here is the sequence, and the peak months to avoid.",
+    status: "published",
+    factsCheckedOn: "2026-08-22",
+    sources: [
+      {
+        label: "Philippine passport renewal 2026 — Traveloka",
+        url: "https://www.traveloka.com/en-ph/explore/tips/ultimate-guide-renewing-philippine-passport/63530"
+      },
+      {
+        label: "DFA passport appointment application — Respicio & Co.",
+        url: "https://www.respicio.ph/commentaries/dfa-passport-appointment-application-in-the-philippines"
+      },
+      {
+        label: "Passport application and renewal requirements — Globe",
+        url: "https://www.globe.com.ph/blog/ph-passport-application-and-renewal-requirements"
+      }
+    ],
+    body: [
+      {
+        type: "note",
+        tone: "warning",
+        title: "Booking an appointment is free",
+        text: "The DFA does not charge for an appointment slot. Any site or fixer asking for a booking fee is not the DFA. Fees are paid only for the passport itself, at an authorised payment centre, after your slot is confirmed."
+      },
+      {
+        type: "paragraph",
+        text: "A passport that expires within a year is the most common reason a trip has to be postponed. Renewal is not difficult, but it is slow and appointment-bound, so the order you do things in matters."
+      },
+
+      { type: "heading", text: "The sequence" },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "Book an appointment online. Walk-ins are generally not accepted — the DFA runs an appointment-based system.",
+          "Pay the passport fee at an authorised payment centre once your slot is confirmed.",
+          "Appear in person on the date and time given. Nobody can go in your place.",
+          "Bring originals and photocopies of everything, in a folder.",
+          "Collect the passport, or have it delivered, once processing is done."
+        ]
+      },
+
+      { type: "heading", text: "What it costs and how long it takes" },
+      {
+        type: "table",
+        caption: "Checked August 2026 — confirm current rates with the DFA",
+        columns: ["Processing", "Fee", "Typical time"],
+        rows: [
+          ["Regular", "₱950", "15–20 working days"],
+          ["Expedited", "₱1,200", "7–10 working days"]
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "Working days, not calendar days — count weekends and holidays on top. Expedited buys you roughly a week, not same-day service."
+      },
+
+      { type: "heading", text: "The months to avoid" },
+      {
+        type: "paragraph",
+        text: "Appointment availability and processing both stretch during peak periods: March to June, and November to December. If you are travelling in those windows, renew months ahead rather than weeks."
+      },
+
+      { type: "heading", text: "What to bring" },
+      {
+        type: "paragraph",
+        text: "A straightforward renewal with no change of details is light on paperwork — your current passport and the confirmed appointment packet. If anything on your passport is changing, a married name most commonly, expect to bring supporting civil registry documents. Check the current list on the DFA site before you go, because a missing document means a new appointment."
+      },
+      {
+        type: "note",
+        tone: "info",
+        text: "Renew before you book flights, not after. A confirmed booking does not move an appointment date, and airlines will not refund a trip you cannot take because your passport was not ready."
+      }
+    ]
+  },
+
+  {
+    slug: "travel-insurance-explained",
+    title: "Travel insurance, in plain terms",
+    question: "Do I really need travel insurance, and what does it actually cover?",
+    summary:
+      "What a policy covers, where it is compulsory rather than optional, why Schengen plans often exclude trip cancellation, and how to read a policy before you buy it.",
+    status: "published",
+    factsCheckedOn: "2026-08-22",
+    sources: [
+      {
+        label: "Travel insurance Philippines — Oona",
+        url: "https://myoona.ph/all-product/travel-insurance/"
+      },
+      {
+        label: "Schengen visa travel insurance guide — UnitedHealthcare",
+        url: "https://www.uhcsafetrip.com/tips/schengen-visa-travel-and-insurance-guide/"
+      },
+      {
+        label: "Accredited travel insurance for a Schengen visa — The Poor Traveler",
+        url: "https://www.thepoortraveler.net/travel-insurance-schengen-visa/"
+      }
+    ],
+    body: [
+      {
+        type: "note",
+        tone: "warning",
+        title: "Read the policy, not the summary",
+        text: "This page explains the general shape of travel insurance. Every policy differs in its limits, exclusions and claim conditions, and only the policy document governs what you are actually covered for. Nothing here is insurance advice or a recommendation of a particular insurer."
+      },
+      {
+        type: "paragraph",
+        text: "Travel insurance is bought either because a destination demands it or because a medical bill abroad can be ruinous. Both are good reasons. What trips people up is assuming one policy does everything."
+      },
+
+      { type: "heading", text: "What a policy typically covers" },
+      {
+        type: "checklist",
+        items: [
+          "Emergency medical treatment and hospitalisation abroad",
+          "Emergency evacuation and repatriation",
+          "Trip cancellation or interruption, reimbursing prepaid costs you cannot recover",
+          "Travel delay, and baggage that is delayed, lost or damaged",
+          "Round-the-clock assistance for emergencies and lost documents"
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "The medical portion is the part you cannot sensibly travel without. Everything else is a judgement about how much prepaid money is at risk."
+      },
+
+      { type: "heading", text: "Where it is compulsory" },
+      {
+        type: "paragraph",
+        text: "Some destinations require proof of cover as a visa condition. The Schengen area is the strictest commonly encountered example: a policy must provide at least €30,000 of medical cover, and the application will not proceed without it."
+      },
+      {
+        type: "note",
+        tone: "info",
+        title: "The trap in Schengen policies",
+        text: "Most Schengen-compliant plans are medical-only, because that is all the visa rules require. They frequently do not include trip cancellation. If you want your prepaid flights and hotels protected too, that is usually a separate add-on rather than something already in the policy."
+      },
+      {
+        type: "paragraph",
+        text: "Many insurers will refund a Schengen policy in full if the visa is refused, provided cover has not yet started and you can produce the rejection letter. Ask about that before you buy, not after."
+      },
+
+      { type: "heading", text: "Questions worth asking before you pay" },
+      {
+        type: "list",
+        items: [
+          "What is the medical limit, and does it meet the destination's requirement?",
+          "Are pre-existing conditions covered, excluded, or covered only if declared?",
+          "Is trip cancellation included, or an add-on?",
+          "What is excluded — adventure activities, alcohol, undeclared conditions?",
+          "How do you claim, and what do you need to keep? Receipts and reports usually have to be originals.",
+          "Is there a 24-hour assistance number that works from abroad?"
+        ]
+      },
+
+      { type: "heading", text: "If a tour already includes it" },
+      {
+        type: "paragraph",
+        text: "Some packages include a basic policy and some list insurance as an exclusion, meaning it is mandatory but you arrange it yourself. Both are common. Check which applies before you assume you are covered — and if it is included, ask for the limits, because an included policy is not automatically enough for the destination you are visiting."
+      }
+    ]
+  },
+
+  {
+    slug: "first-time-flying-abroad-airport-guide",
+    title: "Your first flight abroad, gate by gate",
+    question: "What actually happens at the airport when I fly out?",
+    summary:
+      "The order of events at a Philippine airport on departure day — eTravel registration, check-in, travel tax, immigration, security — and roughly how long each takes.",
+    status: "published",
+    factsCheckedOn: "2026-08-22",
+    sources: [
+      { label: "eTravel Pass — official registration site", url: "https://etravelpass.ph/" },
+      {
+        label: "eTravel registration is mandatory and free — Air Traveler Club",
+        url: "https://www.airtraveler.club/intel/e-travel-registration-philippines-mandatory-free/"
+      },
+      {
+        label: "How to avoid being offloaded, 2026 — The Poor Traveler",
+        url: "https://www.thepoortraveler.net/offloaded-immigration-requirements/"
+      }
+    ],
+    body: [
+      {
+        type: "note",
+        tone: "warning",
+        title: "eTravel is free. Sites that charge for it are not official.",
+        text: "eTravel registration is mandatory for travellers entering and departing the Philippines, and it costs nothing at the government site. Any page charging a fee to register you is not the government. Departing Filipino citizens complete a departure form, which is separate from the arrival one."
+      },
+      {
+        type: "paragraph",
+        text: "Nobody explains the airport the first time. Here is the whole sequence, in order, so none of it is a surprise."
+      },
+
+      { type: "heading", text: "Before you leave home" },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "Register for eTravel. The window is within 72 hours of your flight — the system will not accept it earlier, and 24 to 48 hours ahead is comfortable. Save the QR code to your phone and screenshot it in case there is no signal.",
+          "Check in online if the airline allows it, and note your baggage allowance.",
+          "Put your documents in one folder: passport, printed booking, hotel confirmations, itinerary, and proof of employment or business.",
+          "Leave for the airport in time to arrive at least four hours before an international departure."
+        ]
+      },
+
+      { type: "heading", text: "At the airport, in order" },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "Terminal entry — passport and flight details checked at the door.",
+          "Check-in — bags weighed and tagged, boarding pass issued. Excess baggage is paid here and is expensive at the counter.",
+          "Travel tax, if it was not already included in your ticket. Children and certain passengers pay less or nothing.",
+          "Immigration — the counter that decides whether you fly. Have the folder ready and answer briefly and honestly.",
+          "Security screening — laptops and liquids out, belts and metal off.",
+          "Your gate. Find it, then eat, and be back before boarding time."
+        ]
+      },
+      {
+        type: "note",
+        tone: "info",
+        text: "Four hours sounds excessive until an unusually long queue at one of those six steps. If you are sent for secondary inspection at immigration, the time is what saves the trip."
+      },
+
+      { type: "heading", text: "At the other end" },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "Arrival immigration — your visa, if you need one, and often proof of onward travel and where you are staying.",
+          "Baggage claim, then customs.",
+          "Money and a connection — an ATM or a currency counter, and a local SIM or roaming, before you leave the terminal.",
+          "Meet your transfer or find the official taxi rank. Ignore anyone approaching you inside the terminal offering a ride."
+        ]
+      },
+
+      { type: "heading", text: "Small things that make a difference" },
+      {
+        type: "list",
+        items: [
+          "Photograph your passport and keep a copy separately from the original.",
+          "Carry a day of medication and one change of clothes in hand luggage, in case a bag is delayed.",
+          "Keep some pesos for the trip home from the airport when you return.",
+          "Tell your bank you are travelling so a card is not blocked mid-trip.",
+          "Write down the address of your first night's accommodation on paper. Arrival immigration will ask, and your phone may be dead."
+        ]
+      }
+    ]
   }
 ]
 
