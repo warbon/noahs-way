@@ -1,6 +1,7 @@
 import Link from "next/link"
 
 import InquiryForm from "@/components/InquiryForm"
+import PaymentBadge from "@/components/PaymentBadge"
 import Reveal from "@/components/Reveal"
 import {
   emailHref,
@@ -90,9 +91,11 @@ export default function Contact() {
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-secondary">
                 How you can pay
               </p>
-              <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-white/85">
+              <ul className="mt-4 flex flex-wrap gap-2">
                 {paymentMethods.map((method) => (
-                  <li key={method.name}>{method.name}</li>
+                  <li key={method.name}>
+                    <PaymentBadge method={method} tone="dark" />
+                  </li>
                 ))}
               </ul>
               <p className="mt-4 text-xs text-white/70">

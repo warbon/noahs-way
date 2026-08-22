@@ -82,13 +82,38 @@ export const accreditations: Accreditation[] = [
  * up to ₱125,000 spread over 24 months, which is the whole price range of the
  * catalog — so it is a conversion lever, not a footnote.
  */
-export const paymentMethods = [
-  { name: "GCash", detail: "Send to our registered GCash business account." },
-  { name: "GGives instalment", detail: "Split the cost over up to 24 months, subject to your GCash limit." },
-  { name: "Maya", detail: "Direct transfer to our Maya account." },
-  { name: "Bank transfer", detail: "Over-the-counter or online, to our company bank account." },
-  { name: "Over-the-counter", detail: "Bayad Center and partner outlets." }
-] as const
+export type PaymentMethod = {
+  name: string
+  detail: string
+  /** Which generic icon stands in until a real brand mark is supplied. */
+  icon: "wallet" | "instalment" | "bank" | "counter"
+  /**
+   * Path to the provider's official logo, e.g. "/images/payments/gcash.svg".
+   *
+   * Left unset on purpose. GCash, Maya and Bayad Center marks are third-party
+   * trademarks, usually licensed to registered merchants under brand
+   * guidelines — they have to come from the provider's own brand kit rather
+   * than be copied off the web or redrawn. Drop the file in and set the path;
+   * the icon below is only the stand-in.
+   */
+  logo?: string
+}
+
+export const paymentMethods: PaymentMethod[] = [
+  { name: "GCash", detail: "Send to our registered GCash business account.", icon: "wallet" },
+  {
+    name: "GGives instalment",
+    detail: "Split the cost over up to 24 months, subject to your GCash limit.",
+    icon: "instalment"
+  },
+  { name: "Maya", detail: "Direct transfer to our Maya account.", icon: "wallet" },
+  {
+    name: "Bank transfer",
+    detail: "Over-the-counter or online, to our company bank account.",
+    icon: "bank"
+  },
+  { name: "Over-the-counter", detail: "Bayad Center and partner outlets.", icon: "counter" }
+]
 
 /** True when at least one registration number has actually been filled in. */
 export const hasPublishedAccreditation = accreditations.some((item) => item.value.trim() !== "")

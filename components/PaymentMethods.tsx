@@ -1,5 +1,6 @@
 import Link from "next/link"
 
+import PaymentBadge from "@/components/PaymentBadge"
 import { paymentMethods } from "@/lib/site-config"
 
 /**
@@ -32,16 +33,16 @@ export default function PaymentMethods({
         exact schedule when we send your quote.
       </p>
 
+      {/*
+        Badges first so the options register at a glance, with the per-method
+        detail under each. A bulleted list of five payment names reads as terms
+        and conditions; the point here is recognition.
+      */}
       <ul className="mt-4 space-y-3">
         {paymentMethods.map((method) => (
-          <li key={method.name} className="flex gap-3 text-sm">
-            <span aria-hidden="true" className="mt-0.5 font-bold text-accent">
-              •
-            </span>
-            <span>
-              <span className="font-semibold text-foreground">{method.name}</span>
-              <span className="block text-muted-foreground">{method.detail}</span>
-            </span>
+          <li key={method.name} className="space-y-1.5">
+            <PaymentBadge method={method} />
+            <p className="text-sm text-muted-foreground">{method.detail}</p>
           </li>
         ))}
       </ul>
