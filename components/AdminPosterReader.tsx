@@ -21,7 +21,7 @@ import type { PosterExtraction } from "@/lib/ai/poster-extraction"
 type State =
   | { status: "idle" }
   | { status: "reading" }
-  | { status: "done"; filled: string[]; unreadable: string[] }
+  | { status: "done"; filled: string[]; unreadable: string[]; model?: string }
   | { status: "error"; message: string }
 
 /** Which form input each extracted field belongs in. */
@@ -90,7 +90,7 @@ export default function AdminPosterReader({ disabled }: { disabled?: boolean }) 
     const body = new FormData()
     body.append("image", file)
 
-    let payload: { fields?: PosterExtraction; error?: string }
+    let payload: { fields?: PosterExtraction; error?: string; model?: string }
     try {
       const response = await fetch("/api/admin/packages/read-poster", { method: "POST", body })
       payload = await response.json()
@@ -127,7 +127,8 @@ export default function AdminPosterReader({ disabled }: { disabled?: boolean }) 
     setState({
       status: "done",
       filled,
-      unreadable: Array.isArray(fields.unreadable) ? fields.unreadable : []
+      unreadable: Array.isArray(fields.unreadable) ? fields.unreadable : [],
+      model: payload.model
     })
   }
 
@@ -161,6 +162,9 @@ export default function AdminPosterReader({ disabled }: { disabled?: boolean }) 
                 them before saving.
               </p>
               <p className="text-xs text-muted-foreground">{state.filled.join(", ")}</p>
+              {state.model ? (
+                <p className="text-xs text-muted-foreground">Read by {state.model}.</p>
+              ) : null}
             </>
           ) : (
             <p className="font-semibold text-foreground">
