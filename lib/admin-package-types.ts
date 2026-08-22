@@ -25,6 +25,7 @@ export type AdminPackageRecord = {
   exclusions?: string[]
   fees?: PackageFee[]
   imageAlt?: string
+  createdAt?: string
   updatedAt?: string
 }
 

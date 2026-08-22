@@ -45,6 +45,12 @@ export type TravelPackage = {
    */
   fees?: PackageFee[]
   imageAlt?: string
+  /**
+   * Set once, when the record is created. Absent on everything seeded before
+   * the field existed — there is no honest way to date those, so the admin
+   * list sorts them below the records that do carry one rather than guessing.
+   */
+  createdAt?: string
   updatedAt?: string
 }
 

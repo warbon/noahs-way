@@ -54,6 +54,38 @@ function isDraft(pkg: AdminPackageRecord) {
   return pkg.status === "draft"
 }
 
+/**
+ * Newest first, so a package the admin just added is the first thing they see.
+ *
+ * Without this the list was local-then-international in file order, which put a
+ * brand new international package below all fifteen local ones — the opposite
+ * of where you look for something you just created.
+ *
+ * Records created before `createdAt` existed cannot be dated honestly, so they
+ * keep their existing relative order and sit underneath the dated ones rather
+ * than being given an invented timestamp. Both repositories prepend on create,
+ * so that leftover order is already newest-first within each category.
+ */
+function sortByNewestFirst(packages: AdminPackageRecord[]) {
+  return packages
+    .map((pkg, index) => ({ pkg, index }))
+    .sort((a, b) => {
+      const aCreated = a.pkg.createdAt
+      const bCreated = b.pkg.createdAt
+
+      if (aCreated && bCreated) {
+        // Equal timestamps fall through to index so the order stays stable.
+        const diff = bCreated.localeCompare(aCreated)
+        return diff !== 0 ? diff : a.index - b.index
+      }
+
+      if (aCreated) return -1
+      if (bCreated) return 1
+      return a.index - b.index
+    })
+    .map((entry) => entry.pkg)
+}
+
 export default function AdminPackageManagerPanel() {
   const router = useRouter()
 
@@ -104,7 +136,7 @@ export default function AdminPackageManagerPanel() {
   }, [loadPackages])
 
   const allPackages = useMemo(
-    () => [...catalog.local, ...catalog.international],
+    () => sortByNewestFirst([...catalog.local, ...catalog.international]),
     [catalog]
   )
 

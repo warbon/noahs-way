@@ -168,6 +168,9 @@ async function createPackageRecord(payload: CreatePackagePayload) {
   const newPackage: PackageRecord = {
     ...payload,
     id: createUniqueId(),
+    // Stamped here rather than taken from the payload so it records when the
+    // record was actually stored, and cannot be back-dated by a caller.
+    createdAt: new Date().toISOString(),
     previewImage: payload.previewImage ?? payload.imagePath
   }
 
