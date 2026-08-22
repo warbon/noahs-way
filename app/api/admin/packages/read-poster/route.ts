@@ -11,6 +11,21 @@ import { PosterExtractionError, extractPosterFields } from "@/lib/ai/poster-extr
  * routes, so a misread price can never reach the storefront unseen.
  */
 
+/**
+ * Reading a poster is the slowest request the app makes — measured between 10
+ * and 280 seconds, median around 35 — because the model reads every printed
+ * line off the image before answering.
+ *
+ * Without this the platform default applies, which is 10 seconds. Every read
+ * would be killed mid-flight in production and come back missing most of its
+ * fields, while working fine locally where no such ceiling exists. The other
+ * two AI routes already set their own ceilings; this one was overlooked.
+ *
+ * 60 is the highest a Vercel Hobby plan accepts. On Pro this can go to 300,
+ * which is what the slowest posters actually need.
+ */
+export const maxDuration = 60
+
 /** Matches the upload ceiling on the package routes. */
 const MAX_UPLOAD_SIZE_BYTES = 8 * 1024 * 1024
 

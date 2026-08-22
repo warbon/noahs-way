@@ -78,22 +78,39 @@ export async function POST(request: NextRequest) {
     return errorResponse("Unsupported image type. Use JPG, PNG, or WEBP.", 400)
   }
 
-  const { publicImagePath } = await savePackageImage({
-    category,
-    title,
-    file: imageValue,
-    extension
-  })
+  // Both steps write to storage, and both throw if the configured backend
+  // cannot accept a write — most often because PACKAGE_STORE/IMAGE_STORE are
+  // unset in a deployment, leaving the file backend selected against a
+  // read-only filesystem. Uncaught, that surfaced as a bare 500 with an HTML
+  // body, so the admin form could not parse a message out of it and the save
+  // simply appeared to do nothing.
+  let publicImagePath: string
+  let createdPackage: Awaited<ReturnType<typeof createPackageRecord>>
 
-  const createdPackage = await createPackageRecord({
-    category,
-    title,
-    details,
-    price,
-    imagePath: publicImagePath,
-    previewImage: publicImagePath,
-    ...readStructuredFields(formData)
-  })
+  try {
+    ;({ publicImagePath } = await savePackageImage({
+      category,
+      title,
+      file: imageValue,
+      extension
+    }))
+
+    createdPackage = await createPackageRecord({
+      category,
+      title,
+      details,
+      price,
+      imagePath: publicImagePath,
+      previewImage: publicImagePath,
+      ...readStructuredFields(formData)
+    })
+  } catch (error) {
+    console.error("[admin] Failed to store new package", error)
+    return errorResponse(
+      "The package could not be saved. Its storage backend rejected the write — check that PACKAGE_STORE and IMAGE_STORE are configured for this deployment.",
+      500
+    )
+  }
 
   revalidatePath("/")
   revalidatePath("/packages")
