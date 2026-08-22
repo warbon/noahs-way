@@ -27,6 +27,7 @@ type PackageEditableFields = Pick<
   | "itinerary"
   | "inclusions"
   | "exclusions"
+  | "fees"
   | "imageAlt"
 >
 

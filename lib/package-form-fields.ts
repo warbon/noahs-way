@@ -1,4 +1,12 @@
 import type { ItineraryDay, PackageStatus, TravelPackage } from "@/lib/package-data"
+import type { FeeBasis, PackageFee } from "@/lib/package-fees"
+
+const FEE_BASES: FeeBasis[] = [
+  "per-person",
+  "per-person-per-way",
+  "per-person-per-day",
+  "per-booking"
+]
 
 /** One item per line, blank lines dropped. */
 export function parseLines(value: unknown): string[] | undefined {
@@ -35,6 +43,46 @@ export function parseItinerary(value: unknown): ItineraryDay[] | undefined {
   return days.length > 0 ? days : undefined
 }
 
+/**
+ * One fee per line: `Label | amount | currency | basis | required | note`
+ *
+ * Everything after the label is optional. Leaving the amount blank is a valid
+ * and useful entry — "Visa fee | | | per-person | yes | subject to quotation"
+ * lists the fee without pretending to know what it costs.
+ */
+export function parseFees(value: unknown): PackageFee[] | undefined {
+  const lines = parseLines(value)
+  if (!lines) return undefined
+
+  const fees = lines.flatMap((line) => {
+    const [label, amountRaw, currencyRaw, basisRaw, requiredRaw, note] = line
+      .split("|")
+      .map((part) => part.trim())
+
+    if (!label) return []
+
+    const amount = Number.parseFloat((amountRaw ?? "").replace(/[^\d.]/g, ""))
+    const currency = (currencyRaw ?? "").toUpperCase() === "USD" ? "USD" : "PHP"
+    const basis = FEE_BASES.includes(basisRaw as FeeBasis)
+      ? (basisRaw as FeeBasis)
+      : "per-person"
+
+    return [
+      {
+        label,
+        ...(Number.isFinite(amount) && amount > 0 ? { amount, currency } : {}),
+        basis,
+        // Anything but an explicit no is treated as required, so a fee is
+        // never quietly dropped from a total by a typo.
+        required: !/^(no|false|optional)$/i.test(requiredRaw ?? ""),
+        ...(note ? { note } : {})
+      } satisfies PackageFee
+    ]
+  })
+
+  return fees.length > 0 ? fees : undefined
+}
+
 export function parseOptionalNumber(value: unknown): number | undefined {
   if (typeof value !== "string" || !value.trim()) return undefined
   const parsed = Number.parseFloat(value.replace(/,/g, ""))
@@ -65,6 +113,7 @@ type StructuredFields = Pick<
   | "itinerary"
   | "inclusions"
   | "exclusions"
+  | "fees"
   | "imageAlt"
 >
 
@@ -93,6 +142,7 @@ export function readStructuredFields(formData: FormData): StructuredFields {
     itinerary: parseItinerary(formData.get("itinerary")),
     inclusions: parseLines(formData.get("inclusions")),
     exclusions: parseLines(formData.get("exclusions")),
+    fees: parseFees(formData.get("fees")),
     imageAlt: parseOptionalText(formData.get("imageAlt"))
   }
 

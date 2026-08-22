@@ -11,6 +11,7 @@ import InquiryForm from "@/components/InquiryForm"
 import Navbar from "@/components/Navbar"
 import PaymentMethods from "@/components/PaymentMethods"
 import ScrollProgress from "@/components/ScrollProgress"
+import TripCostCalculator from "@/components/TripCostCalculator"
 import { packageCategoryMeta, type PackageCategory } from "@/lib/package-data"
 import { getPackagesByCategory } from "@/lib/package-repository"
 import type { PackageRecord } from "@/lib/package-repository-types"
@@ -309,6 +310,13 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   intro="Send us your booking details and we'll confirm availability and the final price."
                 />
               </div>
+              {/* Sits under the enquiry form, where the price question lands. */}
+              <TripCostCalculator
+                priceAmount={pkg.priceAmount}
+                durationDays={pkg.durationDays}
+                fees={pkg.fees}
+                packageTitle={pkg.title}
+              />
               <PaymentMethods />
             </aside>
           </div>

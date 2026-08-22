@@ -350,7 +350,53 @@
         "Surcharge for non-Philippine passport holders"
       ],
       "status": "published",
-      "updatedAt": "2026-08-21T06:46:23.914Z"
+      "updatedAt": "2026-08-22T08:27:35.592Z",
+      "fees": [
+        {
+          "label": "Philippine travel tax",
+          "amount": 1620,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true,
+          "note": "Paid at the airport"
+        },
+        {
+          "label": "Tipping",
+          "amount": 999,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true,
+          "note": "Mandatory"
+        },
+        {
+          "label": "Travel insurance",
+          "amount": 600,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true
+        },
+        {
+          "label": "20kg baggage allowance",
+          "amount": 2600,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": false,
+          "note": "Only 7kg hand-carry is included"
+        },
+        {
+          "label": "Travel WiFi",
+          "amount": 300,
+          "currency": "PHP",
+          "basis": "per-person-per-day",
+          "required": false,
+          "note": "Unlimited, shared across 3–4 devices"
+        },
+        {
+          "label": "Surcharge for non-Philippine passport holders",
+          "basis": "per-person",
+          "required": false
+        }
+      ]
     },
     {
       "category": "international",
@@ -479,7 +525,30 @@
         "Personal expenses such as laundry, telephone and drinks"
       ],
       "status": "published",
-      "updatedAt": "2026-08-22T05:38:14.744Z"
+      "updatedAt": "2026-08-22T08:27:35.593Z",
+      "fees": [
+        {
+          "label": "Philippine travel tax",
+          "amount": 1670,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true,
+          "note": "Mandatory"
+        },
+        {
+          "label": "Tipping for the guide",
+          "amount": 360,
+          "currency": "PHP",
+          "basis": "per-person-per-day",
+          "required": true
+        },
+        {
+          "label": "Travel insurance",
+          "basis": "per-person",
+          "required": true,
+          "note": "Mandatory — amount depends on the policy you choose"
+        }
+      ]
     },
     {
       "category": "international",
@@ -609,7 +678,39 @@
         "Rates are subject to change based on airline advice"
       ],
       "status": "published",
-      "updatedAt": "2026-08-21T06:46:23.914Z"
+      "updatedAt": "2026-08-22T08:27:35.593Z",
+      "fees": [
+        {
+          "label": "Philippine travel tax",
+          "amount": 1620,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true,
+          "note": "Paid at the airport"
+        },
+        {
+          "label": "Tips for guide and driver",
+          "amount": 5,
+          "currency": "USD",
+          "basis": "per-person-per-day",
+          "required": true,
+          "note": "Collected in Manila"
+        },
+        {
+          "label": "Check-in baggage, 20kg",
+          "amount": 1700,
+          "currency": "PHP",
+          "basis": "per-person-per-way",
+          "required": false,
+          "note": "32kg is ₱3,500 and 40kg is ₱3,600 per person each way"
+        },
+        {
+          "label": "Korean visa processing fee",
+          "basis": "per-person",
+          "required": false,
+          "note": "Subject to quotation"
+        }
+      ]
     },
     {
       "category": "international",
@@ -711,7 +812,49 @@
         "Personal expenses such as telephone calls and minibar"
       ],
       "status": "published",
-      "updatedAt": "2026-08-21T06:46:23.914Z"
+      "updatedAt": "2026-08-22T08:27:35.593Z",
+      "fees": [
+        {
+          "label": "Airport tax, Da Nang and Manila",
+          "amount": 2499,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true
+        },
+        {
+          "label": "Tips for the driver and guide",
+          "amount": 1200,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true
+        },
+        {
+          "label": "Philippine travel tax",
+          "basis": "per-person",
+          "required": true,
+          "note": "Rate set by TIEZA"
+        },
+        {
+          "label": "Travel insurance",
+          "basis": "per-person",
+          "required": true,
+          "note": "Mandatory — amount depends on the policy you choose"
+        },
+        {
+          "label": "Check-in luggage",
+          "basis": "per-person",
+          "required": false,
+          "note": "Only 7kg hand carry-on is included"
+        },
+        {
+          "label": "Optional tour",
+          "amount": 5999,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": false,
+          "note": "Han River cruise, Vietnamese massage and Ao Dai show"
+        }
+      ]
     },
     {
       "category": "international",
@@ -828,7 +971,30 @@
         "Airline tax and terminal fee — ₱4,500 per pax"
       ],
       "status": "published",
-      "updatedAt": "2026-08-21T06:46:23.914Z"
+      "updatedAt": "2026-08-22T08:27:35.593Z",
+      "fees": [
+        {
+          "label": "Philippine travel tax",
+          "amount": 1620,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true
+        },
+        {
+          "label": "Local tipping",
+          "amount": 1200,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true
+        },
+        {
+          "label": "Airline tax and terminal fee",
+          "amount": 4500,
+          "currency": "PHP",
+          "basis": "per-person",
+          "required": true
+        }
+      ]
     },
     {
       "category": "international",

@@ -20,6 +20,24 @@ function linesOf(values?: string[]) {
   return values?.join("\n") ?? ""
 }
 
+function feesText(pkg?: AdminPackageRecord | null) {
+  if (!pkg?.fees?.length) return ""
+  return pkg.fees
+    .map((fee) =>
+      [
+        fee.label,
+        fee.amount ?? "",
+        fee.amount ? fee.currency ?? "PHP" : "",
+        fee.basis,
+        fee.required ? "yes" : "no",
+        fee.note ?? ""
+      ]
+        .join(" | ")
+        .replace(/\s*\|\s*$/, "")
+    )
+    .join("\n")
+}
+
 function itineraryText(pkg?: AdminPackageRecord | null) {
   if (!pkg?.itinerary?.length) return ""
   return pkg.itinerary
@@ -253,6 +271,26 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
               customer asks for.
             </p>
           </div>
+        </div>
+
+        <div className={fieldClass}>
+          <label htmlFor="fees" className={labelClass}>
+            Fees outside the package price
+          </label>
+          <Textarea
+            id="fees"
+            name="fees"
+            rows={5}
+            defaultValue={feesText(pkg)}
+            placeholder={"Philippine travel tax | 1620 | PHP | per-person | yes | Paid at the airport\nCheck-in baggage 20kg | 1700 | PHP | per-person-per-way | no\nVisa fee | | | per-person | no | Subject to quotation"}
+          />
+          <p className={hintClass}>
+            One per line: <code>Label | amount | PHP or USD | basis | yes or no | note</code>.
+            Basis is <code>per-person</code>, <code>per-person-per-way</code>,{" "}
+            <code>per-person-per-day</code> or <code>per-booking</code>. Leave the amount blank
+            when it is not known — the fee is still listed, just not added up. This is what the
+            trip cost estimate on the package page uses.
+          </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">

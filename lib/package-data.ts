@@ -1,3 +1,5 @@
+import type { PackageFee } from "@/lib/package-fees"
+
 export type PackageCategory = "local" | "international"
 
 export type ItineraryDay = {
@@ -37,6 +39,11 @@ export type TravelPackage = {
   itinerary?: ItineraryDay[]
   inclusions?: string[]
   exclusions?: string[]
+  /**
+   * The exclusions above, with amounts, so a total can be computed. The prose
+   * stays authoritative — this is the machine-readable companion to it.
+   */
+  fees?: PackageFee[]
   imageAlt?: string
   updatedAt?: string
 }
