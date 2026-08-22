@@ -28,6 +28,15 @@ export type PosterExtraction = {
   itinerary?: ItineraryDay[]
   inclusions?: string[]
   exclusions?: string[]
+  /** The priced exclusions again, structured, so a total can be computed. */
+  fees?: {
+    label: string
+    amount?: number
+    currency?: "PHP" | "USD"
+    basis?: "per-person" | "per-person-per-way" | "per-person-per-day" | "per-booking"
+    required?: boolean
+    note?: string
+  }[]
   imageAlt?: string
   /** Anything printed that the reader could not make out. Shown to the admin. */
   unreadable?: string[]
@@ -93,6 +102,17 @@ FIELD SHAPES
 • "summary": two sentences of plain prose describing the trip, drawn only from the poster.
 • "itinerary": one entry per printed day. "title" is the day's route heading as printed, in Title Case rather than all caps. "description" holds ONLY the meals line and any flight details, as a short sentence. Everything else the day panel lists goes into "activities", one entry each — this includes both the plain bullets AND anything under a "TOUR HIGHLIGHTS" heading, which are itinerary items, not description. Clean off bullet characters, keep each item separate, and never repeat an item within a day.
 • "inclusions"/"exclusions": one printed item per entry, verbatim.
+• "fees": the exclusions again, but as numbers so they can be totalled.
+
+  THE AMOUNT IS THE POINT. If any figure is printed anywhere in that fee — including inside a list of tiers, or in a currency other than pesos — you must put a number in "amount". Leaving it out when a price is printed makes the total wrong, which is worse than not showing a total at all. Only omit "amount" when the poster gives no figure whatsoever, such as "subject to quotation".
+
+  Worked examples, follow them exactly:
+  - "Philippine travel tax = Php 1,620 per pax" → amount 1620, currency PHP, basis per-person, required true.
+  - "Tips for Guide/Driver $5 per pax per day ($25) collect in Manila, Mandatory" → amount 5, currency USD, basis per-person-per-day, required true, note "Collected in Manila".
+  - "Check-in Baggage: 20kgs P1,700/pax/way, 32kgs P3,500/pax/way" → amount 1700, currency PHP, basis per-person-per-way, required false, note "32kg is ₱3,500 per person each way". Use the cheapest tier as the amount and put the rest in the note.
+  - "Korean Visa Processing Fee (subject for quotation)" → no amount, basis per-person, required false, note "Subject to quotation".
+
+  Read the basis from the wording: "per pax" is per-person, "per pax per way" is per-person-per-way, "per pax per day" is per-person-per-day. Mark required true when the poster calls it mandatory or it is unavoidable, and false for add-ons such as extra baggage or an optional tour.
 • "travelPeriods": each departure window as printed, surcharge included.`
 
 /**
@@ -136,6 +156,28 @@ export const EXTRACTION_SCHEMA = {
     },
     inclusions: { type: "array", items: { type: "string" } },
     exclusions: { type: "array", items: { type: "string" } },
+    fees: {
+      type: "array",
+      description:
+        "The exclusions that carry a price, expressed as numbers so they can be totalled",
+      items: {
+        type: "object",
+        properties: {
+          label: { type: "string", description: "Short name, e.g. 'Philippine travel tax'" },
+          amount: { type: "number", description: "Figure only, no symbol or commas" },
+          currency: { type: "string", enum: ["PHP", "USD"] },
+          basis: {
+            type: "string",
+            enum: ["per-person", "per-person-per-way", "per-person-per-day", "per-booking"],
+            description: "How the amount multiplies out"
+          },
+          required: { type: "boolean", description: "True when mandatory rather than optional" },
+          note: { type: "string", description: "Tiers, where it is collected, who is exempt" }
+        },
+        required: ["label", "basis", "required"],
+        additionalProperties: false
+      }
+    },
     imageAlt: { type: "string", description: "Short alt text describing the poster" },
     unreadable: {
       type: "array",

@@ -32,7 +32,6 @@ const TEXT_FIELDS: (keyof PosterExtraction)[] = [
   "details",
   "price",
   "priceAmount",
-  "currency",
   "durationDays",
   "durationNights",
   "imageAlt"
@@ -54,6 +53,31 @@ function setFieldValue(form: HTMLFormElement, name: string, value: string) {
   Object.getOwnPropertyDescriptor(prototype, "value")?.set?.call(el, value)
   el.dispatchEvent(new Event("input", { bubbles: true }))
   return true
+}
+
+/**
+ * The admin fees textarea format:
+ * `Label | amount | currency | basis | yes/no | note`
+ *
+ * Mirrors `feesText` in the form component, so a poster read and a hand edit
+ * produce the same text and round-trip through the same parser.
+ */
+function feesToText(fees: PosterExtraction["fees"]) {
+  if (!fees?.length) return ""
+  return fees
+    .map((fee) =>
+      [
+        fee.label,
+        fee.amount ?? "",
+        fee.amount ? fee.currency ?? "PHP" : "",
+        fee.basis ?? "per-person",
+        fee.required === false ? "no" : "yes",
+        fee.note ?? ""
+      ]
+        .join(" | ")
+        .replace(/\s*\|\s*$/, "")
+    )
+    .join("\n")
 }
 
 /** The admin itinerary textarea format: `Day 1 | Title | Activity; Activity`. */
@@ -122,6 +146,11 @@ export default function AdminPosterReader({ disabled }: { disabled?: boolean }) 
     const itineraryText = itineraryToText(fields.itinerary)
     if (itineraryText && setFieldValue(form, "itinerary", itineraryText)) {
       filled.push(`itinerary (${fields.itinerary?.length} days)`)
+    }
+
+    const feesTextValue = feesToText(fields.fees)
+    if (feesTextValue && setFieldValue(form, "fees", feesTextValue)) {
+      filled.push(`fees (${fields.fees?.length})`)
     }
 
     setState({
