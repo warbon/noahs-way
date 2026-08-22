@@ -98,8 +98,14 @@ ACCURACY RULES
 
 FIELD SHAPES
 • "price": the lead-in price normalised to "from PHP 21,888". "priceAmount": that number as a plain integer, e.g. 21888.
-• "details" and "summary" are the ONE exception to transcribing. Both must always be produced, and both are written by you — but only ever by summarising what the poster already shows, never by adding a fact or a selling point that is not on it. Composing these two from the poster's own content is your job; inventing anything for them is not.
+• "details", "imageAlt" and "summary" are the ONE exception to transcribing. All three must always be produced, and all three are written by you — but only ever by describing what the poster already shows, never by adding a fact or a selling point that is not on it. Composing these from the poster's own content is your job; inventing anything for them is not.
   - "details" is a single card line: the duration, then two or three of the trip's most recognisable inclusions or stops, separated by "•". For example "4 Days / 3 Nights • Ba Na Hills • Hoi An Ancient Town". Keep it under about twelve words.
+  - "imageAlt" describes what the poster DEPICTS, for someone who cannot see it — the
+    scenery, landmarks and people in the artwork. Do not restate the price, the dates or
+    the itinerary: all of that is transcribed into the fields above and is already read
+    aloud as text on the page, so repeating it here just makes a screen reader say
+    everything twice. One sentence, under about twenty words, and do not open with
+    "Image of" or "Picture of".
   - "summary" is two sentences of plain prose naming the main places and what is included — the kind of thing a person would say describing the trip to a friend. Do not use marketing adjectives the poster does not use.
 • "itinerary": one entry per printed day. "title" is the day's route heading as printed, in Title Case rather than all caps. "description" holds ONLY the meals line and any flight details, as a short sentence. Everything else the day panel lists goes into "activities", one entry each — this includes both the plain bullets AND anything under a "TOUR HIGHLIGHTS" heading, which are itinerary items, not description. Clean off bullet characters, keep each item separate, and never repeat an item within a day.
 • "inclusions"/"exclusions": one printed item per entry, verbatim.
@@ -117,8 +123,9 @@ FIELD SHAPES
 • "travelPeriods": each departure window as printed, surcharge included.`
 
 /**
- * The canonical schema. Every field is optional: an absent field means the
- * poster did not show it, which is a valid answer.
+ * The canonical schema. Every field is optional except the three composed
+ * ones: for the rest, an absent field means the poster did not show it, which
+ * is a valid answer.
  *
  * Anthropic accepts this as-is. OpenAI's strict mode does not — see
  * `toOpenAiStrictSchema` below.
@@ -179,7 +186,7 @@ export const EXTRACTION_SCHEMA = {
         additionalProperties: false
       }
     },
-    imageAlt: { type: "string", description: "Short alt text describing the poster" },
+    imageAlt: { type: "string", description: "One sentence describing what the poster depicts, for a screen reader" },
     unreadable: {
       type: "array",
       description: "Anything printed you could not read with confidence",
@@ -187,17 +194,21 @@ export const EXTRACTION_SCHEMA = {
     }
   },
   /*
-    The only two required fields, and deliberately so.
-    
-    Both are composed rather than transcribed, and the prompt's insistence on
+    The only three required fields, and deliberately so.
+
+    All are composed rather than transcribed, and the prompt's insistence on
     not inventing anything is strong enough that asking politely did not work —
-    two live reads returned every other field and left these blank. Requiring
+    live reads returned every other field and left these blank. Requiring
     them in the schema is what actually compels the model to write them, and
     they are safe to compel because they are assembled from content it has
     already extracted. "details" also happens to be required by the admin form,
-    so without it a poster read leaves the record unsaveable.
+    so without it a poster read leaves the record unsaveable. "imageAlt" is
+    required for a quieter reason: every consumer falls back to the title, so
+    leaving it out looks like nothing is wrong. The alt text just silently
+    stops saying anything a screen reader could not already read from the
+    heading beside it.
   */
-  required: ["details", "summary"],
+  required: ["details", "summary", "imageAlt"],
   additionalProperties: false as const
 }
 
