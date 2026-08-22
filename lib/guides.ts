@@ -1,11 +1,11 @@
 /**
- * Long-form guides — the visa, immigration and cost questions people search for
- * before they are anywhere near choosing a package.
+ * Long-form guides — the questions people search before they are anywhere near
+ * choosing a package.
  *
  * Content lives in code rather than the admin panel on purpose, for now. These
- * pages carry visa rules and fees: getting one wrong is a complaint, not a
- * typo, so they should go through review the way code does. Moving them into
- * the admin editor later is a straightforward port of this shape.
+ * pages carry visa rules and government fees: getting one wrong is a complaint,
+ * not a typo, so they should go through review the way code does. Moving them
+ * into the admin editor later is a straightforward port of this shape.
  */
 
 export type GuideBlock =
@@ -14,6 +14,7 @@ export type GuideBlock =
   | { type: "list"; items: string[]; ordered?: boolean }
   | { type: "checklist"; items: string[] }
   | { type: "note"; tone: "info" | "warning"; title?: string; text: string }
+  | { type: "table"; caption?: string; columns: string[]; rows: string[][] }
 
 export type GuideStatus = "published" | "draft"
 
@@ -30,8 +31,8 @@ export type Guide = {
   status: GuideStatus
   /**
    * The date the facts in this guide were last checked against a source.
-   * Rendered on the page — a visa guide without one is worthless, and Korea's
-   * rules changed twice in 2026.
+   * Rendered near the top — a guide full of fees and visa rules is worthless
+   * without one, and Korea changed its rules twice in 2026.
    */
   factsCheckedOn: string
   /** Optional: the package this guide should send a convinced reader to. */
@@ -43,28 +44,32 @@ export type Guide = {
 
 export const guides: Guide[] = [
   {
-    slug: "korean-visa-for-filipinos",
-    title: "The Korean visa for Filipino travellers",
-    question: "Do I need a visa for South Korea, and what do I have to submit?",
+    slug: "before-you-fly-filipino-travellers",
+    title: "Before you fly: what Filipino travellers need",
+    question: "What do I actually need to prepare before travelling abroad?",
     summary:
-      "What the C-3-9 tourist visa requires in 2026, what changed in February and June, the two visa-free exceptions, and which parts a tour operator can handle for you.",
-    status: "draft",
+      "Passport rules, which destinations need a visa, what happens at the Philippine immigration counter, and the fees that come on top of any tour price.",
+    status: "published",
     factsCheckedOn: "2026-08-22",
-    relatedPackageSlug: "/packages/international/nami-island-seoul-tour",
+    relatedPackageSlug: "/packages",
     relatedPackageLabel:
-      "Nami Island & Seoul Tour — group visa processing arranged, with the itinerary and bookings your application needs.",
+      "Every package we run publishes its full itinerary, inclusions and exclusions — the documents both counters ask to see.",
     sources: [
+      {
+        label: "How to avoid being offloaded, 2026 — The Poor Traveler",
+        url: "https://www.thepoortraveler.net/offloaded-immigration-requirements/"
+      },
+      {
+        label: "Avoiding offloading at Philippine immigration — Moneymax",
+        url: "https://www.moneymax.ph/lifestyle/articles/how-to-avoid-offload-flight"
+      },
       {
         label: "South Korea visa for Filipinos, 2026 — Klook",
         url: "https://www.klook.com/en-PH/blog/south-korea-visa-for-filipinos/"
       },
       {
-        label: "Korean tourist visa from the Philippines — Oona",
-        url: "https://myoona.ph/blog/travel/korean-tourist-visa-philippines-guide/"
-      },
-      {
-        label: "Korean visa application guide — The Poor Traveler",
-        url: "https://www.thepoortraveler.net/south-korea-visa/"
+        label: "Vietnam visa for Philippine citizens",
+        url: "https://www.myvietnamvisa.com/visa-requirements/philippines.html"
       }
     ],
     body: [
@@ -72,99 +77,126 @@ export const guides: Guide[] = [
         type: "note",
         tone: "warning",
         title: "Check before you rely on this",
-        text: "Korea changed its tourist visa rules twice in 2026. Everything here was checked on the date shown above, but the Korean Embassy and the Korea Visa Application Center are the only authorities on what is required today. Nothing on this page is a guarantee of approval — the consulate decides, not us."
+        text: "Rules and fees change — Korea altered its tourist visa requirements twice in 2026. Everything here was checked on the date shown above. The embassy concerned and the Bureau of Immigration are the only authorities on what is required today, and nothing on this page is a guarantee that you will be issued a visa or allowed to depart."
       },
       {
         type: "paragraph",
-        text: "Yes, Filipino passport holders need a visa for mainland South Korea. The one you want for a holiday is the C-3-9 short-term tourist visa, which covers sightseeing and leisure for stays of up to 90 days."
-      },
-      {
-        type: "paragraph",
-        text: "That is the short answer. The longer answer is that the process got noticeably easier in 2026, and that a packaged tour removes most of the parts people find stressful."
+        text: "Most of the worry around a first trip abroad comes down to four things: whether your passport is in order, whether you need a visa, whether you will actually be allowed to board, and what the trip costs once every fee is counted. Here they are in order."
       },
 
-      { type: "heading", text: "What changed in 2026" },
-      {
-        type: "list",
-        items: [
-          "From 20 February 2026, the Korea Visa Application Center in the Philippines stopped requiring three months of bank statements from tourist applicants. This was the single most common reason people delayed applying.",
-          "Proof of student status became more flexible — either a school certificate or a student ID is accepted.",
-          "From 15 June 2026, regular processing for a short-term C-3 visa takes up to 10 working days. Express applications are 5 working days."
-        ]
-      },
+      { type: "heading", text: "1. Your passport" },
       {
         type: "paragraph",
-        text: "Ten working days is roughly two calendar weeks before you count weekends and holidays. Plan your application at least a month before departure, and longer if you are travelling in autumn or over the New Year, when volumes are highest."
-      },
-
-      { type: "heading", text: "Where you can apply" },
-      {
-        type: "list",
-        items: [
-          "The Korea Visa Application Center (KVAC) in Manila, either as a walk-in or with a booked appointment.",
-          "The Korean Consulate for applicants in Cebu, through an online appointment.",
-          "Through a travel agency designated by the Korean Embassy, which files on your behalf. Designation is granted to specific agencies by the embassy — ask any agency directly whether they hold it."
-        ]
-      },
-
-      { type: "heading", text: "The two visa-free exceptions" },
-      {
-        type: "paragraph",
-        text: "There are two narrow routes into Korea that do not need a visa, and both come with real limits worth understanding before you plan around them."
-      },
-      {
-        type: "list",
-        items: [
-          "Jeju Island — visa-free for up to 30 days, but only if you arrive on a direct international flight into Jeju International Airport. You cannot travel on to the mainland.",
-          "The Jeolla region — visa-free if you join a group tour run by a government-designated travel agency and enter through Muan International Airport. Travel is limited to North Jeolla, South Jeolla, Gwangju and Jeju. Only designated agencies can run these, so check with the operator before planning around it."
-        ]
-      },
-      {
-        type: "note",
-        tone: "info",
-        text: "Neither route gets you to Seoul. If your trip includes Seoul, Nami Island, Mt. Seorak or Everland, you need the C-3-9 visa."
-      },
-
-      { type: "heading", text: "What to prepare" },
-      {
-        type: "paragraph",
-        text: "Requirements vary by employment status and change from time to time, so treat this as a starting checklist and confirm the current list with KVAC before you file."
+        text: "Nearly every destination asks the same two things, and they catch people out more often than visas do."
       },
       {
         type: "checklist",
         items: [
-          "Passport valid for at least six months, with blank pages",
-          "Completed application form and a recent photo to specification",
-          "Proof of employment, business registration, or school enrolment",
-          "Proof of your ability to fund the trip",
-          "Confirmed return flights and hotel bookings",
-          "A day-by-day itinerary for the whole stay"
+          "Valid for at least six months beyond the date you enter the country",
+          "At least one blank page for entry and exit stamps",
+          "No significant damage — water damage or a loose page can be refused at the counter"
         ]
       },
-
-      { type: "heading", text: "Where a tour package helps" },
       {
         type: "paragraph",
-        text: "We are not a Korean Embassy designated agency, so we do not file your visa for you. What a packaged trip does give you is the paperwork the application rests on."
-      },
-      {
-        type: "paragraph",
-        text: "Three of the items above — the confirmed return flights, the hotel bookings, and the day-by-day itinerary — are documents we produce as a matter of course. On a packaged trip they arrive together and already agree with each other, which is what a consular officer is checking for. Assembling those three yourself, consistently, is the part most first-time applicants find hardest."
-      },
-      {
-        type: "paragraph",
-        text: "Our Korea departures also run with a partner operator who arranges group visa processing for the whole group. That means your application is submitted alongside everyone else's on the same departure, with the same supporting documents. It does not mean approval is guaranteed — the consulate decides every application on its own merits, and no agency can promise otherwise."
-      },
-      {
-        type: "paragraph",
-        text: "The same three documents are what Philippine immigration asks to see on the day you fly."
+        text: "If your passport expires within a year, renew it before booking anything. Waiting on a renewal appointment is the most common reason a trip has to be moved."
       },
 
+      { type: "heading", text: "2. Do you need a visa?" },
+      {
+        type: "paragraph",
+        text: "It depends entirely on where you are going, and the gap is wider than most people expect. Here is where the destinations we currently run trips to stand."
+      },
+      {
+        type: "table",
+        caption: "For Philippine passport holders, checked August 2026",
+        columns: ["Destination", "Visa needed?", "How long you may stay"],
+        rows: [
+          ["Vietnam", "No — visa-free", "21 days. Longer stays need an e-visa."],
+          [
+            "South Korea, mainland",
+            "Yes — C-3-9 tourist visa",
+            "Up to 90 days. Processing takes up to 10 working days."
+          ],
+          [
+            "South Korea, Jeju only",
+            "No, with conditions",
+            "30 days, but only on a direct flight into Jeju, with no onward travel to the mainland."
+          ]
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "Korea's process got easier in 2026. From 20 February the requirement for three months of bank statements was dropped for tourist applicants, and proof of student status became more flexible. From 15 June, regular processing moved to up to ten working days, with express at five. Apply at least a month ahead, and earlier for autumn and New Year departures when volumes peak."
+      },
       {
         type: "note",
         tone: "info",
-        title: "Still to confirm before this page is published",
-        text: "This guide is a draft. One thing is still open: exactly what the group visa arrangement on the Nami Island package covers — who submits, what the traveller supplies, and what happens to the package price if an application is refused. The wording here is deliberately cautious until that is confirmed."
+        text: "Vietnam being visa-free is why it is often the easiest first trip abroad. If the visa interview is the part putting you off, start there."
+      },
+
+      { type: "heading", text: "3. The Philippine immigration counter" },
+      {
+        type: "paragraph",
+        text: "This is the part people underestimate. Being offloaded means Philippine immigration stops you boarding your flight — with a valid ticket and visa in hand. More than 36,000 Filipinos were offloaded in 2023."
+      },
+      {
+        type: "paragraph",
+        text: "Officers are checking one thing: that you are travelling for the reason you state, and that you intend to come home. Every question is aimed at that, and everything below is about answering it plainly."
+      },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "Arrive at least four hours before departure. If you are sent for secondary inspection, you need the time.",
+          "Carry the documents rather than describing them — return ticket, hotel bookings, a day-by-day itinerary, and proof of your ties here such as a certificate of employment or business registration.",
+          "Answer honestly and keep it short. Long answers invite follow-up questions, and officers are trained to notice inconsistencies.",
+          "Be clear about who is paying. If someone else is funding the trip, bring proof of your relationship to them.",
+          "Expect more questions if it is your first time abroad. That is routine, not suspicion of you personally."
+        ]
+      },
+      {
+        type: "note",
+        tone: "warning",
+        title: "Cases that need paperwork weeks in advance",
+        text: "A minor travelling without both parents may need a DSWD travel clearance. Anyone travelling to meet or marry a foreign fiancé or spouse needs a CFO certificate. Travelling as a tourist while intending to work is the classic offloading case and needs the correct working visa instead. Sort these out well before the airport."
+      },
+
+      { type: "heading", text: "4. What it costs on top of the tour price" },
+      {
+        type: "paragraph",
+        text: "A package price is not the whole number, and any operator implying otherwise is setting you up for a surprise. These are the usual additions."
+      },
+      {
+        type: "list",
+        items: [
+          "Philippine travel tax — around ₱1,620 per person, usually paid at the airport",
+          "Check-in baggage, where only hand-carry is included. Often ₱1,700 or more each way",
+          "Tipping for guides and drivers, which on some tours is mandatory and collected up front",
+          "Travel insurance, which several destinations require",
+          "Visa processing fees, where a visa is needed",
+          "Anything marked optional on the itinerary"
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "Add these before you compare two tours. A cheaper package with a longer exclusions list is often the more expensive trip."
+      },
+      {
+        type: "note",
+        tone: "info",
+        title: "How to compare fairly",
+        text: "Ask any operator for the exclusions in writing before paying a deposit. Every package on this site lists its inclusions and exclusions on the package page, so you can add up the real total yourself."
+      },
+
+      { type: "heading", text: "What a tour package does, and does not, cover" },
+      {
+        type: "paragraph",
+        text: "A packaged trip does not get you a visa. The consulate decides that, and no agency can promise approval. What it does is produce the paperwork both counters ask for: confirmed return flights, hotel bookings, and a day-by-day itinerary that agrees with them. Putting those three together consistently is the part most first-time travellers find hardest."
+      },
+      {
+        type: "paragraph",
+        text: "Travelling independently is entirely doable — just assemble the same three documents yourself before you go anywhere near the airport."
       }
     ]
   }

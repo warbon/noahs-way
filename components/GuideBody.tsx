@@ -61,6 +61,51 @@ export default function GuideBody({ blocks }: { blocks: GuideBlock[] }) {
               </ul>
             )
 
+          case "table":
+            return (
+              <figure key={key} className="max-w-prose">
+                {/* Its own scroll container so a wide table never scrolls the page. */}
+                <div className="overflow-x-auto rounded-2xl border border-border">
+                  <table className="w-full border-collapse text-sm">
+                    <thead>
+                      <tr>
+                        {block.columns.map((column) => (
+                          <th
+                            key={column}
+                            scope="col"
+                            className="border-b border-border bg-muted/60 px-4 py-3 text-left text-xs font-bold uppercase tracking-[0.1em] text-muted-foreground"
+                          >
+                            {column}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {block.rows.map((row) => (
+                        <tr key={row.join("|")}>
+                          {row.map((cell, cellIndex) => (
+                            <td
+                              key={cell}
+                              className={`border-b border-border px-4 py-3 align-top last:border-b-0 ${
+                                cellIndex === 0 ? "font-semibold text-foreground" : "text-muted-foreground"
+                              }`}
+                            >
+                              {cell}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {block.caption ? (
+                  <figcaption className="mt-2 text-xs text-muted-foreground">
+                    {block.caption}
+                  </figcaption>
+                ) : null}
+              </figure>
+            )
+
           case "note": {
             const warning = block.tone === "warning"
             return (
