@@ -23,11 +23,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!destination) return { title: "Destination not found" }
 
   return {
-    title: `${destination.name} tours from the Philippines`,
+    title: destination.headline ?? `${destination.name} tours from the Philippines`,
     description: destination.summary,
     alternates: { canonical: `/destinations/${destination.slug}` },
     openGraph: {
-      title: `${destination.name} tours from the Philippines`,
+      title: destination.headline ?? `${destination.name} tours from the Philippines`,
       description: destination.summary,
       url: `${siteConfig.url}/destinations/${destination.slug}`
     }
@@ -80,7 +80,7 @@ export default async function DestinationPage({ params }: PageProps) {
               {destination.tagline}
             </p>
             <h1 className="mt-2 text-3xl font-bold text-primary md:text-5xl">
-              {destination.name} from the Philippines
+              {destination.headline ?? `${destination.name} from the Philippines`}
             </h1>
             <p className="mt-5 text-lg text-muted-foreground">{destination.summary}</p>
           </header>
@@ -159,7 +159,7 @@ export default async function DestinationPage({ params }: PageProps) {
             ) : (
               <div className="mt-6 rounded-2xl border border-dashed border-primary/20 bg-card p-6 text-center">
                 <p className="text-sm text-muted-foreground">
-                  Nothing scheduled for {destination.name} right now.{" "}
+                  Nothing scheduled here right now.{" "}
                   <Link href="/#contact" className="font-semibold text-primary underline">
                     Tell us when you want to go
                   </Link>{" "}

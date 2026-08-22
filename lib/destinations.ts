@@ -11,11 +11,19 @@
 
 export type Destination = {
   slug: string
-  /** Country name, as a traveller would say it. */
+  /**
+   * Country name, bare of any article — it is interpolated into headings like
+   * "Our {name} trips", where a leading "the" reads as a mistake.
+   */
   name: string
   /** Matched against each package's `destination` field. */
   match: RegExp
   tagline: string
+  /**
+   * Overrides the "{name} from the Philippines" headline. Needed for the
+   * domestic page, where that template reads as nonsense.
+   */
+  headline?: string
   summary: string
   /** The visa position, in one line. Detail lives in the guides. */
   visa: { needed: boolean; line: string }
@@ -25,6 +33,40 @@ export type Destination = {
 }
 
 export const destinations: Destination[] = [
+  {
+    slug: "philippines",
+    name: "Philippines",
+    headline: "Travelling around the Philippines",
+    match: /philippines|boracay|palawan|el nido|coron|cebu|bohol|siargao|baguio|batanes|davao|iloilo|camiguin|sagada|la union|bacolod|dumaguete|vigan|zambales|puerto princesa/i,
+    tagline: "No passport, no visa, and the season matters more than the island",
+    summary:
+      "Home is the easiest trip to take and the one most often planned badly — because the country does not have one weather season, it has several, and they run at different times depending on which island you pick.",
+    visa: {
+      needed: false,
+      line: "Domestic travel. A valid government ID is enough — no passport, no visa, and no travel tax."
+    },
+    whatItIsLike: [
+      "Palawan is the postcard — El Nido lagoons, Coron wrecks — and the most fee-heavy to visit, so budget past the airfare.",
+      "Cebu and Bohol pair a city with a countryside easily, which is why they work well for a first domestic trip with family.",
+      "Siargao and the rest of Mindanao sit largely outside the main typhoon belt, which makes them the sensible pick when the rest of the country is under habagat."
+    ],
+    whenToGo: [
+      {
+        season: "Amihan, November to April",
+        detail: "The northeast monsoon and the dry season for most of the country. December to February is the most reliable stretch, and also the most expensive and crowded."
+      },
+      {
+        season: "Habagat, May to October",
+        detail: "The southwest monsoon. Cheaper and quieter, but boat trips get choppy, underwater visibility drops with river runoff, and remote destinations can become hard to reach."
+      },
+      {
+        season: "Typhoon season, peaking July to October",
+        detail: "Worst in the north and along exposed east coasts. Palawan, the southern Visayas and Mindanao are markedly less exposed — the country is not uniformly off-limits in these months."
+      }
+    ],
+    goodFor:
+      "Anyone who wants a trip without paperwork, families travelling with young children, and last-minute plans that a visa timeline would rule out."
+  },
   {
     slug: "vietnam",
     name: "Vietnam",

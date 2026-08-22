@@ -659,6 +659,191 @@ export const guides: Guide[] = [
         ]
       }
     ]
+  },
+
+  {
+    slug: "philippine-island-fees",
+    title: "The fees nobody mentions when you fly to a Philippine island",
+    question: "What do I have to pay on arrival at Boracay, El Nido or Coron?",
+    summary:
+      "Environmental and terminal fees are collected on the island, usually in cash, and are not in your airfare. Here is what the main destinations charge and who is exempt.",
+    status: "published",
+    factsCheckedOn: "2026-08-22",
+    relatedPackageSlug: "/destinations/philippines",
+    relatedPackageLabel: "Planning a domestic trip? Start with when to go where.",
+    sources: [
+      {
+        label: "Updated Boracay travel requirements — Respicio & Co.",
+        url: "https://www.respicio.ph/commentaries/updated-boracay-travel-requirements-and-entry-regulations-for-tourists"
+      },
+      {
+        label: "Boracay environmental and tourist fee requirements",
+        url: "https://4stogo.com/blog/posts/environmental-and-tourist-fee-requirements"
+      },
+      {
+        label: "Tourism fees in Boracay under review — Philippine News Agency",
+        url: "https://www.pna.gov.ph/articles/1244647"
+      }
+    ],
+    body: [
+      {
+        type: "note",
+        tone: "warning",
+        title: "Rates are set locally and change",
+        text: "These fees are collected by local government units, not the airline, and each can change them independently. The figures below were checked on the date above — confirm with your resort or the LGU before you travel, and carry a little more than you expect to need."
+      },
+      {
+        type: "paragraph",
+        text: "A domestic flight is cheap enough that people budget the airfare and stop there. Then they land, and there is a counter between them and the boat. These fees are legitimate and they fund the places you came to see, but nobody puts them in the fare, and they are almost always cash."
+      },
+
+      { type: "heading", text: "What the main destinations charge" },
+      {
+        type: "table",
+        caption: "Per person, checked August 2026",
+        columns: ["Destination", "Fee", "How it works"],
+        rows: [
+          [
+            "Boracay",
+            "₱300 environmental + ₱150 terminal",
+            "The environmental fee is once for the whole stay, paid on arrival. The terminal fee is charged both entering and leaving."
+          ],
+          [
+            "El Nido",
+            "₱400 eco-tourism development fee",
+            "Valid for 10 days, so one payment covers a normal trip."
+          ],
+          ["Coron", "Around ₱200", "Collected on arrival."]
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "Individually these are small. Across a multi-island itinerary, with a terminal fee at each end of each hop, they add up to real money for a family — and they arrive at exactly the moment you have already committed."
+      },
+
+      { type: "heading", text: "Who pays less" },
+      {
+        type: "list",
+        items: [
+          "Children aged five and under are generally exempt from the environmental and terminal fees, on proof of age. Bring the birth certificate or a copy.",
+          "Some LGUs set reduced rates for residents of the province. If you are going home rather than going on holiday, ask.",
+          "Senior and PWD discounts apply to many attraction and boat fees, though not always to the LGU fees themselves. Carry the ID and ask each time."
+        ]
+      },
+
+      { type: "heading", text: "Practical notes" },
+      {
+        type: "checklist",
+        items: [
+          "Bring cash in small notes. Card acceptance at these counters is unreliable at best.",
+          "Boracay now runs a digital pass at boracayipass.ph — paying ahead saves queueing on arrival.",
+          "Keep the receipts. The terminal fee on the way out is sometimes checked against the one you paid coming in.",
+          "Budget separately for island-hopping tours, which carry their own permits and are not covered by the entry fee."
+        ]
+      },
+      {
+        type: "note",
+        tone: "info",
+        title: "Why we publish this",
+        text: "We list every fee that sits outside a package price on the package page itself, including this kind. A trip that looks cheaper because the fees were left out is not cheaper — you simply find out later."
+      }
+    ]
+  },
+
+  {
+    slug: "when-to-go-where-philippines",
+    title: "When to go where in the Philippines",
+    question: "When is the best time to travel around the Philippines?",
+    summary:
+      "Amihan and habagat explained, when typhoon season actually bites, and why writing off July to October across the whole country is the most common planning mistake.",
+    status: "published",
+    factsCheckedOn: "2026-08-22",
+    relatedPackageSlug: "/destinations/philippines",
+    relatedPackageLabel: "See what a domestic trip involves, and tell us where you want to go.",
+    sources: [
+      {
+        label: "Best time to visit the Philippines — month by month",
+        url: "https://www.philippinestourism.org/best-time-to-visit-philippines/"
+      },
+      {
+        label: "Best time to go to the Philippines — Responsible Travel",
+        url: "https://www.responsibletravel.com/holidays/philippines/travel-guide/best-time-to-go"
+      },
+      {
+        label: "Typhoon season guide",
+        url: "https://www.homejourney.sg/blog/best-time-to-visit-philippines-typhoon-season-guide-homejourney-202601161404"
+      }
+    ],
+    body: [
+      {
+        type: "note",
+        tone: "warning",
+        title: "Weather is a pattern, not a promise",
+        text: "Everything here describes what is typical. Any given week can behave differently, and PAGASA is the authority on actual forecasts and warnings. Check it before you travel, and take storm advisories seriously regardless of what the season is supposed to be doing."
+      },
+      {
+        type: "paragraph",
+        text: "The country has two monsoons, and most trip planning goes wrong by treating the whole archipelago as if it shared one climate. It does not — which is good news, because it means there is almost always somewhere sensible to go."
+      },
+
+      { type: "heading", text: "The two seasons" },
+      {
+        type: "table",
+        columns: ["Season", "Months", "What it means"],
+        rows: [
+          [
+            "Amihan",
+            "November to April",
+            "The northeast monsoon. Dry and cooler for most of the country, with December to February the most reliable stretch — and the most crowded and expensive."
+          ],
+          [
+            "Habagat",
+            "May to October",
+            "The southwest monsoon. Wetter and humid, with cheaper rates and fewer people, but choppier boats and poorer underwater visibility from river runoff."
+          ]
+        ]
+      },
+
+      { type: "heading", text: "Typhoon season, honestly" },
+      {
+        type: "paragraph",
+        text: "Typhoon activity peaks between July and October, and is worst in the north and along exposed east coasts. That is the part everyone knows. The part that gets missed is how unevenly it lands."
+      },
+      {
+        type: "list",
+        items: [
+          "Palawan and the southern Visayas are markedly less exposed than Luzon.",
+          "Mindanao and Caraga — Davao, Siargao — sit largely outside the main typhoon belt and are drier year-round.",
+          "Eastern Visayas gets more rain than the rest of the country even during the so-called dry months."
+        ]
+      },
+      {
+        type: "note",
+        tone: "info",
+        text: "So writing off July to October across the whole country is the most common planning mistake we hear. It is the right advice for northern Luzon and the wrong advice for Siargao."
+      },
+
+      { type: "heading", text: "What the rainy months cost you, and what they save" },
+      {
+        type: "list",
+        items: [
+          "Cheaper flights and rooms, and far fewer people at the places worth seeing.",
+          "Against that: boat trips cancelled at short notice, remote roads that turn to mud, and diving visibility reduced by runoff.",
+          "Domestic flights are the real risk. A cancellation in the rainy months can cost you a day of a short trip, so build in a buffer and know your passenger rights."
+        ]
+      },
+
+      { type: "heading", text: "A rough rule" },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "Travelling December to February? Almost anywhere works — book early, because everyone else has the same idea.",
+          "Travelling March to May? Hot and dry, and the best window for Palawan before habagat arrives.",
+          "Travelling June to October? Go south. Siargao, Davao and the southern Visayas are the sensible picks, and you will pay less for them."
+        ]
+      }
+    ]
   }
 ]
 
