@@ -24,3 +24,6 @@ certificates
 
 # Admin-managed assistant settings (encrypted API keys) — never commit
 /data/ai-settings.json
+
+# Throwaway scripts run from the project root so they can resolve node_modules.
+.tmp-*

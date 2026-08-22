@@ -13,10 +13,23 @@ import type {
 
 export type { SavePackageImageParams, SavePackageImageResult }
 
+let warnedAboutLocalStore = false
+
 function getImageStoreMode() {
   const value = process.env.IMAGE_STORE?.trim().toLowerCase()
 
   if (value === "blob") return "blob"
+
+  // Same trap as the package store: local mode writes into public/, which a
+  // serverless host will not accept.
+  if (process.env.NODE_ENV === "production" && !warnedAboutLocalStore) {
+    warnedAboutLocalStore = true
+    console.warn(
+      "[packages] IMAGE_STORE is not set to \"blob\", so uploads are being written to " +
+        "public/images, which is read-only on a serverless host. Set IMAGE_STORE=blob and link a Blob store."
+    )
+  }
+
   return "local"
 }
 
