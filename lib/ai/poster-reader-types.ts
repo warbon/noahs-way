@@ -98,8 +98,9 @@ ACCURACY RULES
 
 FIELD SHAPES
 • "price": the lead-in price normalised to "from PHP 21,888". "priceAmount": that number as a plain integer, e.g. 21888.
-• "details": one card line, e.g. "4 Days / 3 Nights • Ba Na Hills • Hoi An Ancient Town".
-• "summary": two sentences of plain prose describing the trip, drawn only from the poster.
+• "details" and "summary" are the ONE exception to transcribing. Both must always be produced, and both are written by you — but only ever by summarising what the poster already shows, never by adding a fact or a selling point that is not on it. Composing these two from the poster's own content is your job; inventing anything for them is not.
+  - "details" is a single card line: the duration, then two or three of the trip's most recognisable inclusions or stops, separated by "•". For example "4 Days / 3 Nights • Ba Na Hills • Hoi An Ancient Town". Keep it under about twelve words.
+  - "summary" is two sentences of plain prose naming the main places and what is included — the kind of thing a person would say describing the trip to a friend. Do not use marketing adjectives the poster does not use.
 • "itinerary": one entry per printed day. "title" is the day's route heading as printed, in Title Case rather than all caps. "description" holds ONLY the meals line and any flight details, as a short sentence. Everything else the day panel lists goes into "activities", one entry each — this includes both the plain bullets AND anything under a "TOUR HIGHLIGHTS" heading, which are itinerary items, not description. Clean off bullet characters, keep each item separate, and never repeat an item within a day.
 • "inclusions"/"exclusions": one printed item per entry, verbatim.
 • "fees": the exclusions again, but as numbers so they can be totalled.
@@ -185,7 +186,18 @@ export const EXTRACTION_SCHEMA = {
       items: { type: "string" }
     }
   },
-  required: [],
+  /*
+    The only two required fields, and deliberately so.
+    
+    Both are composed rather than transcribed, and the prompt's insistence on
+    not inventing anything is strong enough that asking politely did not work —
+    two live reads returned every other field and left these blank. Requiring
+    them in the schema is what actually compels the model to write them, and
+    they are safe to compel because they are assembled from content it has
+    already extracted. "details" also happens to be required by the admin form,
+    so without it a poster read leaves the record unsaveable.
+  */
+  required: ["details", "summary"],
   additionalProperties: false as const
 }
 
