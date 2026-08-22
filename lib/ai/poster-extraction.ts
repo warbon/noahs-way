@@ -94,6 +94,57 @@ async function resolveReader(): Promise<PosterReader> {
   }
 }
 
+/**
+ * Fills "details" when the reader did not.
+ *
+ * The admin form will not submit without it, so an absent one turns a good
+ * read into a record nobody can save. Asking the model to guarantee it was
+ * tried and made things far worse — see the note on `required` in
+ * poster-reader-types.ts — so it is assembled here instead, from fields the
+ * model has already transcribed.
+ *
+ * Deterministic and free. The admin can overwrite it; this only has to be
+ * good enough to not block the save.
+ */
+/**
+ * "Manila - Incheon - Dumulmeori Park - Nami Island" -> "Nami Island".
+ *
+ * Day headings are printed as the whole route. The last leg is the day's
+ * destination, which is the part worth putting on a card.
+ */
+function lastLeg(title: string | undefined) {
+  if (!title) return ""
+
+  const legs = title.split(/\s+[-–—]\s+/).map((leg) => leg.trim())
+  return (legs[legs.length - 1] || title).trim()
+}
+
+function withComposedDetails(fields: PosterExtraction): PosterExtraction {
+  if (fields.details?.trim()) return fields
+
+  const parts: string[] = []
+
+  const { durationDays: days, durationNights: nights } = fields
+  if (days && nights) parts.push(`${days} Days / ${nights} Nights`)
+
+  // Highlights are already the poster's own shorthand for the trip. Itinerary
+  // headings are the fallback, but they are printed as full routes —
+  // "Manila - Incheon - Dumulmeori Park - Nami Island" — and stringing three of
+  // those together makes a card line nothing can display. Take the last leg of
+  // each, which is where the day actually ends up.
+  const stops = fields.highlights?.length
+    ? fields.highlights
+    : (fields.itinerary ?? []).map((day) => lastLeg(day.title)).filter(Boolean)
+
+  // A stop long enough to swamp the line is worse than one fewer stop.
+  parts.push(...stops.filter((stop) => stop.length <= 40).slice(0, 3))
+
+  const composed = parts.filter(Boolean).join(" • ")
+  if (!composed) return fields
+
+  return { ...fields, details: composed }
+}
+
 export async function extractPosterFields(
   imageBase64: string,
   mediaType: string
@@ -113,7 +164,7 @@ export async function extractPosterFields(
   }
 
   return {
-    fields: attempt.fields,
+    fields: withComposedDetails(attempt.fields),
     provider: reader.name,
     model: reader.model,
     usage: attempt.usage

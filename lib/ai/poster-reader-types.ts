@@ -194,21 +194,21 @@ export const EXTRACTION_SCHEMA = {
     }
   },
   /*
-    The only three required fields, and deliberately so.
+    Deliberately empty.
 
-    All are composed rather than transcribed, and the prompt's insistence on
-    not inventing anything is strong enough that asking politely did not work —
-    live reads returned every other field and left these blank. Requiring
-    them in the schema is what actually compels the model to write them, and
-    they are safe to compel because they are assembled from content it has
-    already extracted. "details" also happens to be required by the admin form,
-    so without it a poster read leaves the record unsaveable. "imageAlt" is
-    required for a quieter reason: every consumer falls back to the title, so
-    leaving it out looks like nothing is wrong. The alt text just silently
-    stops saying anything a screen reader could not already read from the
-    heading beside it.
+    "details", "summary" and "imageAlt" were required here so the model would
+    stop skipping them. It worked, and it cost far more than it bought: made
+    required, the model treats them as the whole job and returns them ALONE —
+    no itinerary, no inclusions, no exclusions, no fees, not even the price.
+    Measured against a live poster through the real route, three fields in and
+    everything else gone.
+
+    The transcription is the point of this feature. A missing card line is
+    thirty seconds of typing; a missing itinerary is the whole package. So the
+    three go back to being asked for in the prompt, and `composeDetails` in
+    package-form-fields.ts fills the one the admin form cannot submit without.
   */
-  required: ["details", "summary", "imageAlt"],
+  required: [],
   additionalProperties: false as const
 }
 

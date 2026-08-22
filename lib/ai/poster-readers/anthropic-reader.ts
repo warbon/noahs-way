@@ -24,6 +24,34 @@ import {
 /** Measured default. See the note in poster-extraction.ts on model choice. */
 const DEFAULT_MODEL = "claude-sonnet-5"
 
+/**
+ * Folds several partial extractions into one.
+ *
+ * A field already filled is never overwritten, and empty values — null,
+ * undefined, an empty array — do not count as filled, so a later block can
+ * still supply something an earlier one left blank.
+ */
+function mergeExtractions(inputs: unknown[]): PosterExtraction {
+  const merged: Record<string, unknown> = {}
+
+  for (const input of inputs) {
+    if (!input || typeof input !== "object") continue
+
+    for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
+      if (value == null) continue
+      if (Array.isArray(value) && value.length === 0) continue
+
+      const existing = merged[key]
+      const alreadyFilled =
+        existing != null && !(Array.isArray(existing) && existing.length === 0)
+
+      if (!alreadyFilled) merged[key] = value
+    }
+  }
+
+  return merged as PosterExtraction
+}
+
 export function createAnthropicPosterReader(apiKey: string, model?: string): PosterReader {
   const resolvedModel = model || DEFAULT_MODEL
   const client = new Anthropic({ apiKey })
@@ -76,18 +104,30 @@ export function createAnthropicPosterReader(apiKey: string, model?: string): Pos
         throw new PosterExtractionError("Could not reach Anthropic.", 502)
       }
 
-      const toolUse = response.content.find(
+      /*
+        A dense poster comes back as SEVERAL tool_use blocks, not one.
+
+        This used to take the first and drop the rest, which silently lost
+        whichever half of the poster did not land in that block — a read would
+        return the itinerary and inclusions but no summary, or the reverse,
+        depending on what the model happened to emit first. Both halves were
+        present in the response the whole time.
+
+        Earlier blocks win each field, since the model refines rather than
+        contradicts, and a later block repeating a field carries the same value.
+      */
+      const toolUses = response.content.filter(
         (block): block is Anthropic.ToolUseBlock =>
           block.type === "tool_use" && block.name === TOOL_NAME
       )
 
-      if (!toolUse) {
+      if (toolUses.length === 0) {
         throw new PosterExtractionError("The reader returned nothing usable for this image.", 422)
       }
 
       return {
         // Already parsed by the SDK — never string-match the serialized input.
-        fields: toolUse.input as PosterExtraction,
+        fields: mergeExtractions(toolUses.map((block) => block.input)),
         usage: {
           inputTokens: response.usage.input_tokens,
           outputTokens: response.usage.output_tokens
