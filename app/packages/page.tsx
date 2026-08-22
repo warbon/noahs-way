@@ -85,7 +85,7 @@ export default async function AllPackagesPage({ searchParams }: PageProps) {
   return (
     <>
       <Navbar />
-      <main id="main-content" tabIndex={-1} className="px-5 py-12 md:px-8">
+      <main id="main-content" tabIndex={-1} className="px-5 py-8 md:px-8 md:py-12">
         <div className="mx-auto max-w-6xl">
           <header>
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary/70">

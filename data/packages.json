@@ -2,34 +2,6 @@
   "local": [
     {
       "category": "local",
-      "title": "Cebu & Bohol Signature",
-      "details": "5 Days / 4 Nights • City stay • Countryside + marine tour",
-      "previewImage": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
-      "imagePath": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
-      "price": "from PHP 29,800",
-      "id": "local-cebu-bohol-signature-4",
-      "slug": "cebu-bohol-signature",
-      "priceAmount": 29800,
-      "currency": "PHP",
-      "durationDays": 5,
-      "durationNights": 4,
-      "imageAlt": "Cebu & Bohol Signature package poster"
-    },
-    {
-      "category": "local",
-      "title": "Deca Tour",
-      "details": "5 Days / 4 Nights",
-      "price": "24,000.00",
-      "imagePath": "/images/packages/local/deca-tour-1771929787095.jpg",
-      "previewImage": "/images/packages/local/deca-tour-1771929787095.jpg",
-      "id": "local-deca-tour-1",
-      "slug": "deca-tour",
-      "priceAmount": 24000,
-      "currency": "PHP",
-      "imageAlt": "Deca Tour package poster"
-    },
-    {
-      "category": "local",
       "title": "Baguio Highland Weekend",
       "details": "5 Days / 4 Nights • El Nido lagoons • Private boat day",
       "previewImage": "/images/packages/local/palawan-premium.jpg",
@@ -272,33 +244,475 @@
   "international": [
     {
       "category": "international",
-      "title": "Korea",
-      "details": "5 Days / 4 Nights • Downtown hotel • Desert safari VIP",
-      "previewImage": "/images/packages/international/korea-1771931931226.jpg",
-      "imagePath": "/images/packages/international/korea-1771931931226.jpg",
-      "price": "from PHP 108,900",
-      "id": "international-dubai-gold-collection-5",
-      "slug": "korea",
-      "priceAmount": 108900,
-      "currency": "PHP",
-      "durationDays": 5,
-      "durationNights": 4,
-      "imageAlt": "Korea package poster"
-    },
-    {
-      "category": "international",
-      "title": "Dumlog Tour",
-      "details": "4 Days / 3 Nights with free water.",
-      "price": "60,000.00",
-      "imagePath": "/images/packages/international/dumlog-tour-1771930354227.jpg",
-      "previewImage": "/images/packages/international/dumlog-tour-1771930354227.jpg",
-      "id": "international-dumlog-tour-1",
-      "slug": "dumlog-tour",
-      "priceAmount": 60000,
+      "title": "Hanoi + Sapa, Vietnam",
+      "details": "4 Days / 3 Nights • Fansipan cable car • Hanoi old quarter",
+      "previewImage": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
+      "imagePath": "/images/packages/local/cebu-bohol-signature-1771931572275.jpg",
+      "price": "from PHP 32,999",
+      "id": "local-cebu-bohol-signature-4",
+      "slug": "hanoi-sapa-vietnam",
+      "priceAmount": 32999,
       "currency": "PHP",
       "durationDays": 4,
       "durationNights": 3,
-      "imageAlt": "Dumlog Tour package poster"
+      "imageAlt": "Hanoi and Sapa Vietnam 4D3N package poster",
+      "destination": "Hanoi & Sapa, Vietnam",
+      "summary": "Four days across northern Vietnam — the Fansipan summit cable car, Catcat Village in Sapa, and a half-day tour of Hanoi's old quarter. Roundtrip Cebu Pacific airfare, hotels and most meals included.",
+      "travelPeriods": [
+        "Jan 16–20",
+        "Feb 07–10",
+        "Feb 13–17 (+₱5,000/pax)",
+        "Mar 13–17",
+        "Mar 27–30",
+        "Apr 03–07 (+₱5,000/pax)",
+        "Apr 17–20",
+        "Apr 30–May 03 (+₱5,000/pax)",
+        "May 22–25",
+        "Jun 12–15"
+      ],
+      "highlights": [
+        "Fansipan Summit two-way cable car",
+        "Catcat Village and Moana Sapa",
+        "Ho Chi Minh Mausoleum and Ba Dinh Square",
+        "Hanoi train street and the 36 old-quarter streets"
+      ],
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Manila – Hanoi",
+          "description": "Lunch and dinner included. Flight: Manila to Hanoi, 5:10 AM – 7:30 AM.",
+          "activities": [
+            "Arrival at Noi Bai International Airport",
+            "Transfer to Sapa (approximately 4.5 hours by road)",
+            "Lunch at a local restaurant",
+            "Check in at the Sapa hotel",
+            "Catcat Village",
+            "Moana Sapa",
+            "Dinner at a local restaurant",
+            "Overnight stay in Sapa"
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Sapa – Fansipan – Hanoi",
+          "description": "Breakfast and lunch included.",
+          "activities": [
+            "Breakfast at the hotel and checkout",
+            "Fansipan Summit Adventure (two-way cable car experience)",
+            "Lunch at a local restaurant",
+            "Travel back to Hanoi",
+            "Check in at the hotel"
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Hanoi half-day city tour",
+          "description": "Breakfast and lunch included.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Ho Chi Minh Mausoleum",
+            "Ba Dinh Square",
+            "Presidential Palace",
+            "One Pillar Pagoda",
+            "Tran Quoc Pagoda",
+            "Lunch at a local restaurant",
+            "The 36 streets of Hanoi's old quarter",
+            "Hanoi train street",
+            "Grand World Hanoi",
+            "Transfer back to the hotel"
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Hanoi – Manila",
+          "description": "Breakfast included. Flight: Hanoi to Manila, 2:30 AM – 7:15 AM.",
+          "activities": [
+            "Hotel checkout with packed breakfast",
+            "Transfer to the airport for the flight back to Manila"
+          ]
+        }
+      ],
+      "inclusions": [
+        "Roundtrip airfare via Cebu Pacific with 7kg hand-carry",
+        "3 nights hotel accommodation (based on twin sharing)",
+        "Private air-conditioned transportation",
+        "English-speaking tour guide",
+        "Roundtrip airport transfers",
+        "Fansipan Peak Adventure with roundtrip cable car",
+        "Meals as per itinerary (3 breakfast, 3 lunch, 1 dinner)"
+      ],
+      "exclusions": [
+        "Philippine travel tax — ₱1,620 per pax, paid at the airport",
+        "Tipping fees — ₱999 per pax (mandatory)",
+        "20kg baggage allowance — ₱2,600 per pax",
+        "Travel WiFi — ₱300 per day, unlimited for 3–4 devices",
+        "Travel insurance — ₱600 per pax",
+        "Surcharge for non-Philippine passport holders"
+      ],
+      "status": "published",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
+    },
+    {
+      "category": "international",
+      "title": "Nami Island & Seoul Tour",
+      "details": "6 Days / 4 Nights • Nami Island • Guaranteed group visa",
+      "price": "from PHP 32,999",
+      "imagePath": "/images/packages/local/deca-tour-1771929787095.jpg",
+      "previewImage": "/images/packages/local/deca-tour-1771929787095.jpg",
+      "id": "local-deca-tour-1",
+      "slug": "nami-island-seoul-tour",
+      "priceAmount": 32999,
+      "currency": "PHP",
+      "imageAlt": "Nami Island and Seoul Tour 6D4N package poster",
+      "destination": "Nami Island & Seoul, South Korea",
+      "summary": "Six days in South Korea taking in Nami Island, Gyeongbokgung Palace, N Seoul Tower and Myeongdong, with a guaranteed group visa, four nights of hotel accommodation and ten meals included.",
+      "durationDays": 6,
+      "durationNights": 4,
+      "travelPeriods": [
+        "May 07–12",
+        "May 16–21",
+        "Jun 16–21",
+        "Jun 24–28",
+        "Jul 09–14",
+        "Jul 18–23",
+        "Aug 08–13",
+        "Aug 25–30",
+        "Sept 08–13",
+        "Sept 12–17",
+        "All departures +₱6,000"
+      ],
+      "highlights": [
+        "Nami Island day tour",
+        "Gyeongbokgung Palace and the National Folklore Museum",
+        "N Seoul Tower Square and the Love Lock Wall",
+        "Starfield Library at COEX Mall",
+        "Guaranteed group visa"
+      ],
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Incheon – Nami Island – Seoul",
+          "description": "Lunch and dinner included.",
+          "activities": [
+            "Arrival at Incheon International Airport, meet with the guide",
+            "Transfer to Nami Island",
+            "Proceed to Seoul",
+            "Explore Dongdaemun Market",
+            "Check in at the hotel"
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Seoul highlights",
+          "description": "Breakfast, lunch and dinner included.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Cheonggyecheon Stream",
+            "Gwangjang Local Market",
+            "Hikr Ground",
+            "Bukchon Hanok Village",
+            "Hongdae Street",
+            "Back to the hotel"
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Modern Seoul experience",
+          "description": "Breakfast and lunch included.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Red Pine and cosmetic shop",
+            "N Seoul Tower Square and Love Lock Wall",
+            "COEX Mall and Starfield Library",
+            "K-Star Road",
+            "Back to the hotel"
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Seoul heritage tour",
+          "description": "Breakfast and lunch included.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Ginseng shop and amethyst shop",
+            "Gyeongbokgung Palace and the National Folklore Museum",
+            "Duty free shop",
+            "Shopping at Myeongdong",
+            "Back to the hotel"
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Free time – Seoul to Incheon",
+          "description": "Breakfast included.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Souvenir shop",
+            "Free time for last-minute shopping or your own activities",
+            "Transfer to Incheon International Airport (late evening checkout)"
+          ]
+        },
+        {
+          "day": 6,
+          "title": "Departure – Manila",
+          "activities": [
+            "Depart from Incheon International Airport",
+            "Arrive in Manila"
+          ]
+        }
+      ],
+      "inclusions": [
+        "Roundtrip airfare via Cebu Pacific",
+        "1 piece 7kg carry-on baggage allowance",
+        "4 nights hotel accommodation",
+        "4 hotel breakfasts, 4 lunches and 2 dinners",
+        "Tours and entrance tickets: Nami Island, Seoul N Tower Square (observatory excluded), Gyeongbok Palace",
+        "Guaranteed group visa",
+        "English-speaking tour guide",
+        "Shopping stops: ginseng, cosmetic, amethyst and red pine"
+      ],
+      "exclusions": [
+        "Philippine travel tax — ₱1,670 per pax (mandatory)",
+        "Meals other than those listed in the itinerary",
+        "All other services not specified in the itinerary",
+        "Travel insurance (mandatory)",
+        "Tipping fee for the guide — ₱360 per person per day",
+        "Personal expenses such as laundry, telephone and drinks"
+      ],
+      "status": "published",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
+    },
+    {
+      "category": "international",
+      "title": "Autumn Holidays Korea",
+      "details": "5 Days / 4 Nights • Mt. Seorak • Everland • Full board meals",
+      "previewImage": "/images/packages/international/korea-1771931931226.jpg",
+      "imagePath": "/images/packages/international/korea-1771931931226.jpg",
+      "price": "from PHP 36,888",
+      "id": "international-dubai-gold-collection-5",
+      "slug": "autumn-holidays-korea",
+      "priceAmount": 36888,
+      "currency": "PHP",
+      "durationDays": 5,
+      "durationNights": 4,
+      "imageAlt": "Autumn Holidays Korea 5D4N package poster",
+      "destination": "Incheon, Mt. Seorak & Seoul, South Korea",
+      "summary": "Autumn in Korea across Incheon, Mt. Seorak and Seoul — Nami Island, Seoraksan National Park by cable car, Everland theme park and Gyeongbokgung Palace in hanbok, with full board meals and all entrance fees included.",
+      "travelPeriods": [
+        "Oct 14–19",
+        "Oct 15–20 (+₱1,000/pax)",
+        "Oct 16–21 (+₱1,000/pax)",
+        "Oct 26–31 (+₱3,000/pax)",
+        "Oct 27–Nov 01 (+₱5,000/pax)",
+        "Nov 01–06 (+₱5,000/pax)",
+        "Nov 05–10 (+₱1,000/pax)",
+        "Nov 06–11 (+₱1,000/pax)",
+        "Nov 12–17 (+₱1,000/pax)",
+        "Nov 13–18 (+₱1,000/pax)",
+        "Nov 19–24 (+₱1,000/pax)",
+        "Nov 20–25",
+        "Nov 22–27 (+₱1,000/pax)"
+      ],
+      "highlights": [
+        "Mt. Seorak National Park with roundtrip cable car",
+        "Everland Theme Park with a one-day pass",
+        "Gyeongbokgung Palace with hanbok wearing experience",
+        "Haneul Park in autumn colour",
+        "Free travel insurance"
+      ],
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Arrival in Incheon",
+          "description": "Flight: 5J 188 MNL–ICN, 6:25 PM – 11:45 PM.",
+          "activities": [
+            "Arrival at Incheon Airport",
+            "Meet with the tour guide",
+            "Transfer to the hotel in Incheon for check-in"
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Incheon – Mt. Seorak",
+          "description": "Breakfast, lunch and dinner included.",
+          "activities": [
+            "Nami Island (Winter Sonata shooting location)",
+            "Mt. Seorak National Park, including roundtrip cable car",
+            "Sokcho Traditional Market",
+            "Transfer to the hotel for check-in"
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Mt. Seorak – Seoul",
+          "description": "Breakfast, lunch and dinner included.",
+          "activities": [
+            "Everland Theme Park, including a one-day pass",
+            "COEX Mall and Starfield Library",
+            "Transfer to the hotel for check-in"
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Seoul",
+          "description": "Breakfast, lunch and dinner included.",
+          "activities": [
+            "Ginseng outlet",
+            "Cosmetic duty free",
+            "Gyeongbok Palace with hanbok wearing experience",
+            "Duty free shop",
+            "Seongsu Street",
+            "Seoul Forest",
+            "Dongdaemun and Myeongdong streets",
+            "Transfer to the hotel for check-in"
+          ]
+        },
+        {
+          "day": 5,
+          "title": "Seoul – Manila",
+          "description": "Breakfast, lunch and dinner included.",
+          "activities": [
+            "Red pine and amethyst shop",
+            "N Seoul Tower, including roundtrip cable car",
+            "Haneul Park with autumn scenery",
+            "Hongdae Youth Street",
+            "Transfer to Incheon Airport for departure"
+          ]
+        },
+        {
+          "day": 6,
+          "title": "Incheon – Manila",
+          "description": "Flight: 5J 187 ICN–MNL, 1:15 AM – 4:30 AM.",
+          "activities": [
+            "Flight back to Manila",
+            "Home sweet home"
+          ]
+        }
+      ],
+      "inclusions": [
+        "Roundtrip airport transfers",
+        "7kg hand-carry luggage",
+        "1 night hotel accommodation in Incheon",
+        "1 night hotel accommodation in Mt. Seorak",
+        "2 nights accommodation in Seoul",
+        "Full board meals (4 breakfast, 4 lunch, 4 dinner)",
+        "Fully loaded tours as per itinerary",
+        "Private premium coach for transfer services",
+        "All entrance and admission fees",
+        "English-speaking local tour guide",
+        "Free travel insurance"
+      ],
+      "exclusions": [
+        "Korean visa processing fee (subject to quotation)",
+        "Check-in baggage — 20kg ₱1,700, 32kg ₱3,500, 40kg ₱3,600 per pax per way",
+        "Tips for guide and driver — US$5 per pax per day (US$25), collected in Manila, mandatory",
+        "Philippine travel tax — ₱1,620, paid at the airport",
+        "Rates are subject to change based on airline advice"
+      ],
+      "status": "published",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
+    },
+    {
+      "category": "international",
+      "title": "Vietnam Da Nang",
+      "details": "4 Days / 3 Nights • Ba Na Hills • Hoi An Ancient Town",
+      "price": "from PHP 21,888",
+      "imagePath": "/images/packages/international/dumlog-tour-1771930354227.jpg",
+      "previewImage": "/images/packages/international/dumlog-tour-1771930354227.jpg",
+      "id": "international-dumlog-tour-1",
+      "slug": "vietnam-da-nang",
+      "priceAmount": 21888,
+      "currency": "PHP",
+      "durationDays": 4,
+      "durationNights": 3,
+      "imageAlt": "Vietnam Da Nang 4D3N package poster",
+      "destination": "Da Nang, Hoi An & Ba Na Hills, Vietnam",
+      "summary": "Four days in central Vietnam — the Golden Bridge and French Village at Ba Na Hills, a basket boat on the Thu Bon River, and Hoi An Ancient Town, staying at a local four-star on the Han River.",
+      "travelPeriods": [
+        "Feb 28–Mar 03",
+        "Mar 28–31",
+        "Apr 25–28"
+      ],
+      "highlights": [
+        "Ba Na Hills via the world's longest single-line cable car",
+        "The Golden Bridge and French Village",
+        "Hoi An Ancient Town and night market",
+        "Son Tra Peninsula and the 67-metre Guanyin statue",
+        "Optional add-on: Han River cruise, Vietnamese massage and Ao Dai show — ₱5,999 per pax"
+      ],
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Manila – Da Nang",
+          "description": "Arrival day. Hotel: Han River Hotel or a similar local four-star.",
+          "activities": [
+            "Arrive in Da Nang and meet the tour guide at the airport",
+            "Transfer to your hotel in Da Nang to rest"
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Da Nang – Canaan Island – Hoi An Ancient Town",
+          "description": "Breakfast, lunch and dinner included. Hotel: Han River Hotel or similar local four-star.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Transfer to Canaan Island Coconut Village",
+            "Round bamboo basket boat on the Thu Bon River",
+            "Transfer to Hoi An Ancient Town",
+            "Fujian Guild Hall, Feng Xinf Ancient House and the Japanese Covered Bridge",
+            "Thu Bon River and Hoi An Night Market",
+            "Transfer to the hotel"
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Da Nang – Ba Na Hills",
+          "description": "Breakfast, lunch and dinner included. Hotel: Han River Hotel or similar local four-star.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Transfer to Ba Na Mountain on the world's longest single-line cable car",
+            "French Village",
+            "Buffet lunch",
+            "Mountain train to the secret garden",
+            "The seat of Sakyamuni Buddha",
+            "Pass by the Golden Bridge",
+            "Visit the latex shop"
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Da Nang – Manila",
+          "description": "Breakfast, lunch and dinner included.",
+          "activities": [
+            "Hotel breakfast",
+            "Cham Museum",
+            "Dragon Bridge, Lover's Bridge and APEC Park",
+            "Shanshui Beach, known as the Gold Coast of Vietnam",
+            "Son Tra Peninsula and the 67-metre-high Guanyin overlooking the sea",
+            "Silk shop and treasure shop",
+            "Transfer to the airport"
+          ]
+        }
+      ],
+      "inclusions": [
+        "Roundtrip economy airfare and tax via Cebu Pacific",
+        "7kg hand carry-on",
+        "3 nights room accommodation based on twin sharing with daily hotel breakfast",
+        "Private coach with English-speaking tour guide",
+        "Sightseeing tours as specified, including first-way entrance fees",
+        "6 meals as listed"
+      ],
+      "exclusions": [
+        "Visa, if needed (subject to quotation)",
+        "Check-in luggage and extra baggage allowance",
+        "Travel insurance (mandatory)",
+        "Philippine travel tax",
+        "Airport tax, Da Nang and Manila — ₱2,499 per pax",
+        "Tips for the driver and guide — ₱1,200 per pax",
+        "Personal expenses such as telephone calls and minibar"
+      ],
+      "status": "published",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
     },
     {
       "category": "international",
@@ -318,18 +732,104 @@
     },
     {
       "category": "international",
-      "title": "Seoul Discovery",
-      "details": "5 Days / 4 Nights • Palace district tour • Premium food trail",
+      "title": "Seoul-D Out For Winter Fun",
+      "details": "4 Days / 3 Nights • Ski resort • Lotte World • Nami Island",
       "previewImage": "/images/packages/international/seoul-202601jpg.jpg",
       "imagePath": "/images/packages/international/seoul-202601jpg.jpg",
-      "price": "from PHP 104,500",
+      "price": "from PHP 43,999",
       "id": "international-seoul-discovery-3",
-      "slug": "seoul-discovery",
-      "priceAmount": 104500,
+      "slug": "seoul-d-winter-fun",
+      "priceAmount": 43999,
       "currency": "PHP",
-      "durationDays": 5,
-      "durationNights": 4,
-      "imageAlt": "Seoul Discovery package poster"
+      "durationDays": 4,
+      "durationNights": 3,
+      "imageAlt": "Seoul-D Out For Winter Fun 4D3N package poster",
+      "destination": "Seoul & Gapyeong, South Korea",
+      "summary": "A winter run through Seoul and Gapyeong — a day at a ski resort with equipment included, Eobi Ice Valley, Lotte World, and Nami Island in its Winter Sonata setting. Roundtrip Jeju Air fare and e-visa assistance included.",
+      "travelPeriods": [
+        "Mar 04–08",
+        "Mar 18–22"
+      ],
+      "highlights": [
+        "Ski resort day with equipment included",
+        "Eobi Ice Valley",
+        "Lotte World Theme Park with ticket",
+        "Nami Island, Petite France and the Italian Village",
+        "Kimbap making experience"
+      ],
+      "itinerary": [
+        {
+          "day": 1,
+          "title": "Manila – Incheon",
+          "description": "Breakfast, lunch and dinner included. Flight: 7C 2104 MNL–ICN, 11:20 PM – 4:10 AM (next day).",
+          "activities": [
+            "Arrival at Incheon International Airport",
+            "Breakfast box",
+            "Dumulmeori",
+            "Nami Island (Winter Sonata)",
+            "Petite France and the Italian Village",
+            "Check in at the Seoul hotel"
+          ]
+        },
+        {
+          "day": 2,
+          "title": "Seoul",
+          "description": "Breakfast, lunch and dinner included.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Ski resort — ski equipment included, gloves excluded",
+            "Eobi Ice Valley",
+            "Lotte World Theme Park, ticket included",
+            "Starfield Library at COEX Mall",
+            "Transfer back to the hotel"
+          ]
+        },
+        {
+          "day": 3,
+          "title": "Seoul",
+          "description": "Breakfast and lunch included.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Ginseng outlet",
+            "Gyeongbok Palace with hanbok wearing experience",
+            "National Folklore Museum",
+            "Bukchon Hanok Village",
+            "Cosmetic shop and duty free shop",
+            "Myeongdong Shopping Street",
+            "Transfer back to the hotel"
+          ]
+        },
+        {
+          "day": 4,
+          "title": "Seoul – Manila",
+          "description": "Breakfast and lunch included. Flight: 7C 2103 ICN–MNL, 6:05 PM – 10:20 PM.",
+          "activities": [
+            "Breakfast at the hotel",
+            "Red pine shop",
+            "Amethyst showcase",
+            "Kimbap making experience",
+            "Cafe Pokpo (photo stop)",
+            "Korean grocery store",
+            "Transfer to the airport"
+          ]
+        }
+      ],
+      "inclusions": [
+        "Roundtrip airfare via Jeju Air",
+        "20kg check-in baggage plus 10kg hand carry",
+        "3-star hotel accommodation based on twin sharing",
+        "4 days of tours, transfers and meals",
+        "Travel insurance",
+        "Tour guide",
+        "E-visa processing assistance"
+      ],
+      "exclusions": [
+        "Philippine travel tax — ₱1,620 per pax",
+        "Local tipping — ₱1,200 per pax",
+        "Airline tax and terminal fee — ₱4,500 per pax"
+      ],
+      "status": "published",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
     },
     {
       "category": "international",
@@ -376,7 +876,9 @@
       "currency": "PHP",
       "durationDays": 5,
       "durationNights": 4,
-      "imageAlt": "Hong Kong Skyline Escape package poster"
+      "imageAlt": "Hong Kong Skyline Escape package poster",
+      "status": "draft",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
     },
     {
       "category": "international",
@@ -439,7 +941,9 @@
       "currency": "PHP",
       "durationDays": 5,
       "durationNights": 4,
-      "imageAlt": "Paris Landmark Collection package poster"
+      "imageAlt": "Paris Landmark Collection package poster",
+      "status": "draft",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
     },
     {
       "category": "international",
@@ -502,7 +1006,9 @@
       "currency": "PHP",
       "durationDays": 5,
       "durationNights": 4,
-      "imageAlt": "Sydney Harbor Signature package poster"
+      "imageAlt": "Sydney Harbor Signature package poster",
+      "status": "draft",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
     },
     {
       "category": "international",
@@ -565,7 +1071,9 @@
       "currency": "PHP",
       "durationDays": 5,
       "durationNights": 4,
-      "imageAlt": "New York City Premium Stay package poster"
+      "imageAlt": "New York City Premium Stay package poster",
+      "status": "draft",
+      "updatedAt": "2026-08-21T06:46:23.914Z"
     },
     {
       "category": "international",

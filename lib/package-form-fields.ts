@@ -61,6 +61,7 @@ type StructuredFields = Pick<
   | "durationDays"
   | "durationNights"
   | "highlights"
+  | "travelPeriods"
   | "itinerary"
   | "inclusions"
   | "exclusions"
@@ -88,6 +89,7 @@ export function readStructuredFields(formData: FormData): StructuredFields {
     durationDays: parseOptionalNumber(formData.get("durationDays")),
     durationNights: parseOptionalNumber(formData.get("durationNights")),
     highlights: parseLines(formData.get("highlights")),
+    travelPeriods: parseLines(formData.get("travelPeriods")),
     itinerary: parseItinerary(formData.get("itinerary")),
     inclusions: parseLines(formData.get("inclusions")),
     exclusions: parseLines(formData.get("exclusions")),

@@ -940,29 +940,33 @@
   animation: assistant-invite-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* The tail, pointing back at the bot that "said" it. */
+/*
+  The tail, pointing down at the bot that "said" it. The bubble sits above the
+  launcher rather than beside it, so the tail is on the bottom edge, inset to
+  line up with the centre of the round button below.
+*/
 .assistant-invite::after {
   content: "";
   position: absolute;
-  right: -5px;
-  top: 50%;
+  right: 18px;
+  bottom: -5px;
   width: 12px;
   height: 12px;
-  transform: translateY(-50%) rotate(45deg);
+  transform: rotate(45deg);
   background: rgba(255, 255, 255, 0.86);
   border-right: 1px solid rgba(255, 255, 255, 0.7);
-  border-top: 1px solid rgba(255, 255, 255, 0.7);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.7);
 }
 
 @keyframes assistant-invite-in {
   from {
     opacity: 0;
-    transform: translateY(-50%) translateX(14px) scale(0.9);
+    transform: translateY(10px) scale(0.9);
   }
 
   to {
     opacity: 1;
-    transform: translateY(-50%) translateX(0) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 

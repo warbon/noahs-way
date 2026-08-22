@@ -39,11 +39,40 @@ export default function InquiryForm({
   const fieldId = useId()
   const formRef = useRef<HTMLFormElement | null>(null)
   const [state, setState] = useState<SubmitState>({ status: "idle" })
+  /*
+    Two steps, one form. Fourteen inputs on a single screen reads as work even
+    though only three of them are required — so the trip questions come first
+    and the required contact details sit on their own step.
+
+    Both fieldsets stay mounted and the inactive one is `hidden`, which keeps
+    every value in the same FormData on submit and means nothing is lost
+    stepping back and forth. `hidden` also takes the fields out of the tab order,
+    so the required inputs can never be validated while off-screen.
+  */
+  const [step, setStep] = useState<1 | 2>(1)
+
+  /*
+    Recomputed per render, not once at module load: this module is evaluated
+    when the page first loads, so a tab left open overnight would otherwise keep
+    yesterday as the earliest selectable departure.
+
+    Native date inputs render in the visitor's own device locale, so a Philippine
+    customer already sees dd/mm/yyyy. Blocking past dates is the only real gap.
+  */
+  const today = new Date().toISOString().slice(0, 10)
 
   const isSubmitting = state.status === "submitting"
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+
+    // Every required field lives on step 2, which is `hidden` while step 1 is
+    // showing. Browsers cannot report a validation error on a hidden input, so
+    // an unexpected submit here advances instead of failing silently.
+    if (step !== 2) {
+      setStep(2)
+      return
+    }
 
     const formData = new FormData(event.currentTarget)
     const body = {
@@ -109,7 +138,10 @@ export default function InquiryForm({
           type="button"
           variant="outline"
           className="mt-5"
-          onClick={() => setState({ status: "idle" })}
+          onClick={() => {
+            setStep(1)
+            setState({ status: "idle" })
+          }}
         >
           Send another request
         </Button>
@@ -127,7 +159,23 @@ export default function InquiryForm({
         </p>
       ) : null}
 
-      <fieldset className="space-y-4" disabled={isSubmitting}>
+      <div className="flex items-center gap-3" aria-hidden="true">
+        <span
+          className={`h-1.5 flex-1 rounded-full transition ${
+            step >= 1 ? "bg-accent" : "bg-muted"
+          }`}
+        />
+        <span
+          className={`h-1.5 flex-1 rounded-full transition ${
+            step >= 2 ? "bg-accent" : "bg-muted"
+          }`}
+        />
+      </div>
+      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+        Step {step} of 2 — {step === 1 ? "Your trip" : "How we reach you"}
+      </p>
+
+      <fieldset className="space-y-4" disabled={isSubmitting} hidden={step !== 1}>
         <legend className="sr-only">Trip</legend>
 
         <div className="grid gap-4 sm:grid-cols-2">
@@ -166,7 +214,7 @@ export default function InquiryForm({
               >
                 Departure
               </label>
-              <Input id={`${fieldId}-from`} name="travelDateFrom" type="date" />
+              <Input id={`${fieldId}-from`} name="travelDateFrom" type="date" min={today} />
             </div>
             <div className="space-y-1.5">
               <label
@@ -175,7 +223,7 @@ export default function InquiryForm({
               >
                 Return
               </label>
-              <Input id={`${fieldId}-to`} name="travelDateTo" type="date" />
+              <Input id={`${fieldId}-to`} name="travelDateTo" type="date" min={today} />
             </div>
           </div>
         </fieldset>
@@ -253,7 +301,17 @@ export default function InquiryForm({
         </div>
       </fieldset>
 
-      <fieldset className="space-y-4" disabled={isSubmitting}>
+      {step === 1 ? (
+        <Button
+          type="button"
+          onClick={() => setStep(2)}
+          className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+        >
+          Continue
+        </Button>
+      ) : null}
+
+      <fieldset className="space-y-4" disabled={isSubmitting} hidden={step !== 2}>
         <legend className="sr-only">Your contact details</legend>
 
         <div className="space-y-1.5">
@@ -322,13 +380,26 @@ export default function InquiryForm({
         </p>
       ) : null}
 
-      <Button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-      >
-        {isSubmitting ? "Sending…" : "Send Booking Request"}
-      </Button>
+      {step === 2 ? (
+        <div className="flex flex-col gap-3 sm:flex-row-reverse">
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="flex-1 bg-accent text-accent-foreground hover:bg-accent/90"
+          >
+            {isSubmitting ? "Sending…" : "Send Booking Request"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isSubmitting}
+            onClick={() => setStep(1)}
+            className="sm:flex-none"
+          >
+            Back
+          </Button>
+        </div>
+      ) : null}
 
       <p className="text-xs text-muted-foreground">
         We reply within 24 hours. Your details are only used to plan your trip.

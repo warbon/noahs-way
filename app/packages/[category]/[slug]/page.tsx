@@ -9,6 +9,7 @@ import ContactFab from "@/components/ContactFab"
 import Footer from "@/components/Footer"
 import InquiryForm from "@/components/InquiryForm"
 import Navbar from "@/components/Navbar"
+import PaymentMethods from "@/components/PaymentMethods"
 import ScrollProgress from "@/components/ScrollProgress"
 import { packageCategoryMeta, type PackageCategory } from "@/lib/package-data"
 import { getPackagesByCategory } from "@/lib/package-repository"
@@ -64,6 +65,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
   const duration = formatDuration(pkg.durationDays, pkg.durationNights)
   const hasItinerary = Boolean(pkg.itinerary?.length)
   const hasInclusions = Boolean(pkg.inclusions?.length || pkg.exclusions?.length)
+  const hasTravelPeriods = Boolean(pkg.travelPeriods?.length)
 
   const structuredData = {
     "@context": "https://schema.org",
@@ -139,25 +141,26 @@ export default async function PackageDetailPage({ params }: PageProps) {
 
           <div className="mt-10 grid gap-10 lg:grid-cols-[1.4fr_1fr]">
             <div className="space-y-10">
-              {pkg.imagePath ? (
-                <figure>
-                  {/*
-                    Rendered inline at full width (not only in a modal) so phone
-                    users can pinch-zoom the poster natively.
-                  */}
-                  <Image
-                    src={pkg.imagePath}
-                    alt={pkg.imageAlt ?? `${pkg.title} package poster`}
-                    width={1200}
-                    height={1700}
-                    sizes="(max-width: 1024px) 100vw, 60vw"
-                    className="h-auto w-full rounded-2xl border border-border"
-                    priority
-                  />
-                  <figcaption className="mt-2 text-xs text-muted-foreground">
-                    Full package poster — pinch or zoom to read the fine print.
-                  </figcaption>
-                </figure>
+              {hasTravelPeriods ? (
+                <section aria-labelledby="travel-periods-heading">
+                  <h2 id="travel-periods-heading" className="text-2xl font-bold text-primary">
+                    Travel periods
+                  </h2>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Departure windows currently offered for this package. Some dates carry a
+                    surcharge, shown alongside the date.
+                  </p>
+                  <ul className="mt-4 flex flex-wrap gap-2">
+                    {pkg.travelPeriods?.map((period) => (
+                      <li
+                        key={period}
+                        className="rounded-full border border-primary/15 bg-card px-3.5 py-1.5 text-sm font-medium text-primary"
+                      >
+                        {period}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
               ) : null}
 
               {hasItinerary ? (
@@ -220,14 +223,39 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   <h2 className="font-bold text-primary">Full itinerary available on request</h2>
                   <p className="mt-2 text-sm text-muted-foreground">
                     The complete day-by-day schedule, inclusions, and travel dates for this
-                    package are in the poster above. Send us a message and we&apos;ll email you
+                    package are in the poster below. Send us a message and we&apos;ll email you
                     the full details.
                   </p>
                 </section>
               ) : null}
+
+              {pkg.imagePath ? (
+                <figure>
+                  {/*
+                    The structured itinerary above is the source of truth. The poster
+                    stays as a secondary reference — it carries the original artwork
+                    and any fine print, and phone users can pinch-zoom it natively.
+                  */}
+                  <figcaption className="text-2xl font-bold text-primary">
+                    The original poster
+                  </figcaption>
+                  <p className="mb-4 mt-2 text-sm text-muted-foreground">
+                    Everything on it is written out above. Tap to zoom if you want to read the
+                    fine print as printed.
+                  </p>
+                  <Image
+                    src={pkg.imagePath}
+                    alt={pkg.imageAlt ?? `${pkg.title} package poster`}
+                    width={1200}
+                    height={1700}
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="h-auto w-full rounded-2xl border border-border"
+                  />
+                </figure>
+              ) : null}
             </div>
 
-            <aside className="lg:sticky lg:top-24 lg:self-start">
+            <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
               <div className="rounded-2xl border border-primary/15 bg-card p-6 shadow-lg">
                 <h2 className="text-xl font-bold text-primary">Book this package</h2>
                 <InquiryForm
@@ -236,6 +264,7 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   intro="Send us your booking details and we'll confirm availability and the final price."
                 />
               </div>
+              <PaymentMethods />
             </aside>
           </div>
         </div>

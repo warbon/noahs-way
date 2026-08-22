@@ -240,7 +240,13 @@ export default function PackageGallery({
         <span className="absolute left-4 top-4 rounded-full border border-white/50 bg-black/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-white">
           {formatPackagePrice(pkg)}
         </span>
-        <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(6,12,24,0.62)_40%,rgba(6,12,24,0.78))] p-6 text-white">
+        {/*
+          The posters are promotional flyers with their own typography baked in,
+          so a light scrim leaves the card title sitting on top of print. The
+          heavier ramp plus a small backdrop blur gives the text a ground to sit
+          on whatever artwork is behind it.
+        */}
+        <div className="absolute inset-x-0 bottom-0 bg-[linear-gradient(180deg,transparent,rgba(6,12,24,0.55)_22%,rgba(6,12,24,0.88)_58%,rgba(6,12,24,0.95))] p-6 text-white backdrop-blur-[2px]">
           <h3 className="text-2xl font-bold leading-tight">{pkg.title}</h3>
           <p className="mt-3 text-sm text-white/80">{pkg.details}</p>
           <span className="mt-5 inline-flex text-sm font-semibold uppercase tracking-[0.14em] text-secondary transition group-hover:text-accent">

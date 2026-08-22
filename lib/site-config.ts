@@ -41,6 +41,58 @@ export const siteConfig = {
   hours: "Mon–Sat, 9:00 AM – 6:00 PM (PHT)"
 } as const
 
+/**
+ * Registrations and memberships, in the order a customer checks them.
+ *
+ * Philippine buyers are advised to verify a travel agency's DOT accreditation
+ * and business registration before paying, so these are trust signals rather
+ * than legal boilerplate — they belong in the footer, not on a buried page.
+ *
+ * A blank `value` renders as a visible "to be added" placeholder instead of
+ * being hidden, so an unfinished entry is obvious to the owner rather than
+ * silently missing. Set the matching env var to publish the real number.
+ */
+export type Accreditation = {
+  label: string
+  value: string
+  /** Shown under the number — what this registration actually certifies. */
+  note: string
+}
+
+export const accreditations: Accreditation[] = [
+  {
+    label: "DTI Registration",
+    value: env("NEXT_PUBLIC_DTI_REGISTRATION", ""),
+    note: "Registered business name with the Department of Trade and Industry."
+  },
+  {
+    label: "DOT Accreditation",
+    value: env("NEXT_PUBLIC_DOT_ACCREDITATION", ""),
+    note: "Department of Tourism accreditation for travel and tour operators."
+  },
+  {
+    label: "PTAA Membership",
+    value: env("NEXT_PUBLIC_PTAA_MEMBERSHIP", ""),
+    note: "Philippine Travel Agencies Association member."
+  }
+]
+
+/**
+ * How customers can pay. Instalment options matter here: GCash's GGives covers
+ * up to ₱125,000 spread over 24 months, which is the whole price range of the
+ * catalog — so it is a conversion lever, not a footnote.
+ */
+export const paymentMethods = [
+  { name: "GCash", detail: "Send to our registered GCash business account." },
+  { name: "GGives instalment", detail: "Split the cost over up to 24 months, subject to your GCash limit." },
+  { name: "Maya", detail: "Direct transfer to our Maya account." },
+  { name: "Bank transfer", detail: "Over-the-counter or online, to our company bank account." },
+  { name: "Over-the-counter", detail: "Bayad Center and partner outlets." }
+] as const
+
+/** True when at least one registration number has actually been filled in. */
+export const hasPublishedAccreditation = accreditations.some((item) => item.value.trim() !== "")
+
 /** `tel:` needs the number stripped of spaces and punctuation. */
 export const phoneHref = `tel:${siteConfig.phone.replace(/[^\d+]/g, "")}`
 export const emailHref = `mailto:${siteConfig.email}`

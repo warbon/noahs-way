@@ -69,7 +69,13 @@ export default function ChatInvite({
 
   return (
     <div
-      className="assistant-invite absolute right-full top-1/2 mr-3 flex w-[min(15rem,calc(100vw-6rem))] -translate-y-1/2 items-start gap-2 rounded-2xl rounded-br-md px-3.5 py-2.5 text-left"
+      /*
+        Sits above the launcher rather than beside it. Beside meant the bubble
+        reached left across the page at the FAB's vertical centre, covering hero
+        CTAs on desktop and the first package card on phones. Stacked, it stays
+        inside the column the FAB already occupies.
+      */
+      className="assistant-invite absolute bottom-full right-0 mb-3 flex w-[min(15rem,calc(100vw-3rem))] items-start gap-2 rounded-2xl rounded-br-md px-3.5 py-2.5 text-left"
       role="status"
     >
       <button

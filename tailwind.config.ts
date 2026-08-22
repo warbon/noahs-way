@@ -16,6 +16,15 @@ const config: Config = {
       }
     },
     extend: {
+      /*
+        Poppins is applied to `body` in globals.css, but was never registered
+        here — so `font-sans` resolved to Tailwind's default ui-sans-serif stack
+        and would silently render the wrong typeface. Nothing used it yet; this
+        closes the trap before something does.
+      */
+      fontFamily: {
+        sans: ["var(--font-poppins)", "Avenir Next", "Segoe UI", "sans-serif"]
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

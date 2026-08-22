@@ -1,5 +1,7 @@
 "use client"
 
+import AdminPosterField from "@/components/AdminPosterField"
+import AdminPosterReader from "@/components/AdminPosterReader"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { AdminPackageRecord } from "@/lib/admin-package-types"
@@ -38,6 +40,30 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
       {/* Editing sends this so blank fields clear the stored value instead of
           being silently ignored. */}
       {isEditing ? <input type="hidden" name="manageStructured" value="1" /> : null}
+
+      {/* First, because "Read poster" fills everything below it from this file. */}
+      <fieldset className="space-y-4" disabled={disabled}>
+        <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Poster
+        </legend>
+
+        <AdminPosterField existingImage={pkg?.previewImage} isEditing={isEditing} />
+
+        <AdminPosterReader disabled={disabled} />
+
+        <div className={fieldClass}>
+          <label htmlFor="imageAlt" className={labelClass}>
+            Image alt text
+          </label>
+          <Input
+            id="imageAlt"
+            name="imageAlt"
+            defaultValue={pkg?.imageAlt ?? ""}
+            placeholder="Nami Island & Seoul tour poster"
+          />
+          <p className={hintClass}>Describes the poster for screen readers and search engines.</p>
+        </div>
+      </fieldset>
 
       <fieldset className="space-y-4" disabled={disabled}>
         <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
@@ -196,6 +222,41 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
 
         <div className="grid gap-4 sm:grid-cols-2">
           <div className={fieldClass}>
+            <label htmlFor="travelPeriods" className={labelClass}>
+              Travel periods
+            </label>
+            <Textarea
+              id="travelPeriods"
+              name="travelPeriods"
+              rows={4}
+              defaultValue={linesOf(pkg?.travelPeriods)}
+              placeholder={"Mar 04–08\nMar 18–22 (+₱5,000/pax)"}
+            />
+            <p className={hintClass}>
+              One departure window per line, copied from the poster. Add any surcharge in
+              brackets.
+            </p>
+          </div>
+          <div className={fieldClass}>
+            <label htmlFor="highlights" className={labelClass}>
+              Highlights
+            </label>
+            <Textarea
+              id="highlights"
+              name="highlights"
+              rows={4}
+              defaultValue={linesOf(pkg?.highlights)}
+              placeholder={"Fansipan Summit two-way cable car\nHoi An Ancient Town"}
+            />
+            <p className={hintClass}>
+              One per line. The booking assistant uses these when matching a trip to what a
+              customer asks for.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className={fieldClass}>
             <label htmlFor="inclusions" className={labelClass}>
               Inclusions
             </label>
@@ -222,40 +283,6 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
         </div>
       </fieldset>
 
-      <fieldset className="space-y-4" disabled={disabled}>
-        <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-          Image
-        </legend>
-
-        <div className={fieldClass}>
-          <label htmlFor="image" className={labelClass}>
-            Package poster
-          </label>
-          <Input
-            id="image"
-            name="image"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            required={!isEditing}
-          />
-          <p className={hintClass}>
-            JPG, PNG or WEBP up to 8MB.{isEditing ? " Leave empty to keep the current image." : ""}
-          </p>
-        </div>
-
-        <div className={fieldClass}>
-          <label htmlFor="imageAlt" className={labelClass}>
-            Image alt text
-          </label>
-          <Input
-            id="imageAlt"
-            name="imageAlt"
-            defaultValue={pkg?.imageAlt ?? ""}
-            placeholder="Nami Island & Seoul tour poster"
-          />
-          <p className={hintClass}>Describes the poster for screen readers and search engines.</p>
-        </div>
-      </fieldset>
     </div>
   )
 }

@@ -10,7 +10,9 @@ const categories: PackageCategory[] = ["local", "international"]
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = [
     { url: `${siteConfig.url}/`, changeFrequency: "weekly", priority: 1 },
-    { url: `${siteConfig.url}/packages`, changeFrequency: "weekly", priority: 0.9 }
+    { url: `${siteConfig.url}/packages`, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${siteConfig.url}/about`, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${siteConfig.url}/policies`, changeFrequency: "monthly", priority: 0.5 }
   ]
 
   for (const category of categories) {

@@ -9,9 +9,9 @@ export default function Contact() {
         <Reveal className="relative p-8 md:p-10">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_10%_0%,rgba(18,46,93,0.1),transparent_40%)]" />
           <div className="relative">
-            <h3 className="text-3xl font-bold text-primary md:text-4xl">
+            <h2 className="text-3xl font-bold text-primary md:text-4xl">
               Book Your Next Escape
-            </h3>
+            </h2>
             <p className="mt-3 text-sm text-muted-foreground">
               Tell us where you&apos;re headed, when, and who&apos;s travelling.
               We&apos;ll send tailored options within 24 hours.
@@ -53,19 +53,19 @@ export default function Contact() {
             </p>
             <div className="mt-8 space-y-5">
               <article className="card-hover-lift rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-sm">
-                <h4 className="font-bold">Tailored Itineraries</h4>
+                <h3 className="font-bold">Tailored Itineraries</h3>
                 <p className="mt-1 text-sm text-white/80">
                   Every trip is matched to your style, pace, and budget.
                 </p>
               </article>
               <article className="card-hover-lift rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-sm">
-                <h4 className="font-bold">Reliable Support</h4>
+                <h3 className="font-bold">Reliable Support</h3>
                 <p className="mt-1 text-sm text-white/80">
                   Fast response times and active guidance before and during travel.
                 </p>
               </article>
               <article className="card-hover-lift rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-sm">
-                <h4 className="font-bold">Premium Value</h4>
+                <h3 className="font-bold">Premium Value</h3>
                 <p className="mt-1 text-sm text-white/80">
                   Luxury-level experiences with transparent PHP pricing.
                 </p>

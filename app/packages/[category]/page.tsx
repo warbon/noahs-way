@@ -14,6 +14,7 @@ import {
   type PackageCategory
 } from "@/lib/package-data"
 import { getPackagesByCategory } from "@/lib/package-repository"
+import { pill } from "@/lib/pill"
 
 /**
  * Renders at most seven slots: first, last, the current page and its
@@ -96,7 +97,7 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
     <main>
       <Navbar />
 
-      <section className="px-5 py-24 md:px-8">
+      <section className="px-5 py-12 md:px-8 md:py-24">
         <div className="mx-auto max-w-6xl">
           <div className="mb-8 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -108,7 +109,7 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
             </div>
             <Link
               href="/#packages"
-              className="inline-flex items-center rounded-full border border-primary/15 bg-white px-4 py-2 text-sm font-semibold text-primary shadow-sm transition hover:bg-primary hover:text-white"
+              className={pill()}
             >
               Back to Home Packages
             </Link>
@@ -117,34 +118,60 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
           <div className="mb-8 flex flex-wrap gap-3">
             <Link
               href="/packages/local"
-              className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold transition ${
-                category === "local"
-                  ? "bg-primary text-white"
-                  : "border border-primary/15 bg-white text-primary hover:bg-primary hover:text-white"
-              }`}
+              className={pill(category === "local" ? "active" : "idle")}
             >
               Local
             </Link>
             <Link
               href="/packages/international"
-              className={`inline-flex items-center rounded-full px-4 py-2 text-sm font-semibold transition ${
-                category === "international"
-                  ? "bg-primary text-white"
-                  : "border border-primary/15 bg-white text-primary hover:bg-primary hover:text-white"
-              }`}
+              className={pill(category === "international" ? "active" : "idle")}
             >
               International
             </Link>
           </div>
 
-          <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
-            <span>
-              Showing {showingStart}-{showingEnd} of {packages.length} packages
-            </span>
-            <span>
-              Page {currentPage} of {totalPagesDisplay}
-            </span>
-          </div>
+          {!hasPackages ? (
+            /*
+              An empty category is a dead end otherwise — the counter reads
+              "0-0 of 0" above a paginator with nowhere to go. Point the visitor
+              at the trips that do exist, and keep the enquiry route open for the
+              ones that don't.
+            */
+            <section className="rounded-2xl border border-dashed border-primary/20 bg-card p-8 text-center">
+              <h2 className="text-xl font-bold text-primary">
+                No {meta.shortLabel.toLowerCase()} packages are listed right now
+              </h2>
+              <p className="mx-auto mt-3 max-w-prose text-sm text-muted-foreground">
+                We build these to order. Tell us where you want to go and when, and we&apos;ll put
+                together an itinerary and a quote — usually within 24 hours.
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <Link
+                  href="/#contact"
+                  className={pill("active", "px-5 py-2.5 hover:bg-primary/90")}
+                >
+                  Plan a trip with us
+                </Link>
+                <Link
+                  href={`/packages/${category === "local" ? "international" : "local"}`}
+                  className={pill("idle", "px-5 py-2.5")}
+                >
+                  Browse {category === "local" ? "international" : "local"} packages
+                </Link>
+              </div>
+            </section>
+          ) : null}
+
+          {hasPackages ? (
+            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 text-sm text-muted-foreground">
+              <span>
+                Showing {showingStart}-{showingEnd} of {packages.length} packages
+              </span>
+              <span>
+                Page {currentPage} of {totalPagesDisplay}
+              </span>
+            </div>
+          ) : null}
 
           <PackageGallery
             packages={visiblePackages}
@@ -155,12 +182,14 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
 
           <nav
             aria-label={`${meta.shortLabel} package pagination`}
-            className="mt-10 flex flex-wrap items-center justify-center gap-2"
+            className={`mt-10 flex-wrap items-center justify-center gap-2 ${
+              totalPages > 1 ? "flex" : "hidden"
+            }`}
           >
             {currentPage === 1 ? (
               <span
                 aria-disabled="true"
-                className="cursor-not-allowed rounded-full border border-primary/10 bg-white/70 px-4 py-2 text-sm font-semibold text-primary/40"
+                className={pill("disabled")}
               >
                 Previous
               </span>
@@ -168,7 +197,7 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
               <Link
                 href={`/packages/${category}?page=${currentPage - 1}`}
                 rel="prev"
-                className="rounded-full border border-primary/15 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
+                className={pill()}
               >
                 Previous
               </Link>
@@ -190,11 +219,7 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
                   key={page}
                   href={`/packages/${category}?page=${page}`}
                   aria-current={isActive ? "page" : undefined}
-                  className={`min-w-10 rounded-full px-4 py-2 text-center text-sm font-semibold transition ${
-                    isActive
-                      ? "bg-primary text-white"
-                      : "border border-primary/15 bg-white text-primary hover:bg-primary hover:text-white"
-                  }`}
+                  className={pill(isActive ? "active" : "idle", "min-w-10 justify-center")}
                 >
                   {page}
                 </Link>
@@ -204,7 +229,7 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
             {currentPage === totalPagesDisplay ? (
               <span
                 aria-disabled="true"
-                className="cursor-not-allowed rounded-full border border-primary/10 bg-white/70 px-4 py-2 text-sm font-semibold text-primary/40"
+                className={pill("disabled")}
               >
                 Next
               </span>
@@ -212,7 +237,7 @@ export default async function CategoryPackagesPage({ params, searchParams }: Pag
               <Link
                 href={`/packages/${category}?page=${currentPage + 1}`}
                 rel="next"
-                className="rounded-full border border-primary/15 bg-white px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary hover:text-white"
+                className={pill()}
               >
                 Next
               </Link>

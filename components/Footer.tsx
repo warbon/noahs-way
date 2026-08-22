@@ -1,13 +1,21 @@
 import Link from "next/link"
 
-import { emailHref, messengerHref, phoneHref, siteConfig } from "@/lib/site-config"
+import {
+  accreditations,
+  emailHref,
+  messengerHref,
+  phoneHref,
+  siteConfig
+} from "@/lib/site-config"
 
 const exploreLinks = [
   { href: "/packages", label: "All Packages" },
   { href: "/packages/local", label: "Local Philippines Packages" },
   { href: "/packages/international", label: "International Packages" },
+  { href: "/about", label: "About Us" },
   { href: "/#stories", label: "Traveler Stories" },
-  { href: "/#contact", label: "Plan Your Trip" }
+  { href: "/#contact", label: "Plan Your Trip" },
+  { href: "/policies", label: "Payment & Cancellation" }
 ]
 
 export default function Footer() {
@@ -84,6 +92,51 @@ export default function Footer() {
               <li className="pt-2 text-primary-foreground/70">{addressLine}</li>
             ) : null}
           </ul>
+        </div>
+      </div>
+
+      {/*
+        Registrations sit in the footer of every page on purpose: Philippine
+        buyers are told to verify these before paying a travel agency, so making
+        them hunt for the numbers costs bookings.
+      */}
+      <div className="border-t border-primary-foreground/15">
+        <div className="mx-auto max-w-6xl px-5 py-10 md:px-8">
+          <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
+            Registered &amp; accredited
+          </h2>
+          <ul className="mt-5 grid gap-5 sm:grid-cols-3">
+            {accreditations.map((item) => {
+              const published = item.value.trim() !== ""
+              return (
+                <li key={item.label}>
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground/60">
+                    {item.label}
+                  </p>
+                  <p
+                    className={`mt-1 text-sm font-bold ${
+                      published
+                        ? "text-primary-foreground"
+                        : "italic text-primary-foreground/45"
+                    }`}
+                  >
+                    {published ? item.value : "To be added"}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-primary-foreground/60">
+                    {item.note}
+                  </p>
+                </li>
+              )
+            })}
+          </ul>
+          <p className="mt-6 text-xs text-primary-foreground/60">
+            <Link
+              href="/policies"
+              className="underline underline-offset-4 hover:text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-secondary"
+            >
+              Payment &amp; cancellation policy
+            </Link>
+          </p>
         </div>
       </div>
 

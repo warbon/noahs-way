@@ -32,16 +32,16 @@ export default function LuxuryHighlights() {
           </p>
         </Reveal>
         <Reveal delay={120}>
-          <h3 className="mt-4 max-w-3xl text-3xl font-bold leading-tight text-white md:text-5xl">
+          <h2 className="mt-4 max-w-3xl text-3xl font-bold leading-tight text-white md:text-5xl">
             Designed for travelers who value comfort, style, and zero stress.
-          </h3>
+          </h2>
         </Reveal>
 
         <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
           {highlights.map((item, index) => (
             <Reveal key={item.title} delay={200 + index * 110}>
               <article className="card-hover-lift rounded-2xl border border-white/25 bg-white/10 p-5 backdrop-blur-sm">
-                <h4 className="text-lg font-bold text-white">{item.title}</h4>
+                <h3 className="text-lg font-bold text-white">{item.title}</h3>
                 <p className="mt-3 text-sm leading-relaxed text-white/80">{item.text}</p>
               </article>
             </Reveal>

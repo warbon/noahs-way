@@ -17,6 +17,8 @@ export type AdminPackageRecord = {
   currency?: string
   durationDays?: number
   durationNights?: number
+  highlights?: string[]
+  travelPeriods?: string[]
   itinerary?: ItineraryDay[]
   inclusions?: string[]
   exclusions?: string[]

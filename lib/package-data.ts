@@ -32,6 +32,8 @@ export type TravelPackage = {
   durationDays?: number
   durationNights?: number
   highlights?: string[]
+  /** Departure windows as printed on the poster, e.g. "Mar 04–08 (+₱5,000/pax)". */
+  travelPeriods?: string[]
   itinerary?: ItineraryDay[]
   inclusions?: string[]
   exclusions?: string[]
