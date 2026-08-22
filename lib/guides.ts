@@ -51,7 +51,8 @@ export const guides: Guide[] = [
     status: "draft",
     factsCheckedOn: "2026-08-22",
     relatedPackageSlug: "/packages/international/nami-island-seoul-tour",
-    relatedPackageLabel: "Nami Island & Seoul Tour — includes a guaranteed group visa",
+    relatedPackageLabel:
+      "Nami Island & Seoul Tour — group visa processing arranged, with the itinerary and bookings your application needs.",
     sources: [
       {
         label: "South Korea visa for Filipinos, 2026 — Klook",
@@ -102,7 +103,7 @@ export const guides: Guide[] = [
         items: [
           "The Korea Visa Application Center (KVAC) in Manila, either as a walk-in or with a booked appointment.",
           "The Korean Consulate for applicants in Cebu, through an online appointment.",
-          "Through a travel agency designated by the Korean Embassy, which files on your behalf."
+          "Through a travel agency designated by the Korean Embassy, which files on your behalf. Designation is granted to specific agencies by the embassy — ask any agency directly whether they hold it."
         ]
       },
 
@@ -115,7 +116,7 @@ export const guides: Guide[] = [
         type: "list",
         items: [
           "Jeju Island — visa-free for up to 30 days, but only if you arrive on a direct international flight into Jeju International Airport. You cannot travel on to the mainland.",
-          "The Jeolla region — visa-free if you join a group tour run by a government-designated travel agency and enter through Muan International Airport. Travel is limited to North Jeolla, South Jeolla, Gwangju and Jeju."
+          "The Jeolla region — visa-free if you join a group tour run by a government-designated travel agency and enter through Muan International Airport. Travel is limited to North Jeolla, South Jeolla, Gwangju and Jeju. Only designated agencies can run these, so check with the operator before planning around it."
         ]
       },
       {
@@ -144,18 +145,26 @@ export const guides: Guide[] = [
       { type: "heading", text: "Where a tour package helps" },
       {
         type: "paragraph",
-        text: "Three of the items above — the confirmed return flights, the hotel bookings, and the day-by-day itinerary — are documents a tour operator produces as a matter of course. On a packaged trip they arrive together, already consistent with each other, which is what a consular officer is checking for."
+        text: "We are not a Korean Embassy designated agency, so we do not file your visa for you. What a packaged trip does give you is the paperwork the application rests on."
       },
       {
         type: "paragraph",
-        text: "That is also why the same documents are the ones Philippine immigration asks to see on the day you fly."
+        text: "Three of the items above — the confirmed return flights, the hotel bookings, and the day-by-day itinerary — are documents we produce as a matter of course. On a packaged trip they arrive together and already agree with each other, which is what a consular officer is checking for. Assembling those three yourself, consistently, is the part most first-time applicants find hardest."
+      },
+      {
+        type: "paragraph",
+        text: "Our Korea departures also run with a partner operator who arranges group visa processing for the whole group. That means your application is submitted alongside everyone else's on the same departure, with the same supporting documents. It does not mean approval is guaranteed — the consulate decides every application on its own merits, and no agency can promise otherwise."
+      },
+      {
+        type: "paragraph",
+        text: "The same three documents are what Philippine immigration asks to see on the day you fly."
       },
 
       {
         type: "note",
         tone: "info",
         title: "Still to confirm before this page is published",
-        text: "This guide is a draft. Two things need to be checked by Noah's Way first: whether the agency is a Korean Embassy designated agency, and exactly what the guaranteed group visa on the Nami Island package covers. Both are claims that must not go live unverified."
+        text: "This guide is a draft. One thing is still open: exactly what the group visa arrangement on the Nami Island package covers — who submits, what the traveller supplies, and what happens to the package price if an application is refused. The wording here is deliberately cautious until that is confirmed."
       }
     ]
   }
