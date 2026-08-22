@@ -1,22 +1,31 @@
 import Reveal from "@/components/Reveal"
 
+/**
+ * Claims here must be true of the packages actually on sale.
+ *
+ * The previous copy promised "boutique hotels and premium resorts" while the
+ * catalogue sells a 3-star twin-share in Seoul and a local four-star in Da
+ * Nang. Wording that the product cannot back is a consumer-protection problem,
+ * not a tone problem, so each line below is now something every published
+ * package genuinely does.
+ */
 export default function LuxuryHighlights() {
   const highlights = [
     {
-      title: "Private Concierge",
-      text: "Dedicated trip specialists from planning to return flight."
+      title: "One team, start to finish",
+      text: "The same trip specialist from your first question to your return flight."
     },
     {
-      title: "Curated Stays",
-      text: "Boutique hotels and premium resorts selected for comfort and style."
+      title: "Vetted hotels, twin sharing",
+      text: "Every stay named in the itinerary before you book, with its tier stated plainly."
     },
     {
-      title: "Seamless Logistics",
-      text: "Airport meet-and-greet, transfers, and smart itineraries handled for you."
+      title: "Transfers handled",
+      text: "Airport pickup, coach transport and the day-to-day moving about, all arranged."
     },
     {
-      title: "Cultural Access",
-      text: "Authentic experiences with trusted local hosts and guides."
+      title: "Guided, not herded",
+      text: "Small-group departures with a local guide who knows the route."
     }
   ]
 

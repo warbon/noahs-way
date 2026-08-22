@@ -4,6 +4,16 @@ type Testimonial = {
   quote: string
   name: string
   trip: string
+  /**
+   * Only a review from a real, identifiable customer is publishable.
+   *
+   * Publishing invented testimonials is deceptive advertising, not decoration —
+   * and these three name trips the catalogue has never sold, so a customer
+   * comparing them against the packages would catch it. They stay in the file
+   * as placeholders to be replaced, and the section below renders nothing until
+   * at least one is marked verified.
+   */
+  verified: boolean
 }
 
 const testimonials: Testimonial[] = [
@@ -11,19 +21,24 @@ const testimonials: Testimonial[] = [
     quote:
       "Noah's Way handled every detail. We just showed up and enjoyed Japan in total comfort.",
     name: "Angela R.",
-    trip: "Tokyo + Kyoto"
+    trip: "Tokyo + Kyoto",
+    verified: false
   },
   {
     quote: "The Palawan package felt premium from airport pickup to the final sunset dinner.",
     name: "Marco and Liza T.",
-    trip: "El Nido"
+    trip: "El Nido",
+    verified: false
   },
   {
     quote: "Fast responses, elegant hotels, and perfectly planned schedules. Highly recommended.",
     name: "Denise C.",
-    trip: "Seoul"
+    trip: "Seoul",
+    verified: false
   }
 ]
+
+const publishable = testimonials.filter((item) => item.verified)
 
 /**
  * Initials from the first and last word of the name — "Angela R." reads AR.
@@ -42,6 +57,11 @@ function initialsFor(name: string) {
 }
 
 export default function Stories() {
+  // Nothing to show is better than something invented. The nav entries for
+  // this section were removed alongside it and come back with the first real
+  // review.
+  if (publishable.length === 0) return null
+
   return (
     <section id="stories" className="bg-muted/40 px-5 py-24 md:px-8">
       <div className="mx-auto max-w-6xl">
@@ -57,7 +77,7 @@ export default function Stories() {
         </Reveal>
 
         <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {testimonials.map((item, index) => (
+          {publishable.map((item, index) => (
             <Reveal key={item.name} delay={220 + index * 120}>
               <figure className="card-hover-lift flex h-full flex-col rounded-2xl border border-primary/10 bg-card p-7 shadow-lg shadow-primary/5">
                 {/*

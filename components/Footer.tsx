@@ -14,7 +14,6 @@ const exploreLinks = [
   { href: "/packages/international", label: "International Packages" },
   { href: "/guides", label: "Travel Guides" },
   { href: "/about", label: "About Us" },
-  { href: "/#stories", label: "Traveler Stories" },
   { href: "/#contact", label: "Plan Your Trip" },
   { href: "/policies", label: "Payment & Cancellation" }
 ]

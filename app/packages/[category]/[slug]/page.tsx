@@ -146,9 +146,17 @@ export default async function PackageDetailPage({ params }: PageProps) {
                   <h2 id="travel-periods-heading" className="text-2xl font-bold text-primary">
                     Travel periods
                   </h2>
+                  {/*
+                    Does not claim these are current. The windows are transcribed
+                    from each poster and most of the printed seasons have already
+                    passed — asserting "currently offered" over a stale list is
+                    the kind of small untruth a customer discovers at exactly the
+                    wrong moment. Confirmed on enquiry until the data is refreshed.
+                  */}
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Departure windows currently offered for this package. Some dates carry a
-                    surcharge, shown alongside the date.
+                    Departure windows from this package&apos;s published schedule, with any
+                    surcharge shown alongside. Message us to confirm which dates are still open
+                    before you plan around one.
                   </p>
                   <ul className="mt-4 flex flex-wrap gap-2">
                     {pkg.travelPeriods?.map((period) => (

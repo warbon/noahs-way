@@ -62,9 +62,9 @@ export default function Contact() {
             </p>
             <div className="mt-8 space-y-5">
               <article className="card-hover-lift rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-sm">
-                <h3 className="font-bold">Tailored Itineraries</h3>
+                <h3 className="font-bold">A quote within 24 hours</h3>
                 <p className="mt-1 text-sm text-white/80">
-                  Every trip is matched to your style, pace, and budget.
+                  Tell us the dates and the group, and we come back with real options.
                 </p>
               </article>
               <article className="card-hover-lift rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-sm">
@@ -74,9 +74,16 @@ export default function Contact() {
                 </p>
               </article>
               <article className="card-hover-lift rounded-2xl border border-white/30 bg-white/10 p-4 backdrop-blur-sm">
-                <h3 className="font-bold">Premium Value</h3>
+                {/*
+                  "Luxury-level experiences" was not supportable against a
+                  catalogue that sells a 3-star twin-share. Transparent pricing
+                  is — the exclusions are published on every package page — so
+                  the card now claims only the part that is true.
+                */}
+                <h3 className="font-bold">Every fee published</h3>
                 <p className="mt-1 text-sm text-white/80">
-                  Luxury-level experiences with transparent PHP pricing.
+                  Travel tax, tipping and baggage are listed on each package, not sprung on you
+                  later.
                 </p>
               </article>
             </div>

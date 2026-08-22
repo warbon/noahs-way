@@ -42,6 +42,27 @@ function eyebrowFor(title: string) {
   return COLLECTIONS.find((entry) => entry.match.test(title))?.eyebrow ?? "Signature Journeys"
 }
 
+/**
+ * Up to three claims, each verified against this package's own inclusions.
+ *
+ * "Full itinerary published" is the one blanket claim kept, because it is a
+ * property of the page rather than the product and is true wherever a package
+ * has itinerary days.
+ */
+function heroClaims(pkg: PackageRecord) {
+  const inclusions = pkg.inclusions ?? []
+  const has = (pattern: RegExp) => inclusions.some((item) => pattern.test(item))
+
+  const claims: string[] = []
+  if (has(/airfare/i)) claims.push("Roundtrip airfare included")
+  if (has(/english.?speaking/i)) claims.push("English-speaking guide")
+  else if (has(/tour guide|guide:/i)) claims.push("Tour guide included")
+  if (has(/visa/i)) claims.push("Group visa processing")
+  if (pkg.itinerary?.length) claims.push("Full itinerary published")
+
+  return claims.slice(0, 3)
+}
+
 export default function Hero({ packages }: { packages: PackageRecord[] }) {
   const slides = packages.slice(0, 4)
   const [activeIndex, setActiveIndex] = useState(0)
@@ -144,10 +165,17 @@ export default function Hero({ packages }: { packages: PackageRecord[] }) {
             </Link>
           </div>
 
+          {/*
+            Read off the slide's own inclusions rather than asserted for the
+            whole catalogue. Stated as blanket promises these were false:
+            airfare is not in the Autumn Korea inclusions, and Seoul-D lists a
+            guide without specifying English. A claim on the hero has to hold
+            for the trip the hero is showing.
+          */}
           <ul className="mt-7 flex flex-wrap gap-x-7 gap-y-1.5 text-sm text-white/85 md:mt-10">
-            <li>Roundtrip airfare included</li>
-            <li>English-speaking guide</li>
-            <li>Full itinerary published</li>
+            {heroClaims(active).map((claim) => (
+              <li key={claim}>{claim}</li>
+            ))}
           </ul>
 
         </Reveal>
