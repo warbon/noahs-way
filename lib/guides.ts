@@ -669,7 +669,7 @@ export const guides: Guide[] = [
       "Environmental and terminal fees are collected on the island, usually in cash, and are not in your airfare. Here is what the main destinations charge and who is exempt.",
     status: "published",
     factsCheckedOn: "2026-08-22",
-    relatedPackageSlug: "/destinations/philippines",
+    relatedPackageSlug: "/philippines",
     relatedPackageLabel: "Planning a domestic trip? Start with when to go where.",
     sources: [
       {
@@ -758,7 +758,7 @@ export const guides: Guide[] = [
       "Amihan and habagat explained, when typhoon season actually bites, and why writing off July to October across the whole country is the most common planning mistake.",
     status: "published",
     factsCheckedOn: "2026-08-22",
-    relatedPackageSlug: "/destinations/philippines",
+    relatedPackageSlug: "/philippines",
     relatedPackageLabel: "See what a domestic trip involves, and tell us where you want to go.",
     sources: [
       {

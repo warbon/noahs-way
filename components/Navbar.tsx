@@ -14,8 +14,7 @@ const navLinks: NavLink[] = [
   // Points at the full catalog (search + sort), not the homepage carousel —
   // clicking "Packages" should land on the browsable index.
   { href: "/packages", label: "Packages" },
-  { href: "/packages/local", label: "Local" },
-  { href: "/packages/international", label: "International" },
+  { href: "/philippines", label: "Philippines" },
   { href: "/destinations", label: "Destinations" },
   { href: "/guides", label: "Guides" },
   { href: "/about", label: "About" },

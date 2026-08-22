@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // The Philippines outgrew the generic destination template and moved to its
+  // own page. Anything already pointing at the old path still resolves.
+  async redirects() {
+    return [
+      { source: "/destinations/philippines", destination: "/philippines", permanent: true }
+    ]
+  },
   output: "standalone",
   images: {
     remotePatterns: [
