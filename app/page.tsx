@@ -6,7 +6,7 @@ import ContactFab from "@/components/ContactFab"
 import Footer from "@/components/Footer"
 import Hero from "@/components/Hero"
 import GuidesPreview from "@/components/GuidesPreview"
-import LuxuryHighlights from "@/components/LuxuryHighlights"
+import HowItWorks from "@/components/HowItWorks"
 import Navbar from "@/components/Navbar"
 import OrganizationJsonLd from "@/components/OrganizationJsonLd"
 import Packages from "@/components/Packages"
@@ -30,7 +30,7 @@ export default async function Home() {
       <main id="main-content" tabIndex={-1}>
         <Hero packages={[...international, ...local]} />
         <Packages />
-        <LuxuryHighlights />
+        <HowItWorks />
         <Stories />
         <GuidesPreview />
         <Contact />
