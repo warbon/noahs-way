@@ -199,6 +199,210 @@ export const guides: Guide[] = [
         text: "Travelling independently is entirely doable — just assemble the same three documents yourself before you go anywhere near the airport."
       }
     ]
+  },
+
+  {
+    slug: "delayed-or-cancelled-flight-philippines",
+    title: "Your flight was delayed or cancelled. Here is what you are owed.",
+    question: "What are my rights if my flight is delayed or cancelled?",
+    summary:
+      "The Air Passenger Bill of Rights sets out what an airline must give you for a delay of three hours or more, and what you can claim when a flight is cancelled without notice.",
+    status: "published",
+    factsCheckedOn: "2026-08-22",
+    sources: [
+      {
+        label: "Airline passenger rights and flight delay compensation — Respicio & Co.",
+        url: "https://www.respicio.ph/commentaries/airline-passenger-rights-flight-delay-compensation"
+      },
+      {
+        label: "Know your air passenger rights — Philippine News Agency",
+        url: "https://www.pna.gov.ph/articles/1045093"
+      },
+      {
+        label: "Airline compensation rights, Philippines",
+        url: "https://www.respicio.ph/features/airline-compensation-rights-philippines"
+      }
+    ],
+    body: [
+      {
+        type: "note",
+        tone: "warning",
+        title: "General information, not legal advice",
+        text: "This is a plain-language summary of rules that were in force when this page was checked. Airline conditions of carriage vary and the regulations can be amended. For a dispute, deal with the airline in writing first, then the Civil Aeronautics Board — and take proper legal advice if the amount matters."
+      },
+      {
+        type: "paragraph",
+        text: "Most Filipino passengers do not know they are owed anything at all when a flight goes wrong, so they accept whatever the counter offers. The Air Passenger Bill of Rights — Joint Administrative Order No. 1, series of 2012 — says otherwise. It covers domestic and international flights departing from Philippine airports."
+      },
+
+      { type: "heading", text: "If your flight is delayed three hours or more" },
+      {
+        type: "paragraph",
+        text: "This applies whether or not the delay is the airline's fault. You are entitled to be looked after while you wait."
+      },
+      {
+        type: "checklist",
+        items: [
+          "Refreshments or a meal, appropriate to the time of day",
+          "Free phone calls and email — enough to tell someone where you are",
+          "First aid, if you need it",
+          "Rebooking at no extra charge onto the next available flight, or another flight within 30 days",
+          "Or a refund of the fare, including taxes and surcharges, if you would rather not travel"
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "Ask at the counter, in those words. These are obligations, not goodwill gestures, and they are frequently not offered unless requested."
+      },
+
+      { type: "heading", text: "If your flight is cancelled" },
+      {
+        type: "paragraph",
+        text: "The dividing line is notice. If the airline told you at least 24 hours before departure, it has met its obligation to warn you. Cancel with less notice than that, and you may choose one of the following."
+      },
+      {
+        type: "list",
+        items: [
+          "A full refund of the fare, including taxes and surcharges",
+          "Rebooking onto the next available flight at no additional charge",
+          "Rebooking to a later date of your choosing, subject to seat availability"
+        ]
+      },
+      {
+        type: "note",
+        tone: "info",
+        text: "The choice is yours, not the airline's. If you are offered only a voucher or only a rebooking, you can say which of the three you want."
+      },
+
+      { type: "heading", text: "When the airline does not have to pay" },
+      {
+        type: "paragraph",
+        text: "There is a real limit, and it is worth knowing so you do not waste effort on a claim that will not succeed. Carriers are not liable for monetary compensation where the disruption was caused by circumstances outside their control."
+      },
+      {
+        type: "list",
+        items: [
+          "Extreme weather and acts of God",
+          "Security threats",
+          "Air traffic control directives or congestion",
+          "Strikes by third parties, such as airport or ground handling staff"
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "Note the distinction: even in these cases the duty of care during a long delay — food, communication, first aid — is a separate matter from monetary compensation."
+      },
+
+      { type: "heading", text: "What to do at the time" },
+      {
+        type: "list",
+        ordered: true,
+        items: [
+          "Photograph the departure board showing the delay or cancellation, and keep your boarding pass.",
+          "Ask staff for the reason in writing, or note the name of who told you and when.",
+          "Keep receipts for anything you have to pay for yourself — meals, a hotel, transport.",
+          "Make your request at the counter before you leave the airport, and say which remedy you are choosing.",
+          "If it is not resolved, write to the airline, then escalate to the Civil Aeronautics Board."
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "None of this requires a lawyer or a claims service. Most of it is a matter of asking clearly and keeping a record."
+      }
+    ]
+  },
+
+  {
+    slug: "philippine-travel-tax-exemptions-refunds",
+    title: "Travel tax: who pays less, who pays nothing, and how to claim it back",
+    question: "Do I have to pay the full Philippine travel tax?",
+    summary:
+      "The travel tax is not the same for everyone. Children pay half, some passengers are exempt entirely, and if you have already overpaid you can apply for a refund.",
+    status: "published",
+    factsCheckedOn: "2026-08-22",
+    sources: [
+      { label: "Travel tax — TIEZA", url: "https://tieza.gov.ph/travel-tax/" },
+      { label: "Reduced travel tax — TIEZA", url: "https://tieza.gov.ph/reduced-travel-tax/" },
+      { label: "Travel tax refund — TIEZA", url: "https://tieza.gov.ph/travel-tax-refund/" },
+      {
+        label: "How to pay, and apply for exemption or refund — The Poor Traveler",
+        url: "https://www.thepoortraveler.net/travel-tax/"
+      }
+    ],
+    body: [
+      {
+        type: "note",
+        tone: "warning",
+        title: "Rates and categories change",
+        text: "TIEZA administers the travel tax and is the only authority on current rates, exemptions and refunds. The figures here were checked on the date above — confirm with TIEZA before relying on them, especially if you are claiming a reduced rate or a refund."
+      },
+      {
+        type: "paragraph",
+        text: "The Philippine travel tax is charged on passengers departing the country, commonly ₱1,620 in economy, and it is often bundled invisibly into a fare. Most people pay the full amount without checking whether they had to — and a good number of them did not."
+      },
+
+      { type: "heading", text: "Children pay half, and it is easy to miss" },
+      {
+        type: "paragraph",
+        text: "A child aged between 2 and 11 on the date of travel, holding a Philippine passport, pays a reduced rate of ₱810 rather than the full amount. No supporting documents are needed."
+      },
+      {
+        type: "note",
+        tone: "info",
+        text: "The catch is that it is not applied automatically. The child's date of birth has to be entered correctly at booking. Families travelling with young children routinely overpay because of a mistyped birth date."
+      },
+      {
+        type: "paragraph",
+        text: "Infants aged two and under are exempt entirely."
+      },
+
+      { type: "heading", text: "Who is exempt" },
+      {
+        type: "paragraph",
+        text: "TIEZA lists around nineteen categories of exempt passenger. The ones that come up most often are these."
+      },
+      {
+        type: "list",
+        items: [
+          "Overseas Filipino workers, subject to TIEZA's conditions",
+          "Filipinos who are permanent residents abroad and meet the stay requirements",
+          "Infants aged two and under",
+          "International flight crew on duty",
+          "Diplomats and Philippine officials travelling on official business",
+          "Foreign passport holders on a non-immigrant stay of under a year, on presenting their passport ID pages and last arrival stamp"
+        ]
+      },
+
+      { type: "heading", text: "If you already paid too much" },
+      {
+        type: "paragraph",
+        text: "An overpayment can be reclaimed. If you paid the full rate but qualified for the reduced rate or an exemption, you can apply for a refund of the difference at any TIEZA travel tax office or airport counter."
+      },
+      {
+        type: "table",
+        caption: "Refund basics, checked August 2026",
+        columns: ["What to expect", "Detail"],
+        rows: [
+          ["Where to apply", "Any TIEZA travel tax office, or an airport counter"],
+          ["Processing time", "Roughly 30 to 90 days"],
+          ["Processing fee", "₱200"]
+        ]
+      },
+      {
+        type: "paragraph",
+        text: "Keep the ticket, the receipt and proof of the category you are claiming under. A refund on a child's fare is usually worth more than the processing fee; on a single adult economy ticket, check the arithmetic before you commit to the paperwork."
+      },
+
+      { type: "heading", text: "A word on how it appears on a tour price" },
+      {
+        type: "paragraph",
+        text: "Travel tax is a government charge, not part of what a tour operator sells, which is why it appears as an exclusion on most package listings — including ours. That is normal and correct. What is not normal is failing to mention it at all, so that it arrives as a surprise at the airport."
+      },
+      {
+        type: "paragraph",
+        text: "Whoever you book with, ask what the travel tax treatment is before you pay a deposit, and whether children in your group have been declared at the right age."
+      }
+    ]
   }
 ]
 
