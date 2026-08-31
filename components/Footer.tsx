@@ -1,8 +1,10 @@
 import Link from "next/link"
 
+import AccreditationLogo from "@/components/AccreditationLogo"
 import {
   accreditations,
   emailHref,
+  isPublished,
   messengerHref,
   phoneHref,
   siteConfig
@@ -107,11 +109,12 @@ export default function Footer() {
           <h2 className="text-sm font-semibold uppercase tracking-[0.18em] text-secondary">
             Registered &amp; accredited
           </h2>
-          <ul className="mt-5 grid gap-5 sm:grid-cols-3">
+          <ul className="mt-5 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {accreditations.map((item) => {
-              const published = item.value.trim() !== ""
+              const published = isPublished(item)
               return (
                 <li key={item.label}>
+                  <AccreditationLogo item={item} />
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary-foreground/60">
                     {item.label}
                   </p>

@@ -4,7 +4,7 @@ import Link from "next/link"
 import Footer from "@/components/Footer"
 import Navbar from "@/components/Navbar"
 import PaymentMethods from "@/components/PaymentMethods"
-import { accreditations, emailHref, phoneHref, siteConfig } from "@/lib/site-config"
+import { accreditations, emailHref, isPublished, phoneHref, siteConfig } from "@/lib/site-config"
 
 export const metadata: Metadata = {
   title: "Payment & Cancellation Policy",
@@ -115,7 +115,7 @@ export default function PoliciesPage() {
                 </p>
                 <ul className="mt-3 space-y-2 text-sm">
                   {accreditations.map((item) => {
-                    const published = item.value.trim() !== ""
+                    const published = isPublished(item)
                     return (
                       <li key={item.label}>
                         <span className="font-semibold text-foreground">{item.label}:</span>{" "}

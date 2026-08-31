@@ -42,6 +42,20 @@ export const siteConfig = {
 } as const
 
 /**
+ * An issuing body's mark, with the file's true pixel dimensions.
+ *
+ * The dimensions are load-bearing rather than documentation: the badge renders
+ * height-constrained with `width: auto`, so the browser reserves horizontal
+ * space from this ratio before the file decodes. Wrong numbers mean the badge
+ * visibly jumps width on load, and skew the srcset Next generates.
+ */
+export type AccreditationMark = {
+  src: string
+  width: number
+  height: number
+}
+
+/**
  * Registrations and memberships, in the order a customer checks them.
  *
  * Philippine buyers are advised to verify a travel agency's DOT accreditation
@@ -50,20 +64,60 @@ export const siteConfig = {
  *
  * A blank `value` renders as a visible "to be added" placeholder instead of
  * being hidden, so an unfinished entry is obvious to the owner rather than
- * silently missing. Set the matching env var to publish the real number.
+ * silently missing.
+ *
+ * Note that DTI and BIR carry their real numbers as defaults below, following
+ * this file's convention for public business details — they publish whether or
+ * not an env var is set. Only DOT and PTAA are still waiting on one. Anyone
+ * deploying this site for a different business has to override or clear those
+ * two defaults; leaving the env vars unset is not enough.
  */
 export type Accreditation = {
   label: string
   value: string
   /** Shown under the number — what this registration actually certifies. */
   note: string
+  /**
+   * The issuing body's mark. Optional — an entry without one renders text-only,
+   * which reads fine because the number beside it is what a customer verifies.
+   *
+   * These are plain agency emblems: no RSN, no QR, no year, so they identify
+   * the issuing body rather than this business. That is what makes them safe to
+   * reuse between projects, and it also means the emblem alone proves nothing —
+   * the number does the work. Never substitute a per-business badge issued to
+   * someone else; it would resolve to the wrong registration.
+   *
+   * A mark is only shown once `value` is filled in. Rendering an official
+   * emblem above a "to be added" placeholder would assert a credential the
+   * business does not hold, so `AccreditationLogo` drops it instead.
+   */
+  logo?: AccreditationMark
+}
+
+/** True once a registration's number has actually been filled in. */
+export function isPublished(item: Accreditation) {
+  return item.value.trim() !== ""
 }
 
 export const accreditations: Accreditation[] = [
   {
     label: "DTI Registration",
-    value: env("NEXT_PUBLIC_DTI_REGISTRATION", ""),
-    note: "Registered business name with the Department of Trade and Industry."
+    value: env("NEXT_PUBLIC_DTI_REGISTRATION", "Business Name No. 7004987"),
+    note:
+      "Business name registered with the Department of Trade and Industry — Region VII " +
+      "(Central Visayas), valid to 13 March 2030.",
+    logo: { src: "/images/badges/dti.png", width: 214, height: 215 }
+  },
+  {
+    /**
+     * The RSN from the "BIR Registered" seal, not the TIN. The seal is the
+     * number the Bureau publishes for customers to check a business against,
+     * so it is the one that belongs on a public page.
+     */
+    label: "BIR Registration",
+    value: env("NEXT_PUBLIC_BIR_REGISTRATION", "RSN 080RC20250000004120"),
+    note: "Registered with the Bureau of Internal Revenue; we issue official receipts.",
+    logo: { src: "/images/badges/bir-registered.png", width: 177, height: 145 }
   },
   {
     label: "DOT Accreditation",
@@ -116,7 +170,7 @@ export const paymentMethods: PaymentMethod[] = [
 ]
 
 /** True when at least one registration number has actually been filled in. */
-export const hasPublishedAccreditation = accreditations.some((item) => item.value.trim() !== "")
+export const hasPublishedAccreditation = accreditations.some(isPublished)
 
 /** `tel:` needs the number stripped of spaces and punctuation. */
 export const phoneHref = `tel:${siteConfig.phone.replace(/[^\d+]/g, "")}`

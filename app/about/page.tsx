@@ -1,11 +1,12 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 
+import AccreditationLogo from "@/components/AccreditationLogo"
 import BackToTop from "@/components/BackToTop"
 import ContactFab from "@/components/ContactFab"
 import Footer from "@/components/Footer"
 import Navbar from "@/components/Navbar"
-import { accreditations, emailHref, phoneHref, siteConfig } from "@/lib/site-config"
+import { accreditations, emailHref, isPublished, phoneHref, siteConfig } from "@/lib/site-config"
 
 export const metadata: Metadata = {
   title: "About Us",
@@ -103,15 +104,21 @@ export default function AboutPage() {
               You should never wire money to a travel agency you haven&apos;t verified. Ours are
               below — ask us for copies of the certificates any time.
             </p>
-            <dl className="mt-6 grid gap-5 sm:grid-cols-3">
+            <dl className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
               {accreditations.map((item) => {
-                const published = item.value.trim() !== ""
+                const published = isPublished(item)
                 return (
                   <div
                     key={item.label}
                     className="rounded-2xl border border-primary/10 bg-card p-5"
                   >
+                    {/*
+                      The mark lives inside the <dt>, not beside it: a <div>
+                      grouping inside a <dl> may only contain <dt> and <dd>,
+                      so a sibling here would break the list's content model.
+                    */}
                     <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                      <AccreditationLogo item={item} />
                       {item.label}
                     </dt>
                     <dd
