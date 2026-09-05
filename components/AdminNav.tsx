@@ -9,7 +9,8 @@ import { cn } from "@/lib/utils"
 const links = [
   { href: "/admin/packages", label: "Packages" },
   { href: "/admin/inquiries", label: "Inquiries" },
-  { href: "/admin/ai", label: "AI Assistant" }
+  { href: "/admin/ai", label: "AI Assistant" },
+  { href: "/admin/facebook", label: "Facebook" }
 ]
 
 export default function AdminNav() {

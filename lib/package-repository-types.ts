@@ -29,6 +29,9 @@ type PackageEditableFields = Pick<
   | "exclusions"
   | "fees"
   | "imageAlt"
+  | "facebookPostId"
+  | "facebookPostedAt"
+  | "facebookPermalink"
 >
 
 export type CreatePackagePayload = Omit<TravelPackage, "previewImage" | "imagePath"> & {

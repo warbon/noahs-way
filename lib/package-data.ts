@@ -46,6 +46,17 @@ export type TravelPackage = {
   fees?: PackageFee[]
   imageAlt?: string
   /**
+   * Set by Admin -> Packages -> "Post to Facebook", never by the package form.
+   *
+   * Their presence is what tells an admin a package has already been announced,
+   * so a second click is a deliberate re-post rather than an accident. The id is
+   * Facebook's `{page-id}_{post-id}`; the permalink is stored beside it because
+   * reading it back needs the Page token, which the browser never sees.
+   */
+  facebookPostId?: string
+  facebookPostedAt?: string
+  facebookPermalink?: string
+  /**
    * Set once, when the record is created. Absent on everything seeded before
    * the field existed — there is no honest way to date those, so the admin
    * list sorts them below the records that do carry one rather than guessing.

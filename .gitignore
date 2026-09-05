@@ -27,3 +27,6 @@ certificates
 
 # Throwaway scripts run from the project root so they can resolve node_modules.
 .tmp-*
+
+# Admin-managed Facebook settings (encrypted Page token) — never commit
+/data/facebook-settings.json

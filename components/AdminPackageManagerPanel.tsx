@@ -1,7 +1,8 @@
 "use client"
 
-import { Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { ExternalLink, Facebook, Pencil, Plus, Search, Trash2 } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import {
   startTransition,
@@ -19,6 +20,7 @@ import AdminSidePanel from "@/components/AdminSidePanel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { AdminPackageCatalog, AdminPackageRecord } from "@/lib/admin-package-types"
+import type { PublicFacebookSettings } from "@/lib/facebook/settings-types"
 import type { PackageCategory } from "@/lib/package-data"
 import { formatPackagePrice } from "@/lib/price"
 
@@ -52,6 +54,20 @@ function normalizeCatalog(payload: unknown): AdminPackageCatalog | null {
 
 function isDraft(pkg: AdminPackageRecord) {
   return pkg.status === "draft"
+}
+
+/** The date only — the hour a package was announced is not something anyone acts on. */
+function formatShareDate(iso: string | undefined) {
+  if (!iso) return null
+
+  const date = new Date(iso)
+  if (Number.isNaN(date.getTime())) return null
+
+  return new Intl.DateTimeFormat("en-PH", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+  }).format(date)
 }
 
 /**
@@ -101,8 +117,13 @@ export default function AdminPackageManagerPanel() {
   const [saving, setSaving] = useState(false)
   const [panelError, setPanelError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [noticeHref, setNoticeHref] = useState<string | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
+
+  const [facebook, setFacebook] = useState<PublicFacebookSettings | null>(null)
+  const [pendingShareId, setPendingShareId] = useState<string | null>(null)
+  const [sharingId, setSharingId] = useState<string | null>(null)
 
   const loadPackages = useCallback(async () => {
     setLoading(true)
@@ -134,6 +155,34 @@ export default function AdminPackageManagerPanel() {
   useEffect(() => {
     void loadPackages()
   }, [loadPackages])
+
+  /** One place to set the banner, so a stale "view post" link can never outlive it. */
+  function showNotice(message: string, href: string | null = null) {
+    setNotice(message)
+    setNoticeHref(href)
+  }
+
+  // Best-effort. The list works without this; all it buys is telling an admin
+  // that sharing is not connected before they press the button and find out.
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadFacebookSettings() {
+      try {
+        const response = await fetch("/api/admin/facebook-settings", { cache: "no-store" })
+        if (!response.ok) return
+        const payload = (await response.json()) as { settings?: PublicFacebookSettings }
+        if (!cancelled && payload.settings) setFacebook(payload.settings)
+      } catch {
+        /* a missing hint is not worth an error banner */
+      }
+    }
+
+    void loadFacebookSettings()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const allPackages = useMemo(
     () => sortByNewestFirst([...catalog.local, ...catalog.international]),
@@ -190,7 +239,7 @@ export default function AdminPackageManagerPanel() {
       }
 
       await loadPackages()
-      setNotice(isEdit ? "Package updated." : "Package created.")
+      showNotice(isEdit ? "Package updated." : "Package created.")
       closePanel()
       startTransition(() => router.refresh())
     } catch {
@@ -206,7 +255,7 @@ export default function AdminPackageManagerPanel() {
       const response = await fetch(`/api/admin/packages/${pkg.id}`, { method: "DELETE" })
       if (!response.ok) {
         const payload = (await response.json().catch(() => null)) as unknown
-        setNotice(getApiErrorMessage(payload) ?? "Could not delete the package.")
+        showNotice(getApiErrorMessage(payload) ?? "Could not delete the package.")
         return
       }
 
@@ -214,13 +263,55 @@ export default function AdminPackageManagerPanel() {
         local: prev.local.filter((item) => item.id !== pkg.id),
         international: prev.international.filter((item) => item.id !== pkg.id)
       }))
-      setNotice(`Deleted “${pkg.title}”.`)
+      showNotice(`Deleted “${pkg.title}”.`)
       startTransition(() => router.refresh())
     } catch {
-      setNotice("Network error while deleting.")
+      showNotice("Network error while deleting.")
     } finally {
       setBusyId(null)
       setPendingDeleteId(null)
+    }
+  }
+
+  /**
+   * Publishes one package to the Page.
+   *
+   * `force` is set from the package's own state rather than from a flag on the
+   * button: the API refuses a second post unless it is asked twice on purpose,
+   * and the confirm step the admin just passed through is that purpose.
+   */
+  async function shareToFacebook(pkg: AdminPackageRecord) {
+    setSharingId(pkg.id)
+    try {
+      const response = await fetch(`/api/admin/packages/${pkg.id}/facebook`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ force: Boolean(pkg.facebookPostId) })
+      })
+      const payload = (await response.json().catch(() => null)) as {
+        share?: { permalink: string | null; recorded: boolean }
+      } | null
+
+      if (!response.ok) {
+        showNotice(getApiErrorMessage(payload) ?? "Could not post to Facebook.")
+        return
+      }
+
+      await loadPackages()
+
+      // A post that went out but was not recorded is the one case worth spelling
+      // out, because the next click would quietly publish a duplicate.
+      showNotice(
+        payload?.share?.recorded === false
+          ? `Posted “${pkg.title}” to Facebook, but it could not be marked as posted here — check the Page before posting it again.`
+          : `Posted “${pkg.title}” to Facebook.`,
+        payload?.share?.permalink ?? null
+      )
+    } catch {
+      showNotice("Network error while posting to Facebook.")
+    } finally {
+      setSharingId(null)
+      setPendingShareId(null)
     }
   }
 
@@ -295,9 +386,30 @@ export default function AdminPackageManagerPanel() {
       {notice ? (
         <p
           role="status"
-          className="notice-in rounded-md bg-muted px-3 py-2 text-sm text-foreground"
+          className="notice-in flex flex-wrap items-center gap-2 rounded-md bg-muted px-3 py-2 text-sm text-foreground"
         >
-          {notice}
+          <span>{notice}</span>
+          {noticeHref ? (
+            <a
+              href={noticeHref}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-primary underline-offset-4 hover:underline"
+            >
+              View post
+              <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
+            </a>
+          ) : null}
+        </p>
+      ) : null}
+
+      {facebook && !facebook.resolved.available ? (
+        <p className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          Facebook sharing is not connected yet, so posting will be refused.{" "}
+          <Link href="/admin/facebook" className="font-medium underline underline-offset-4">
+            Connect the Page
+          </Link>
+          .
         </p>
       ) : null}
 
@@ -354,6 +466,28 @@ export default function AdminPackageManagerPanel() {
                       <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-medium capitalize text-muted-foreground">
                         {pkg.category}
                       </span>
+                      {pkg.facebookPostId ? (
+                        pkg.facebookPermalink ? (
+                          <a
+                            href={pkg.facebookPermalink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-900 underline-offset-2 hover:underline"
+                          >
+                            <Facebook className="h-3 w-3" aria-hidden="true" />
+                            {formatShareDate(pkg.facebookPostedAt)
+                              ? `Posted ${formatShareDate(pkg.facebookPostedAt)}`
+                              : "Posted"}
+                          </a>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-900">
+                            <Facebook className="h-3 w-3" aria-hidden="true" />
+                            {formatShareDate(pkg.facebookPostedAt)
+                              ? `Posted ${formatShareDate(pkg.facebookPostedAt)}`
+                              : "Posted"}
+                          </span>
+                        )
+                      ) : null}
                     </div>
                     <p className="mt-1 truncate text-sm text-muted-foreground">{pkg.details}</p>
                     <p className="mt-1 text-sm font-medium text-primary">
@@ -383,8 +517,51 @@ export default function AdminPackageManagerPanel() {
                           Cancel
                         </Button>
                       </>
+                    ) : pendingShareId === pkg.id ? (
+                      <>
+                        <span className="text-sm text-muted-foreground">
+                          {pkg.facebookPostId ? "Post again?" : "Post to the Page?"}
+                        </span>
+                        <Button
+                          type="button"
+                          size="sm"
+                          disabled={sharingId === pkg.id}
+                          onClick={() => shareToFacebook(pkg)}
+                        >
+                          {sharingId === pkg.id ? "Posting…" : "Confirm"}
+                        </Button>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          disabled={sharingId === pkg.id}
+                          onClick={() => setPendingShareId(null)}
+                        >
+                          Cancel
+                        </Button>
+                      </>
                     ) : (
                       <>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          // A draft has no page to link to, so posting it would
+                          // advertise a 404. The status filter is right there.
+                          disabled={isDraft(pkg)}
+                          title={
+                            isDraft(pkg)
+                              ? "Publish this package on the website before posting it"
+                              : pkg.facebookPostId
+                                ? "Post this package to the Page again"
+                                : "Post this package to the Facebook Page"
+                          }
+                          onClick={() => setPendingShareId(pkg.id)}
+                        >
+                          <Facebook className="h-3.5 w-3.5" aria-hidden="true" />
+                          <span>{pkg.facebookPostId ? "Repost" : "Post"}</span>
+                          <span className="sr-only"> {pkg.title} to Facebook</span>
+                        </Button>
                         <Button
                           type="button"
                           size="sm"

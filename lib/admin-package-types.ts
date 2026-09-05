@@ -25,6 +25,9 @@ export type AdminPackageRecord = {
   exclusions?: string[]
   fees?: PackageFee[]
   imageAlt?: string
+  facebookPostId?: string
+  facebookPostedAt?: string
+  facebookPermalink?: string
   createdAt?: string
   updatedAt?: string
 }
