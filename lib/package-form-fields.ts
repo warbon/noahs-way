@@ -146,7 +146,9 @@ export function readStructuredFields(formData: FormData): StructuredFields {
     imageAlt: parseOptionalText(formData.get("imageAlt"))
   }
 
-  // `status` is a select that always submits, so it is never a "clear".
+  // `status` is the one field a blank does not clear: the admin panel only
+  // sends it when a save button picked one, and an absent status has to mean
+  // "leave the package as it is" rather than "unpublish it".
   if (managesAll) {
     return Object.fromEntries(
       Object.entries(fields).filter(([key]) => key !== "status" || fields.status !== undefined)

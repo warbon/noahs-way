@@ -95,37 +95,23 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
           <Input id="title" name="title" defaultValue={pkg?.title ?? ""} required />
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className={fieldClass}>
-            <label htmlFor="category" className={labelClass}>
-              Category
-            </label>
-            <select
-              id="category"
-              name="category"
-              defaultValue={pkg?.category ?? "local"}
-              required
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="local">Local</option>
-              <option value="international">International</option>
-            </select>
-          </div>
-
-          <div className={fieldClass}>
-            <label htmlFor="status" className={labelClass}>
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              defaultValue={pkg?.status ?? "published"}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              <option value="published">Published</option>
-              <option value="draft">Draft — hidden from the website</option>
-            </select>
-          </div>
+        {/* No status field: the save buttons in the panel footer decide whether
+            this is a draft or published. Two controls for one value is how a
+            package ends up on the website by accident. */}
+        <div className={fieldClass}>
+          <label htmlFor="category" className={labelClass}>
+            Category
+          </label>
+          <select
+            id="category"
+            name="category"
+            defaultValue={pkg?.category ?? "local"}
+            required
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <option value="local">Local</option>
+            <option value="international">International</option>
+          </select>
         </div>
 
         <div className={fieldClass}>

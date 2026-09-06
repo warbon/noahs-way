@@ -9,6 +9,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type FormEvent
@@ -19,6 +20,7 @@ import AdminPackageFormFields from "@/components/AdminPackageFormFields"
 import AdminSidePanel from "@/components/AdminSidePanel"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { SplitButton, splitButtonItemClass } from "@/components/ui/split-button"
 import type { AdminPackageCatalog, AdminPackageRecord } from "@/lib/admin-package-types"
 import type { PublicFacebookSettings } from "@/lib/facebook/settings-types"
 import type { PackageCategory } from "@/lib/package-data"
@@ -32,10 +34,85 @@ type PanelState =
   | { mode: "create" }
   | { mode: "edit"; pkg: AdminPackageRecord }
 
+/** The panel's save buttons live in the sticky footer, outside the form. */
+const PANEL_FORM_ID = "admin-package-form"
+
+/** What the footer button that submitted the form asked for. */
+type PanelAction = "draft" | "publish" | "publish-and-post"
+
+/**
+ * Read off the submit event rather than remembered in a ref: a ref set by one
+ * package's "post to Facebook" could still be sitting there when the next panel
+ * is submitted with the Enter key. The submitter is whatever was clicked this
+ * time, and for Enter it is the form's default button — the primary action.
+ */
+function readPanelAction(event: FormEvent<HTMLFormElement>): PanelAction {
+  const submitter = (event.nativeEvent as SubmitEvent).submitter
+  const value = submitter?.dataset.panelAction
+  return value === "draft" || value === "publish-and-post" ? value : "publish"
+}
+
 function getApiErrorMessage(value: unknown) {
   if (!value || typeof value !== "object") return null
   const record = value as Record<string, unknown>
   return typeof record.error === "string" ? record.error : null
+}
+
+/** What the banner should say after a post attempt, and where it can link. */
+type PostOutcome = { message: string; href: string | null }
+
+/**
+ * Posts one saved package to the Page and turns every ending into something the
+ * banner can say. Deliberately never throws: one caller has already committed a
+ * save it must not pretend did not happen.
+ */
+async function postPackageToFacebook(
+  pkg: AdminPackageRecord,
+  prefix = ""
+): Promise<PostOutcome> {
+  try {
+    const response = await fetch(`/api/admin/packages/${pkg.id}/facebook`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      // The API refuses a second post unless it is asked twice on purpose, and
+      // the confirm step the admin just passed through is that purpose.
+      body: JSON.stringify({ force: Boolean(pkg.facebookPostId) })
+    })
+    const payload = (await response.json().catch(() => null)) as {
+      alreadyPosted?: { permalink: string | null }
+      share?: { permalink: string | null; recorded: boolean }
+    } | null
+
+    if (response.status === 409) {
+      return {
+        message: `${prefix}It was already posted to the Page, so nothing was posted again — use Repost on the row if you meant to.`,
+        href: payload?.alreadyPosted?.permalink ?? null
+      }
+    }
+
+    if (!response.ok) {
+      return {
+        message: `${prefix}${getApiErrorMessage(payload) ?? "Could not post to Facebook."}`,
+        href: null
+      }
+    }
+
+    return {
+      // A post that went out but was not recorded is the one case worth
+      // spelling out, because the next click would quietly publish a duplicate.
+      message:
+        payload?.share?.recorded === false
+          ? `${prefix}Posted “${pkg.title}” to Facebook, but it could not be marked as posted here — check the Page before posting it again.`
+          : `${prefix}Posted “${pkg.title}” to Facebook.`,
+      href: payload?.share?.permalink ?? null
+    }
+  } catch {
+    // The request may well have landed, so this must not claim it did not.
+    return {
+      message: `${prefix}The network dropped before Facebook answered — check the Page before posting it again.`,
+      href: null
+    }
+  }
 }
 
 function normalizeCatalog(payload: unknown): AdminPackageCatalog | null {
@@ -125,6 +202,12 @@ export default function AdminPackageManagerPanel() {
   const [pendingShareId, setPendingShareId] = useState<string | null>(null)
   const [sharingId, setSharingId] = useState<string | null>(null)
 
+  // Labels only. `saving` still does the disabling; posting is split out
+  // because the share route can hold the request for up to a minute.
+  const [savePhase, setSavePhase] = useState<"saving" | "posting">("saving")
+  const [pendingPanelPost, setPendingPanelPost] = useState(false)
+  const confirmPostRef = useRef<HTMLButtonElement | null>(null)
+
   const loadPackages = useCallback(async () => {
     setLoading(true)
     setLoadError(null)
@@ -206,15 +289,36 @@ export default function AdminPackageManagerPanel() {
 
   const draftCount = allPackages.filter(isDraft).length
 
+  // Never the nullish shorthand: `facebook` is null until the best-effort
+  // settings fetch lands, and that is not the same as "not connected".
+  const facebookBlocked = facebook !== null && !facebook.resolved.available
+
+  // The split button unmounts under the focused menu item when the confirm
+  // step takes its place, which would drop focus to the body.
+  useEffect(() => {
+    if (pendingPanelPost) confirmPostRef.current?.focus()
+  }, [pendingPanelPost])
+
   function closePanel() {
     setPanel({ mode: "closed" })
     setPanelError(null)
+    setPendingPanelPost(false)
+    setSavePhase("saving")
   }
 
+  /**
+   * Saves the panel, then does whatever the footer button asked for on top.
+   *
+   * The action is read from the submitter before anything async happens, and
+   * status comes from it rather than from a field — with the select gone, the
+   * button the admin pressed is the only thing that decides whether a package
+   * is on the website.
+   */
   async function submitPanel(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (panel.mode === "closed") return
+    if (panel.mode === "closed" || saving) return
 
+    const action = readPanelAction(event)
     const formData = new FormData(event.currentTarget)
     const isEdit = panel.mode === "edit"
 
@@ -223,29 +327,57 @@ export default function AdminPackageManagerPanel() {
     const image = formData.get("image")
     if (image instanceof File && image.size === 0) formData.delete("image")
 
+    // `set`, not `append`: a status control coming back one day must not be
+    // able to submit two values.
+    formData.set("status", action === "draft" ? "draft" : "published")
+
     setSaving(true)
+    setSavePhase("saving")
     setPanelError(null)
 
     try {
-      const response = await fetch(
-        isEdit ? `/api/admin/packages/${panel.pkg.id}` : "/api/admin/packages",
-        { method: isEdit ? "PUT" : "POST", body: formData }
-      )
-      const payload = (await response.json().catch(() => null)) as unknown
+      let saved: AdminPackageRecord
 
-      if (!response.ok) {
-        setPanelError(getApiErrorMessage(payload) ?? "Could not save the package.")
+      try {
+        const response = await fetch(
+          isEdit ? `/api/admin/packages/${panel.pkg.id}` : "/api/admin/packages",
+          { method: isEdit ? "PUT" : "POST", body: formData }
+        )
+        const payload = (await response.json().catch(() => null)) as {
+          package?: AdminPackageRecord
+        } | null
+
+        if (!response.ok || !payload?.package) {
+          setPanelError(getApiErrorMessage(payload) ?? "Could not save the package.")
+          return
+        }
+
+        saved = payload.package
+      } catch {
+        setPanelError("Network error while saving.")
         return
       }
 
+      // Saved. From here the panel closes however the post goes: what it holds
+      // is already stale, and the row's Post button is the retry that works.
+      let outcome: PostOutcome | null = null
+      if (action === "publish-and-post") {
+        setSavePhase("posting")
+        // `saved`, not `panel.pkg` — a package created a moment ago has no id
+        // on the panel, and an edited one may have been posted since it opened.
+        outcome = await postPackageToFacebook(saved, "Saved. ")
+      }
+
       await loadPackages()
-      showNotice(isEdit ? "Package updated." : "Package created.")
+      showNotice(
+        outcome?.message ?? (isEdit ? "Package updated." : "Package created."),
+        outcome?.href ?? null
+      )
       closePanel()
       startTransition(() => router.refresh())
-    } catch {
-      setPanelError("Network error while saving.")
     } finally {
       setSaving(false)
+      setSavePhase("saving")
     }
   }
 
@@ -273,42 +405,15 @@ export default function AdminPackageManagerPanel() {
     }
   }
 
-  /**
-   * Publishes one package to the Page.
-   *
-   * `force` is set from the package's own state rather than from a flag on the
-   * button: the API refuses a second post unless it is asked twice on purpose,
-   * and the confirm step the admin just passed through is that purpose.
-   */
+  /** Publishes one package to the Page straight from its row. */
   async function shareToFacebook(pkg: AdminPackageRecord) {
     setSharingId(pkg.id)
     try {
-      const response = await fetch(`/api/admin/packages/${pkg.id}/facebook`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ force: Boolean(pkg.facebookPostId) })
-      })
-      const payload = (await response.json().catch(() => null)) as {
-        share?: { permalink: string | null; recorded: boolean }
-      } | null
-
-      if (!response.ok) {
-        showNotice(getApiErrorMessage(payload) ?? "Could not post to Facebook.")
-        return
-      }
-
+      const outcome = await postPackageToFacebook(pkg)
+      // Reloaded even when the post failed: a refusal usually means the row is
+      // out of date, which is exactly when it is worth fetching again.
       await loadPackages()
-
-      // A post that went out but was not recorded is the one case worth spelling
-      // out, because the next click would quietly publish a duplicate.
-      showNotice(
-        payload?.share?.recorded === false
-          ? `Posted “${pkg.title}” to Facebook, but it could not be marked as posted here — check the Page before posting it again.`
-          : `Posted “${pkg.title}” to Facebook.`,
-        payload?.share?.permalink ?? null
-      )
-    } catch {
-      showNotice("Network error while posting to Facebook.")
+      showNotice(outcome.message, outcome.href)
     } finally {
       setSharingId(null)
       setPendingShareId(null)
@@ -597,12 +702,145 @@ export default function AdminPackageManagerPanel() {
         title={panel.mode === "edit" ? "Edit package" : "Add package"}
         description={
           panel.mode === "edit"
-            ? panel.pkg.title
+            ? // With the status field gone, this line is where an admin reads
+              // what the package is doing right now.
+              [
+                panel.pkg.title,
+                isDraft(panel.pkg) ? "Draft" : "Published",
+                panel.pkg.facebookPostId
+                  ? `Posted to Facebook${
+                      formatShareDate(panel.pkg.facebookPostedAt)
+                        ? ` ${formatShareDate(panel.pkg.facebookPostedAt)}`
+                        : ""
+                    }`
+                  : null
+              ]
+                .filter(Boolean)
+                .join(" · ")
             : "Fields beyond the basics are optional, but they are what make the package readable on phones and findable on Google."
+        }
+        footer={
+          panel.mode === "closed" ? null : pendingPanelPost ? (
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-sm text-muted-foreground">
+                {panel.mode === "edit" && panel.pkg.facebookPostId
+                  ? "Save, publish and post it to the Page again?"
+                  : "Save, publish and post it to the Page?"}
+              </span>
+              <Button
+                ref={confirmPostRef}
+                type="submit"
+                form={PANEL_FORM_ID}
+                data-panel-action="publish-and-post"
+                disabled={saving}
+              >
+                {saving ? (savePhase === "posting" ? "Posting…" : "Saving…") : "Confirm"}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={saving}
+                onClick={() => setPendingPanelPost(false)}
+              >
+                Cancel
+              </Button>
+
+              {facebookBlocked ? (
+                <p className="basis-full text-sm text-amber-900">
+                  Facebook sharing is not connected, so the post will be refused —{" "}
+                  <Link
+                    href="/admin/facebook"
+                    className="font-medium underline underline-offset-4"
+                  >
+                    connect the Page
+                  </Link>{" "}
+                  first. The package will still be saved.
+                </p>
+              ) : null}
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              <SplitButton
+                label="More save actions"
+                disabled={saving}
+                menu={
+                  <>
+                    <button
+                      role="menuitem"
+                      type="submit"
+                      form={PANEL_FORM_ID}
+                      data-panel-action="draft"
+                      disabled={saving}
+                      className={splitButtonItemClass}
+                    >
+                      {panel.mode === "edit" && !isDraft(panel.pkg)
+                        ? "Unpublish to draft"
+                        : "Save as draft"}
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        Kept here, hidden from the website.
+                      </span>
+                    </button>
+                    <button
+                      role="menuitem"
+                      // Opens the confirm step rather than submitting: this one
+                      // ends up on a public Page.
+                      type="button"
+                      disabled={saving}
+                      onClick={() => setPendingPanelPost(true)}
+                      className={splitButtonItemClass}
+                    >
+                      {panel.mode === "edit" && panel.pkg.facebookPostId
+                        ? "Publish & repost to Facebook"
+                        : "Publish & post to Facebook"}
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        Saves it, puts it on the website, then posts the poster and details to the
+                        Page.
+                      </span>
+                    </button>
+                  </>
+                }
+              >
+                <Button
+                  type="submit"
+                  form={PANEL_FORM_ID}
+                  data-panel-action="publish"
+                  disabled={saving}
+                >
+                  {saving
+                    ? savePhase === "posting"
+                      ? "Posting…"
+                      : "Saving…"
+                    : panel.mode === "edit" && !isDraft(panel.pkg)
+                      ? "Save changes"
+                      : "Publish"}
+                </Button>
+              </SplitButton>
+
+              <Button type="button" variant="outline" onClick={closePanel} disabled={saving}>
+                Cancel
+              </Button>
+            </div>
+          )
         }
       >
         {panel.mode !== "closed" ? (
-          <form id="admin-package-form" onSubmit={submitPanel} encType="multipart/form-data">
+          <form
+            id={PANEL_FORM_ID}
+            onSubmit={submitPanel}
+            encType="multipart/form-data"
+            // While the confirm is up, the only submit button left is the one
+            // that posts to the Page — which would make Enter in any field
+            // publish to Facebook. Posting stays a deliberate click.
+            onKeyDown={(event) => {
+              if (
+                pendingPanelPost &&
+                event.key === "Enter" &&
+                (event.target as HTMLElement).tagName !== "TEXTAREA"
+              ) {
+                event.preventDefault()
+              }
+            }}
+          >
             <AdminPackageFormFields
               key={panel.mode === "edit" ? panel.pkg.id : "create"}
               pkg={panel.mode === "edit" ? panel.pkg : null}
@@ -614,19 +852,6 @@ export default function AdminPackageManagerPanel() {
                 {panelError}
               </p>
             ) : null}
-
-            <div className="mt-6 flex gap-3">
-              <Button type="submit" disabled={saving}>
-                {saving
-                  ? "Saving…"
-                  : panel.mode === "edit"
-                    ? "Save changes"
-                    : "Create package"}
-              </Button>
-              <Button type="button" variant="outline" onClick={closePanel} disabled={saving}>
-                Cancel
-              </Button>
-            </div>
           </form>
         ) : null}
       </AdminSidePanel>
