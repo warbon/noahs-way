@@ -828,9 +828,8 @@ export default function AdminPackageManagerPanel() {
             id={PANEL_FORM_ID}
             onSubmit={submitPanel}
             encType="multipart/form-data"
-            // While the confirm is up, the only submit button left is the one
-            // that posts to the Page — which would make Enter in any field
-            // publish to Facebook. Posting stays a deliberate click.
+            // A question is on screen while the confirm is up, so Enter is not
+            // an answer to it: it neither posts nor quietly saves instead.
             onKeyDown={(event) => {
               if (
                 pendingPanelPost &&
@@ -841,6 +840,14 @@ export default function AdminPackageManagerPanel() {
               }
             }}
           >
+            {/* Keeps Enter-in-a-field working now that every real save button
+                sits in the footer, outside the form: this is a default button
+                the form owns outright. Hidden, so the panel's focus trap steps
+                over it, and first in tree order, so Enter always means the
+                primary action — never the post-to-Facebook confirm, which is
+                otherwise the only submit button on screen. */}
+            <button type="submit" data-panel-action="publish" hidden aria-hidden="true" />
+
             <AdminPackageFormFields
               key={panel.mode === "edit" ? panel.pkg.id : "create"}
               pkg={panel.mode === "edit" ? panel.pkg : null}

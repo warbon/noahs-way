@@ -136,6 +136,12 @@ export function SplitButton({ children, menu, label, disabled, className }: Spli
         </Button>
       </div>
 
+      {/* The menu deliberately does not close itself when an item is clicked.
+          A submit item's submission is the click's default action, which the
+          browser runs after the handlers — and a button unmounted by then has
+          no form left to submit, so closing here silently ate the save.
+          Choosing an item takes the whole footer with it anyway; Escape, a
+          click outside and focus leaving are the ways out of an unused menu. */}
       {open ? (
         <div
           ref={menuRef}
@@ -143,9 +149,9 @@ export function SplitButton({ children, menu, label, disabled, className }: Spli
           role="menu"
           aria-label={label}
           onKeyDown={handleMenuKeyDown}
-          // Any choice closes the menu; the item's own handler does the work.
-          onClick={() => setOpen(false)}
-          className="absolute bottom-full right-0 z-10 mb-2 w-80 max-w-[calc(100vw-3rem)] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg"
+          // Opens upward and to the right: the footer puts this button on the
+          // left, where a right-anchored menu would hang off the screen.
+          className="absolute bottom-full left-0 z-10 mb-2 w-80 max-w-[calc(100vw-3rem)] rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg"
         >
           {menu}
         </div>
