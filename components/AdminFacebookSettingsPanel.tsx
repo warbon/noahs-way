@@ -247,7 +247,7 @@ export default function AdminFacebookSettingsPanel() {
             spellCheck={false}
             value={pageId}
             onChange={(event) => setPageId(event.target.value)}
-            placeholder="e.g. 102938475610293 or noahswaytravel"
+            placeholder="e.g. 102938475610293 or noahswaytravelandtours"
           />
           <p className="text-sm text-muted-foreground">
             Find the numeric id in Meta Business Suite under <em>Settings → Page details</em>, or

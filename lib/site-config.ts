@@ -12,7 +12,7 @@ function env(key: string, fallback: string) {
   return value || fallback
 }
 
-const facebookHandle = env("NEXT_PUBLIC_FACEBOOK_HANDLE", "noahswaytravel")
+const facebookHandle = env("NEXT_PUBLIC_FACEBOOK_HANDLE", "noahswaytravelandtours")
 
 export const siteConfig = {
   name: "Noah's Way Travel & Tours",
@@ -27,7 +27,7 @@ export const siteConfig = {
   email: env("NEXT_PUBLIC_CONTACT_EMAIL", "sales.noahsway@gmail.com"),
 
   facebookHandle,
-  facebookUrl: env("NEXT_PUBLIC_FACEBOOK_URL", `https://www.facebook.com/${facebookHandle}/`),
+  facebookUrl: env("NEXT_PUBLIC_FACEBOOK_URL", `https://www.facebook.com/${facebookHandle}`),
   instagramUrl: env("NEXT_PUBLIC_INSTAGRAM_URL", ""),
 
   address: {
