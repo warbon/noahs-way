@@ -1,6 +1,6 @@
 "use client"
 
-import { ExternalLink, Facebook, Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { ExternalLink, Eye, Facebook, Pencil, Plus, Search, Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -18,7 +18,7 @@ import {
 import AdminListSkeleton from "@/components/AdminListSkeleton"
 import AdminPackageFormFields from "@/components/AdminPackageFormFields"
 import AdminSidePanel from "@/components/AdminSidePanel"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SplitButton, splitButtonItemClass } from "@/components/ui/split-button"
 import type { AdminPackageCatalog, AdminPackageRecord } from "@/lib/admin-package-types"
@@ -647,6 +647,19 @@ export default function AdminPackageManagerPanel() {
                       </>
                     ) : (
                       <>
+                        {/* Opens in a new tab so the list, its filters and any
+                            half-typed search survive the look. */}
+                        <Link
+                          href={`/admin/packages/${pkg.id}/preview`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title="See this package the way customers will"
+                          className={buttonVariants({ variant: "outline", size: "sm" })}
+                        >
+                          <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                          <span>Preview</span>
+                          <span className="sr-only"> {pkg.title}</span>
+                        </Link>
                         <Button
                           type="button"
                           size="sm"
