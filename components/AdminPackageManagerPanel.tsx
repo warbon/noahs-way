@@ -21,6 +21,7 @@ import AdminSidePanel from "@/components/AdminSidePanel"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SplitButton, splitButtonItemClass } from "@/components/ui/split-button"
+import { postPackageToFacebook, type PostOutcome } from "@/lib/admin-facebook-client"
 import type { AdminPackageCatalog, AdminPackageRecord } from "@/lib/admin-package-types"
 import type { PublicFacebookSettings } from "@/lib/facebook/settings-types"
 import type { PackageCategory } from "@/lib/package-data"
@@ -56,63 +57,6 @@ function getApiErrorMessage(value: unknown) {
   if (!value || typeof value !== "object") return null
   const record = value as Record<string, unknown>
   return typeof record.error === "string" ? record.error : null
-}
-
-/** What the banner should say after a post attempt, and where it can link. */
-type PostOutcome = { message: string; href: string | null }
-
-/**
- * Posts one saved package to the Page and turns every ending into something the
- * banner can say. Deliberately never throws: one caller has already committed a
- * save it must not pretend did not happen.
- */
-async function postPackageToFacebook(
-  pkg: AdminPackageRecord,
-  prefix = ""
-): Promise<PostOutcome> {
-  try {
-    const response = await fetch(`/api/admin/packages/${pkg.id}/facebook`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      // The API refuses a second post unless it is asked twice on purpose, and
-      // the confirm step the admin just passed through is that purpose.
-      body: JSON.stringify({ force: Boolean(pkg.facebookPostId) })
-    })
-    const payload = (await response.json().catch(() => null)) as {
-      alreadyPosted?: { permalink: string | null }
-      share?: { permalink: string | null; recorded: boolean }
-    } | null
-
-    if (response.status === 409) {
-      return {
-        message: `${prefix}It was already posted to the Page, so nothing was posted again — use Repost on the row if you meant to.`,
-        href: payload?.alreadyPosted?.permalink ?? null
-      }
-    }
-
-    if (!response.ok) {
-      return {
-        message: `${prefix}${getApiErrorMessage(payload) ?? "Could not post to Facebook."}`,
-        href: null
-      }
-    }
-
-    return {
-      // A post that went out but was not recorded is the one case worth
-      // spelling out, because the next click would quietly publish a duplicate.
-      message:
-        payload?.share?.recorded === false
-          ? `${prefix}Posted “${pkg.title}” to Facebook, but it could not be marked as posted here — check the Page before posting it again.`
-          : `${prefix}Posted “${pkg.title}” to Facebook.`,
-      href: payload?.share?.permalink ?? null
-    }
-  } catch {
-    // The request may well have landed, so this must not claim it did not.
-    return {
-      message: `${prefix}The network dropped before Facebook answered — check the Page before posting it again.`,
-      href: null
-    }
-  }
 }
 
 function normalizeCatalog(payload: unknown): AdminPackageCatalog | null {
@@ -238,6 +182,29 @@ export default function AdminPackageManagerPanel() {
   useEffect(() => {
     void loadPackages()
   }, [loadPackages])
+
+  /**
+   * `?edit=<id>` opens that package's edit panel once the catalog has loaded;
+   * the preview page's Edit button lands here. The parameter is dropped at
+   * once, so a refresh does not reopen the panel over whatever came next.
+   */
+  const handledEditParamRef = useRef(false)
+  useEffect(() => {
+    if (loading || loadError || handledEditParamRef.current) return
+
+    const editId = new URLSearchParams(window.location.search).get("edit")
+    if (!editId) return
+    handledEditParamRef.current = true
+
+    const match = [...catalog.local, ...catalog.international].find((pkg) => pkg.id === editId)
+    if (match) {
+      setPanel({ mode: "edit", pkg: match })
+    } else {
+      setNoticeHref(null)
+      setNotice("That package could not be found — it may have been deleted.")
+    }
+    router.replace("/admin/packages", { scroll: false })
+  }, [loading, loadError, catalog, router])
 
   /** One place to set the banner, so a stale "view post" link can never outlive it. */
   function showNotice(message: string, href: string | null = null) {

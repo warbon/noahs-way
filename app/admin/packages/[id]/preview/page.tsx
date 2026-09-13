@@ -1,16 +1,11 @@
-import { ArrowLeft, ExternalLink } from "lucide-react"
 import type { Metadata } from "next"
-import Link from "next/link"
 import { unstable_noStore as noStore } from "next/cache"
 import { notFound, redirect } from "next/navigation"
 
-import BackToTop from "@/components/BackToTop"
-import ContactFab from "@/components/ContactFab"
-import Footer from "@/components/Footer"
-import Navbar from "@/components/Navbar"
+import AdminPreviewActions from "@/components/AdminPreviewActions"
 import PackageDetailView from "@/components/PackageDetailView"
-import ScrollProgress from "@/components/ScrollProgress"
 import { isAdminAuthenticated } from "@/lib/admin-auth-server"
+import { resolveFacebookConfig } from "@/lib/facebook/config"
 import { getAllPackagesForAdmin, getPackagesByCategory } from "@/lib/package-repository"
 import { buildPackageHref, resolveSlugCollisions } from "@/lib/package-slug"
 
@@ -34,12 +29,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 /**
- * A package exactly as a customer would see it, drafts included.
+ * A package exactly as a customer would read it, drafts included, with the
+ * decisions about it in a bar underneath.
  *
- * The public page refuses drafts on purpose, which left no way to look at one
- * before publishing it — the admin could only read the form. This renders the
- * same PackageDetailView under the site's own navbar and footer, with a bar on
- * top that says which state the package is in.
+ * No site navbar, footer or floating buttons: those are the same on every
+ * page and only stand between the admin and the part that is new. The body is
+ * the same PackageDetailView the public page renders, so what is reviewed here
+ * is what goes live.
  */
 export default async function AdminPackagePreviewPage({ params }: PageProps) {
   noStore()
@@ -62,52 +58,22 @@ export default async function AdminPackagePreviewPage({ params }: PageProps) {
         (record) => record.id === pkg.id
       )?.slug ?? null
 
-  return (
-    <>
-      <div
-        className={
-          isDraft
-            ? "border-b border-amber-300 bg-amber-100 text-amber-950"
-            : "border-b border-emerald-300 bg-emerald-100 text-emerald-950"
-        }
-      >
-        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-3 text-sm md:px-8">
-          <p>
-            <span className="font-bold">{isDraft ? "Draft preview" : "Published"}</span>
-            {" — "}
-            {isDraft
-              ? "customers can't see this yet. This is how the page will look once it is published."
-              : "this is the page customers see."}
-          </p>
-          <div className="flex flex-wrap items-center gap-4">
-            {liveSlug ? (
-              <a
-                href={buildPackageHref(pkg.category, liveSlug)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 font-semibold underline underline-offset-4"
-              >
-                <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                Open live page
-              </a>
-            ) : null}
-            <Link
-              href="/admin/packages"
-              className="inline-flex items-center gap-1.5 font-semibold underline underline-offset-4"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
-              Back to Package Manager
-            </Link>
-          </div>
-        </div>
-      </div>
+  const facebook = await resolveFacebookConfig()
 
-      <ScrollProgress />
-      <Navbar />
+  return (
+    // Room at the bottom so the action bar never sits over the end of the page.
+    <div className="min-h-screen bg-background pb-44">
       <PackageDetailView pkg={pkg} category={pkg.category} preview />
-      <Footer />
-      <ContactFab />
-      <BackToTop />
-    </>
+      <AdminPreviewActions
+        id={pkg.id}
+        title={pkg.title}
+        isDraft={isDraft}
+        facebookPostId={pkg.facebookPostId}
+        facebookPostedAt={pkg.facebookPostedAt}
+        facebookPermalink={pkg.facebookPermalink}
+        liveHref={liveSlug ? buildPackageHref(pkg.category, liveSlug) : null}
+        facebookAvailable={facebook.available}
+      />
+    </div>
   )
 }
