@@ -49,6 +49,23 @@ export default function PackageGallery({
    */
   const wheelHandlerRef = useRef<(event: WheelEvent) => void>(() => {})
 
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false)
+
+  useEffect(() => {
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)")
+    const update = () => setPrefersReducedMotion(query.matches)
+    update()
+    query.addEventListener("change", update)
+    return () => query.removeEventListener("change", update)
+  }, [])
+
+  /**
+   * Whether the row auto-scrolls. One package has nothing to loop past, and
+   * reduced motion switches the loop off; either way the cloned sequence that
+   * makes the loop seamless would just be a visible duplicate of every card.
+   */
+  const loops = packages.length >= 2 && !prefersReducedMotion
+
   useEffect(() => {
     return () => {
       if (wheelResumeTimeoutRef.current !== null) {
@@ -70,6 +87,32 @@ export default function PackageGallery({
         minWidth: `${carouselItemWidthPx}px`
       }
     : undefined
+
+  /**
+   * Card width is measured in pixels from the viewport, and it has to be. The
+   * track is `w-max`, so a percentage min-width on a card resolves against a
+   * box whose width is the cards' own; browsers settle that cycle at almost
+   * zero, and the cards render about 2px wide — present in the page, invisible
+   * on it. This measurement used to live inside the animation effect below,
+   * which bails out for a single package or reduced motion, so exactly those
+   * rows never got a width.
+   */
+  useEffect(() => {
+    if (layout !== "carousel") return
+
+    const viewport = carouselViewportRef.current
+    if (!viewport) return
+
+    const measure = () => {
+      const width = viewport.clientWidth
+      if (width) setCarouselViewportWidth((prev) => (prev === width ? prev : width))
+    }
+
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(viewport)
+    return () => observer.disconnect()
+  }, [layout])
 
   const setCarouselTrackTransform = (offset: number) => {
     const track = carouselTrackRef.current
@@ -142,8 +185,7 @@ export default function PackageGallery({
     const track = carouselTrackRef.current
     const sequence = carouselSequenceRef.current
     const cloneSequence = carouselCloneSequenceRef.current
-    if (!viewport || !track || !sequence || !cloneSequence || packages.length < 2) return
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    if (!loops || !viewport || !track || !sequence || !cloneSequence) return
 
     let frameId = 0
     let lastTimestamp = 0
@@ -152,7 +194,6 @@ export default function PackageGallery({
     const measure = () => {
       const viewportWidth = viewport.clientWidth
       if (!viewportWidth) return
-      setCarouselViewportWidth((prev) => (prev === viewportWidth ? prev : viewportWidth))
 
       sequence.style.minWidth = `${viewportWidth}px`
       cloneSequence.style.minWidth = `${viewportWidth}px`
@@ -207,7 +248,7 @@ export default function PackageGallery({
       window.cancelAnimationFrame(frameId)
       track.style.transform = ""
     }
-  }, [autoScrollDirection, layout, packages.length])
+  }, [autoScrollDirection, layout, loops])
 
   const renderCard = (pkg: TravelPackage, index: number) => {
     const slug = derivePackageSlug(pkg)
@@ -374,6 +415,7 @@ export default function PackageGallery({
                 ))}
               </div>
 
+              {loops ? (
               <div ref={carouselCloneSequenceRef} className="flex shrink-0 gap-7" aria-hidden="true">
                 {packages.map((pkg, index) => (
                   <div
@@ -388,6 +430,7 @@ export default function PackageGallery({
                   </div>
                 ))}
               </div>
+              ) : null}
             </div>
           </div>
         </div>
