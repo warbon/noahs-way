@@ -14,11 +14,18 @@ type PaymentMethodsProps = {
   className?: string
   /** Off on the policy page itself, where the link would point at the page you're reading. */
   showPolicyLink?: boolean
+  /**
+   * Overrides the line under the heading. A condo stay has no departure to
+   * settle the balance before, so the default sentence reads as a leftover
+   * from a different product.
+   */
+  intro?: string
 }
 
 export default function PaymentMethods({
   className = "",
-  showPolicyLink = true
+  showPolicyLink = true,
+  intro
 }: PaymentMethodsProps) {
   return (
     <section
@@ -29,8 +36,8 @@ export default function PaymentMethods({
         How you can pay
       </h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Reserve with a deposit and settle the balance before departure. We&apos;ll confirm the
-        exact schedule when we send your quote.
+        {intro ??
+          "Reserve with a deposit and settle the balance before departure. We'll confirm the exact schedule when we send your quote."}
       </p>
 
       {/*

@@ -3,6 +3,8 @@ import type { MetadataRoute } from "next"
 import type { PackageCategory } from "@/lib/package-data"
 import { getPackagesByCategory } from "@/lib/package-repository"
 import { buildPackageHref, resolveSlugCollisions } from "@/lib/package-slug"
+import { getStays } from "@/lib/stay-repository"
+import { resolveStaySlugs } from "@/lib/stay-slug"
 import { destinations } from "@/lib/destinations"
 import { publishedGuides } from "@/lib/guides"
 import { siteConfig } from "@/lib/site-config"
@@ -21,6 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.7
     })),
+    { url: `${siteConfig.url}/stays`, changeFrequency: "weekly", priority: 0.8 },
     { url: `${siteConfig.url}/guides`, changeFrequency: "weekly", priority: 0.7 },
     ...publishedGuides().map((guide) => ({
       url: `${siteConfig.url}/guides/${guide.slug}`,
@@ -48,6 +51,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         priority: 0.7
       })
     }
+  }
+
+  // Drafts are excluded by the repository, so an unpublished unit never leaks
+  // into the sitemap.
+  for (const stay of resolveStaySlugs(await getStays())) {
+    entries.push({
+      url: `${siteConfig.url}/stays/${stay.slug}`,
+      lastModified: stay.updatedAt ? new Date(stay.updatedAt) : undefined,
+      changeFrequency: "weekly",
+      priority: 0.7
+    })
   }
 
   return entries

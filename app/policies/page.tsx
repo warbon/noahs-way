@@ -9,7 +9,7 @@ import { accreditations, emailHref, isPublished, phoneHref, siteConfig } from "@
 export const metadata: Metadata = {
   title: "Payment & Cancellation Policy",
   description:
-    "How to pay for a Noah's Way package, when the balance is due, and what happens if you need to cancel or reschedule.",
+    "How to pay for a Noah's Way package or condo stay, when the balance is due, and what happens if you need to cancel or reschedule.",
   alternates: { canonical: "/policies" }
 }
 
@@ -45,6 +45,42 @@ const terms = [
   {
     heading: "What is never included",
     body: "Philippine travel tax, mandatory tipping, check-in baggage beyond the stated allowance, travel insurance and visa fees are listed per package on its own page. Check the exclusions before you budget."
+  }
+]
+
+/**
+ * Condo stays run on different terms from tours, and saying so is the point.
+ *
+ * A tour's cancellation schedule is set by airline and hotel partners weeks
+ * out; a condo booking is a single unit for a few nights, where the cost of a
+ * late cancellation is one empty room. Letting the tour terms above stand in
+ * for both would mean quoting an airline's rules at someone renting a
+ * bedroom.
+ */
+const stayTerms = [
+  {
+    heading: "Requesting dates",
+    body: "The calendar on each unit shows the nights we know are taken. Sending a request does not hold the unit — we confirm it is still free, then send you the total and the deposit details."
+  },
+  {
+    heading: "Reserving the unit",
+    body: `A deposit holds the dates. Deposit amount: ${TO_CONFIRM} — stated on your confirmation before you pay anything.`
+  },
+  {
+    heading: "Balance and check-in",
+    body: `The balance is due ${TO_CONFIRM}. Check-in and check-out times are listed on each unit's page; the check-out day is not charged as a night.`
+  },
+  {
+    heading: "If you cancel a stay",
+    body: `Refund terms for condo stays: ${TO_CONFIRM}. They are not the same as the package terms above — a stay has no airline ticket behind it.`
+  },
+  {
+    heading: "Fees on top of the nightly rate",
+    body: "The cleaning fee, where one applies, is shown on the unit's page and charged once per booking rather than per night. Any security deposit or association fee is stated on your confirmation."
+  },
+  {
+    heading: "House rules",
+    body: "Each unit lists its own rules — occupancy limits, smoking, pets and quiet hours. The maximum number of guests is a building rule, not a preference, and we cannot exceed it."
   }
 ]
 
@@ -104,6 +140,24 @@ export default function PoliciesPage() {
                   </div>
                 ))}
               </dl>
+
+              <section aria-labelledby="stay-terms-heading" className="border-t border-border pt-5">
+                <h2 id="stay-terms-heading" className="font-bold text-primary">
+                  Condo stays
+                </h2>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Short-stay rentals are booked on their own terms. Where these differ from the
+                  package terms above, these are the ones that apply to your stay.
+                </p>
+                <dl className="mt-4 space-y-5">
+                  {stayTerms.map((term) => (
+                    <div key={term.heading}>
+                      <dt className="text-sm font-bold text-foreground">{term.heading}</dt>
+                      <dd className="mt-1 text-sm text-muted-foreground">{term.body}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
 
               <section aria-labelledby="verify-heading" className="border-t border-border pt-5">
                 <h2 id="verify-heading" className="font-bold text-primary">
