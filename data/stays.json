@@ -1,0 +1,24 @@
+[
+  {
+    "id": "stay-1789973948211-recovered",
+    "title": "1BR Suite Avida Tower",
+    "details": "Studio \u2022 Sleeps 2 \u2022 Cebu City IT Park",
+    "previewImage": "/images/stays/units/1br-suite-avida-tower-1789973948211.jpg",
+    "imagePath": "/images/stays/units/1br-suite-avida-tower-1789973948211.jpg",
+    "gallery": [
+      "/images/stays/units/1br-suite-avida-tower-1789975427862.jpg",
+      "/images/stays/units/1br-suite-avida-tower-1789975427863.jpg"
+    ],
+    "nightlyRate": 2462,
+    "currency": "PHP",
+    "city": "Cebu City IT Park",
+    "bedrooms": 0,
+    "maxGuests": 2,
+    "status": "published",
+    "blocks": [],
+    "createdAt": "2026-09-21T06:59:08.211Z",
+    "minimumNights": 2,
+    "building": "Avida Towers",
+    "updatedAt": "2026-09-21T07:24:01.996Z"
+  }
+]

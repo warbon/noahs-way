@@ -9,6 +9,7 @@
     "start": "next start",
     "lint": "next lint",
     "seed:kv": "node --env-file=.env.local scripts/seed-kv-from-json.mjs",
+    "seed:kv:stays": "node --env-file=.env.local scripts/seed-kv-stays.mjs",
     "reset:inquiries": "node --env-file=.env.local scripts/reset-inquiries.mjs"
   },
   "dependencies": {
