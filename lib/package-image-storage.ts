@@ -7,11 +7,12 @@ import {
   savePackageImageLocally
 } from "@/lib/storage/local-package-image-storage"
 import type {
+  ImageCollection,
   SavePackageImageParams,
   SavePackageImageResult
 } from "@/lib/storage/package-image-storage-types"
 
-export type { SavePackageImageParams, SavePackageImageResult }
+export type { ImageCollection, SavePackageImageParams, SavePackageImageResult }
 
 let warnedAboutLocalStore = false
 
@@ -53,7 +54,7 @@ export async function deletePackageImage(imagePath: string | undefined): Promise
   try {
     if (imagePath.includes(".blob.vercel-storage.com")) {
       await deletePackageImageFromBlob(imagePath)
-    } else if (imagePath.startsWith("/images/packages/")) {
+    } else if (/^\/images\/(packages|stays)\//.test(imagePath)) {
       await deletePackageImageLocally(imagePath)
     }
   } catch (error) {

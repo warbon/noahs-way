@@ -1,21 +1,27 @@
 import { del, put } from "@vercel/blob"
 
 import type {
+  ImageCollection,
   SavePackageImageParams,
   SavePackageImageResult
 } from "@/lib/storage/package-image-storage-types"
 
-function slugify(value: string) {
+function slugify(value: string, fallback = "package") {
   const slug = value
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "")
 
-  return slug || "package"
+  return slug || fallback
 }
 
-function getBlobPrefix() {
-  return process.env.BLOB_PACKAGE_IMAGE_PREFIX?.trim().replace(/^\/+|\/+$/g, "") || "packages"
+function getBlobPrefix(collection: ImageCollection) {
+  const override =
+    collection === "packages"
+      ? process.env.BLOB_PACKAGE_IMAGE_PREFIX
+      : process.env.BLOB_STAY_IMAGE_PREFIX
+
+  return override?.trim().replace(/^\/+|\/+$/g, "") || collection
 }
 
 /**
@@ -24,12 +30,16 @@ function getBlobPrefix() {
  * the project. Returns the public Blob URL.
  */
 export async function savePackageImageToBlob({
-  category,
+  collection,
+  folder,
   title,
   file,
   extension
 }: SavePackageImageParams): Promise<SavePackageImageResult> {
-  const objectPath = `${getBlobPrefix()}/${category}/${slugify(title)}-${Date.now()}${extension}`
+  // `addRandomSuffix` below already prevents collisions, but the base path
+  // carries its own token too so the two adapters produce the same shape of
+  // name and neither depends on the other's safety net.
+  const objectPath = `${getBlobPrefix(collection)}/${slugify(folder, "other")}/${slugify(title)}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${extension}`
 
   const arrayBuffer = await file.arrayBuffer()
   const blob = await put(objectPath, Buffer.from(arrayBuffer), {

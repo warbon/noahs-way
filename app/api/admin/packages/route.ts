@@ -89,7 +89,8 @@ export async function POST(request: NextRequest) {
 
   try {
     ;({ publicImagePath } = await savePackageImage({
-      category,
+      collection: "packages",
+      folder: category,
       title,
       file: imageValue,
       extension

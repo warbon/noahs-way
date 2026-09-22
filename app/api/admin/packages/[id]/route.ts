@@ -91,7 +91,8 @@ export async function PUT(request: NextRequest, { params }: RouteContext) {
       }
 
       const { publicImagePath } = await savePackageImage({
-        category: categoryValue,
+        collection: "packages",
+        folder: categoryValue,
         title,
         file: imageValue,
         extension
