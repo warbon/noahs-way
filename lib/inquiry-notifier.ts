@@ -19,15 +19,34 @@ type NotificationChannel = {
   send(inquiry: InquiryRecord): Promise<void>
 }
 
+/** The headline both the alert and the receipt lead with. */
+function subjectOf(inquiry: InquiryRecord) {
+  if (inquiry.stayTitle) return `New stay request — ${inquiry.stayTitle}`
+  if (inquiry.packageTitle) return `New booking request — ${inquiry.packageTitle}`
+  return "New booking request"
+}
+
 function formatInquiry(inquiry: InquiryRecord) {
   const lines = [
-    inquiry.packageTitle
-      ? `New booking request — ${inquiry.packageTitle}`
-      : "New booking request",
+    subjectOf(inquiry),
     `From: ${inquiry.name}`,
     `Mobile: ${inquiry.mobile}`,
     `Email: ${inquiry.email}`
   ]
+
+  /*
+    Stay details go first when there are any. A condo request is answered by
+    checking one calendar and quoting one total, and burying the dates under
+    the flight-shaped fields is how a booking gets held against the wrong
+    nights.
+  */
+  if (inquiry.checkIn && inquiry.checkOut) {
+    lines.push(
+      `Stay: ${inquiry.checkIn} to ${inquiry.checkOut}` +
+        (inquiry.nights ? ` (${inquiry.nights} night${inquiry.nights === 1 ? "" : "s"})` : "")
+    )
+  }
+  if (inquiry.guests) lines.push(`Guests: ${inquiry.guests}`)
 
   if (inquiry.destination) lines.push(`Destination: ${inquiry.destination}`)
   if (inquiry.airportOfOrigin) lines.push(`Departing from: ${inquiry.airportOfOrigin}`)
@@ -76,15 +95,24 @@ function customerReceipt(inquiry: InquiryRecord) {
   const lines = [
     `Hi ${inquiry.name.split(" ")[0] || inquiry.name},`,
     "",
-    inquiry.packageTitle
-      ? `Thanks for your booking request for ${inquiry.packageTitle}. We've got it.`
-      : "Thanks for your enquiry. We've got it.",
+    inquiry.stayTitle
+      ? `Thanks for your request to stay at ${inquiry.stayTitle}. We've got it.`
+      : inquiry.packageTitle
+        ? `Thanks for your booking request for ${inquiry.packageTitle}. We've got it.`
+        : "Thanks for your enquiry. We've got it.",
     "",
     "One of our trip specialists will come back to you within 24 hours with availability and a final quote. If it's urgent, call us on " +
       `${siteConfig.phone} — we're open ${siteConfig.hours}.`,
     ""
   ]
 
+  if (inquiry.checkIn && inquiry.checkOut) {
+    lines.push(
+      `Dates: ${inquiry.checkIn} to ${inquiry.checkOut}` +
+        (inquiry.nights ? ` (${inquiry.nights} night${inquiry.nights === 1 ? "" : "s"})` : "")
+    )
+    if (inquiry.guests) lines.push(`Guests: ${inquiry.guests}`)
+  }
   if (inquiry.destination) lines.push(`Destination: ${inquiry.destination}`)
   if (inquiry.travelDateFrom || inquiry.travelDateTo) {
     lines.push(`Travel dates: ${inquiry.travelDateFrom ?? "?"} to ${inquiry.travelDateTo ?? "?"}`)
@@ -152,17 +180,17 @@ const emailChannel: NotificationChannel = {
     const [receipt, alert] = await Promise.allSettled([
       sendViaResend({
         to: inquiry.email,
-        subject: inquiry.packageTitle
-          ? `We received your booking request — ${inquiry.packageTitle}`
-          : "We received your enquiry",
+        subject: inquiry.stayTitle
+          ? `We received your stay request — ${inquiry.stayTitle}`
+          : inquiry.packageTitle
+            ? `We received your booking request — ${inquiry.packageTitle}`
+            : "We received your enquiry",
         text: customerReceipt(inquiry),
         replyTo: salesInbox
       }),
       sendViaResend({
         to: salesInbox,
-        subject: inquiry.packageTitle
-          ? `New booking request — ${inquiry.packageTitle}`
-          : "New booking request",
+        subject: subjectOf(inquiry),
         text: formatInquiry(inquiry),
         replyTo: inquiry.email
       })

@@ -3,6 +3,10 @@ import { notifyNewInquiry } from "@/lib/inquiry-notifier"
 import { isTravelType, type InquiryRecord, type InquirySource } from "@/lib/inquiry-types"
 import { getPackagesByCategory } from "@/lib/package-repository"
 import { derivePackageSlug } from "@/lib/package-slug"
+import { checkStayRange } from "@/lib/stay-availability"
+import { getStays } from "@/lib/stay-repository"
+import type { StayRecord } from "@/lib/stay-repository-types"
+import { deriveSlug } from "@/lib/slug"
 
 /**
  * One validated path from "someone asked to be contacted" to a stored lead.
@@ -88,6 +92,17 @@ async function resolvePackageSnapshot(packageId: string | undefined) {
   return {}
 }
 
+/**
+ * Resolves the condo unit the guest was looking at, from the catalog rather
+ * than from the request — same rule as packages, for the same reason.
+ */
+async function resolveStay(stayId: string | undefined): Promise<StayRecord | undefined> {
+  if (!stayId) return undefined
+
+  const stays = await getStays({ includeDrafts: true })
+  return stays.find((stay) => stay.id === stayId)
+}
+
 export type InquirySubmissionResult =
   | { ok: true; inquiry: InquiryRecord }
   | { ok: false; status: 400 | 503; error: string }
@@ -164,8 +179,51 @@ export async function submitInquiry(
     readOptionalString(body.destination, MAX_FREEFORM_LENGTH) ??
     (resolvedDestination ? sanitizeText(resolvedDestination).slice(0, MAX_FREEFORM_LENGTH) : undefined)
 
+  /*
+    The availability re-check.
+
+    The calendar the guest clicked was rendered from a snapshot of the catalog
+    that may be minutes or hours old, and another guest may have been booked
+    into those nights since. Trusting it would mean confirming a stay that is
+    already gone, so the dates are validated again here, against the unit as it
+    stands right now. This is the check that counts; the one in the browser is
+    only there to save a round trip.
+  */
+  const stay = await resolveStay(readOptionalString(body.stayId, MAX_PACKAGE_ID_LENGTH))
+  let staySnapshot: Partial<InquiryRecord> = {}
+
+  if (stay) {
+    const checkIn = readOptionalDate(body.checkIn)
+    const checkOut = readOptionalDate(body.checkOut)
+    const range = checkStayRange(checkIn, checkOut, stay)
+
+    if (!range.ok) {
+      return { ok: false, status: 400, error: range.error }
+    }
+
+    const guests = readOptionalCount(body.guests)
+    if (guests !== undefined && guests > stay.maxGuests) {
+      return {
+        ok: false,
+        status: 400,
+        error: `This unit sleeps up to ${stay.maxGuests} guest${stay.maxGuests === 1 ? "" : "s"}.`
+      }
+    }
+
+    staySnapshot = {
+      stayId: stay.id,
+      stayTitle: stay.title,
+      staySlug: deriveSlug(stay, "stay"),
+      checkIn: checkIn as string,
+      checkOut: checkOut as string,
+      nights: range.nights,
+      guests
+    }
+  }
+
   const source: InquirySource =
-    options.source ?? (packageSnapshot.packageId ? "package-cta" : "contact-form")
+    options.source ??
+    (staySnapshot.stayId ? "stay-cta" : packageSnapshot.packageId ? "package-cta" : "contact-form")
 
   try {
     const inquiry = await createInquiry({
@@ -173,7 +231,10 @@ export async function submitInquiry(
       mobile,
       email,
       message,
-      destination,
+      // A stay names a city, not a destination, and the inbox sorts and filters
+      // on `destination` — so the unit's city backfills it rather than leaving
+      // every condo lead blank in the column the consultant scans first.
+      destination: destination ?? (stay ? sanitizeText(stay.city).slice(0, MAX_FREEFORM_LENGTH) : undefined),
       airportOfOrigin: readOptionalString(body.airportOfOrigin, MAX_FREEFORM_LENGTH),
       travelDateFrom,
       travelDateTo,
@@ -184,6 +245,7 @@ export async function submitInquiry(
       childAges: readOptionalString(body.childAges, MAX_FREEFORM_LENGTH),
       travelType: isTravelType(body.travelType) ? body.travelType : undefined,
       ...packageSnapshot,
+      ...staySnapshot,
       source
     })
 

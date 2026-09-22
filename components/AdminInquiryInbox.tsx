@@ -28,10 +28,11 @@ const statusLabels: Record<InquiryStatus, string> = {
   archived: "Archived"
 }
 
-/** Which channel produced the lead — the chat assistant is one of three. */
+/** Which channel produced the lead. */
 const sourceLabels: Record<InquirySource, string> = {
   "contact-form": "Contact form",
   "package-cta": "Package page",
+  "stay-cta": "Condo stay",
   "chat-agent": "AI assistant"
 }
 
@@ -137,6 +138,15 @@ export default function AdminInquiryInbox() {
     () => (selected?.packageId ? packages.find((pkg) => pkg.id === selected.packageId) : null),
     [selected, packages]
   )
+
+  /**
+   * Keyed on the stored snapshot, not the source.
+   *
+   * `source` records which channel produced the lead; the snapshot records what
+   * it is actually about. A stay booked through the chat assistant would carry
+   * `source: "chat-agent"` and still be a condo request.
+   */
+  const isStayLead = Boolean(selected?.stayTitle)
 
   const counts = useMemo(
     () =>
@@ -439,44 +449,70 @@ export default function AdminInquiryInbox() {
               </dl>
             </section>
 
+            {/*
+              The flight-shaped rows are hidden on a condo lead unless that lead
+              actually carries one. A stay request has no airport, no return
+              flight and no travel type, so rendering four "Not given" rows
+              under a heading called "Trip details" is noise that buries the two
+              lines — the unit and the nights — that the consultant is looking
+              for. Anything genuinely present is still shown.
+            */}
             <section>
               <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
-                Trip details
+                {isStayLead ? "Guest details" : "Trip details"}
               </h3>
               <dl className="mt-3 space-y-2 text-sm">
                 <div className="flex gap-2">
-                  <dt className="w-28 shrink-0 text-muted-foreground">Destination</dt>
+                  <dt className="w-28 shrink-0 text-muted-foreground">
+                    {isStayLead ? "City" : "Destination"}
+                  </dt>
                   <dd>{selected.destination ?? "Not given"}</dd>
                 </div>
-                <div className="flex gap-2">
-                  <dt className="w-28 shrink-0 text-muted-foreground">From airport</dt>
-                  <dd>{selected.airportOfOrigin ?? "Not given"}</dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt className="w-28 shrink-0 text-muted-foreground">Travel dates</dt>
-                  <dd>
-                    {travelWindow(selected) ?? "Not given"}
-                    {selected.flexibleOnPromoDates ? (
-                      <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-900">
-                        Flexible for promos
-                      </span>
-                    ) : null}
-                  </dd>
-                </div>
-                <div className="flex gap-2">
-                  <dt className="w-28 shrink-0 text-muted-foreground">Travellers</dt>
-                  <dd>{partySize(selected) ?? "Not given"}</dd>
-                </div>
+                {!isStayLead || selected.airportOfOrigin ? (
+                  <div className="flex gap-2">
+                    <dt className="w-28 shrink-0 text-muted-foreground">From airport</dt>
+                    <dd>{selected.airportOfOrigin ?? "Not given"}</dd>
+                  </div>
+                ) : null}
+                {!isStayLead || travelWindow(selected) ? (
+                  <div className="flex gap-2">
+                    <dt className="w-28 shrink-0 text-muted-foreground">Travel dates</dt>
+                    <dd>
+                      {travelWindow(selected) ?? "Not given"}
+                      {selected.flexibleOnPromoDates ? (
+                        <span className="ml-2 rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold text-emerald-900">
+                          Flexible for promos
+                        </span>
+                      ) : null}
+                    </dd>
+                  </div>
+                ) : null}
+                {isStayLead && selected.guests ? (
+                  <div className="flex gap-2">
+                    <dt className="w-28 shrink-0 text-muted-foreground">Guests</dt>
+                    <dd>
+                      {selected.guests} guest{selected.guests === 1 ? "" : "s"}
+                    </dd>
+                  </div>
+                ) : null}
+                {!isStayLead || partySize(selected) ? (
+                  <div className="flex gap-2">
+                    <dt className="w-28 shrink-0 text-muted-foreground">Travellers</dt>
+                    <dd>{partySize(selected) ?? "Not given"}</dd>
+                  </div>
+                ) : null}
                 {selected.childAges ? (
                   <div className="flex gap-2">
                     <dt className="w-28 shrink-0 text-muted-foreground">Child ages</dt>
                     <dd>{selected.childAges}</dd>
                   </div>
                 ) : null}
-                <div className="flex gap-2">
-                  <dt className="w-28 shrink-0 text-muted-foreground">Travel type</dt>
-                  <dd className="capitalize">{selected.travelType ?? "Not given"}</dd>
-                </div>
+                {!isStayLead || selected.travelType ? (
+                  <div className="flex gap-2">
+                    <dt className="w-28 shrink-0 text-muted-foreground">Travel type</dt>
+                    <dd className="capitalize">{selected.travelType ?? "Not given"}</dd>
+                  </div>
+                ) : null}
               </dl>
             </section>
 
@@ -491,7 +527,52 @@ export default function AdminInquiryInbox() {
               </section>
             ) : null}
 
-            <section>
+            {/*
+              A stay request answers a different question from a tour enquiry —
+              which unit, which nights, how many people — so it gets its own
+              block rather than being squeezed into the package one. The dates
+              lead, because confirming them against the calendar is the whole
+              job.
+            */}
+            {isStayLead ? (
+              <section>
+                <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  Condo unit requested
+                </h3>
+                <div className="mt-3 rounded-xl border border-border p-3 text-sm">
+                  <p className="font-semibold text-foreground">{selected.stayTitle}</p>
+                  {selected.checkIn && selected.checkOut ? (
+                    <p className="mt-1 text-muted-foreground">
+                      {selected.checkIn} → {selected.checkOut}
+                      {selected.nights
+                        ? ` · ${selected.nights} night${selected.nights === 1 ? "" : "s"}`
+                        : ""}
+                    </p>
+                  ) : null}
+                  {selected.guests ? (
+                    <p className="text-muted-foreground">
+                      {selected.guests} guest{selected.guests === 1 ? "" : "s"}
+                    </p>
+                  ) : null}
+                  <div className="mt-2 flex flex-wrap gap-3">
+                    {selected.staySlug ? (
+                      <Link
+                        href={`/stays/${selected.staySlug}`}
+                        target="_blank"
+                        className="text-primary underline"
+                      >
+                        View public page
+                      </Link>
+                    ) : null}
+                    <Link href="/admin/stays" className="text-primary underline">
+                      Manage dates
+                    </Link>
+                  </div>
+                </div>
+              </section>
+            ) : null}
+
+            <section className={isStayLead ? "hidden" : undefined}>
               <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Package they were viewing
               </h3>

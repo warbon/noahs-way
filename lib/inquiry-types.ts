@@ -1,6 +1,6 @@
 export type InquiryStatus = "new" | "read" | "responded" | "archived"
 
-export type InquirySource = "contact-form" | "package-cta" | "chat-agent"
+export type InquirySource = "contact-form" | "package-cta" | "chat-agent" | "stay-cta"
 
 export type TravelType = "leisure" | "honeymoon" | "family" | "group" | "corporate"
 
@@ -44,6 +44,25 @@ export type InquiryRecord = {
   packageTitle?: string
   packageSlug?: string
   packageCategory?: "local" | "international"
+
+  /**
+   * Snapshotted server-side when the inquiry came from a condo stay, alongside
+   * the dates that were actually available at the moment it was submitted.
+   *
+   * Parallel to the `package*` fields above rather than sharing one neutral
+   * `subject*` shape with them. Merging the two would read better, but every
+   * inquiry already stored carries the `package*` names, and renaming them
+   * would either orphan that history or require a migration for a cosmetic
+   * gain.
+   */
+  stayId?: string
+  stayTitle?: string
+  staySlug?: string
+  /** `YYYY-MM-DD`, Philippine local time. Check-out is not a night stayed. */
+  checkIn?: string
+  checkOut?: string
+  nights?: number
+  guests?: number
 
   status: InquiryStatus
   source: InquirySource
