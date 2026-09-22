@@ -36,7 +36,7 @@ export default function BookingSummary({
   disabled,
   onSubmit
 }: GenUiComponentProps<"show_booking_summary">) {
-  const { prompt, draft, packageTitle } = widget.payload
+  const { prompt, draft, packageTitle, stayTitle } = widget.payload
   const locked = disabled || answered
 
   const travelWindow =
@@ -49,6 +49,25 @@ export default function BookingSummary({
   return (
     <WidgetShell prompt={prompt} answered={answered}>
       <dl className="divide-y divide-border/60 rounded-xl border border-border/70 bg-muted/30 px-3 py-1">
+        {/*
+          A condo request and a trip request answer different questions, so the
+          recap shows one set of rows or the other. Blank "Departing" and
+          "Travellers" lines under a condo booking read as fields the visitor
+          forgot to fill rather than ones that never applied.
+        */}
+        <Row label="Condo unit" value={stayTitle} />
+        <Row
+          label="Stay"
+          value={
+            draft.checkIn && draft.checkOut
+              ? `${draft.checkIn} to ${draft.checkOut}`
+              : undefined
+          }
+        />
+        <Row
+          label="Guests"
+          value={draft.guests ? `${draft.guests} guest(s)` : undefined}
+        />
         <Row label="Package" value={packageTitle} />
         <Row label="Destination" value={draft.destination} />
         <Row label="Travel" value={travelWindow} />

@@ -15,6 +15,7 @@ import {
 import type {
   ChatBookingDraft,
   ChatPackageSummary,
+  ChatStaySummary,
   GenUiToolName,
   GenUiPayloadMap
 } from "@/lib/ai/genui-types"
@@ -36,7 +37,9 @@ import {
   type AgentToolCallPart,
   type AgentToolResultPart
 } from "@/lib/ai/provider-types"
+import { findStayEntry, toChatStaySummary } from "@/lib/ai/stay-catalog"
 import { AGENT_TOOLS, isGenUiTool, runDataTool } from "@/lib/ai/tools"
+import { checkStayRange, normalizeBlocks } from "@/lib/stay-availability"
 import { isTravelType } from "@/lib/inquiry-types"
 import { checkChatRateLimit } from "@/lib/rate-limit"
 import { getClientIp } from "@/lib/request-ip"
@@ -66,7 +69,9 @@ const SLOW_TURN_MESSAGE =
 /** Progress labels, so a slow turn shows movement instead of silent dots. */
 const TOOL_STATUS: Record<string, string> = {
   search_packages: "Searching packages…",
-  get_package_details: "Reading the itinerary…"
+  get_package_details: "Reading the itinerary…",
+  search_stays: "Searching condo stays…",
+  check_stay_availability: "Checking the calendar…"
 }
 
 type StreamEvent =
@@ -153,6 +158,10 @@ function draftFromToolInput(input: Record<string, unknown>): ChatBookingDraft | 
     mobile,
     email,
     packageId: readString(input.packageId),
+    stayId: readString(input.stayId),
+    checkIn: readIsoDate(input.checkIn),
+    checkOut: readIsoDate(input.checkOut),
+    guests: readCount(input.guests),
     destination: readString(input.destination, 200),
     airportOfOrigin: readString(input.airportOfOrigin, 200),
     travelDateFrom: readIsoDate(input.travelDateFrom),
@@ -207,6 +216,64 @@ async function buildGenUi(
       }
     }
 
+    case "show_stay_picker": {
+      const ids = readStringArray(input.stayIds, 4)
+      const resolved = await Promise.all(ids.map((id) => findStayEntry(id)))
+      const stays = resolved
+        .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
+        .map(toChatStaySummary) satisfies ChatStaySummary[]
+
+      if (stays.length === 0) {
+        return {
+          rendered: false,
+          ack: { error: "None of those stayIds are published. Call search_stays again." }
+        }
+      }
+
+      return {
+        rendered: true,
+        name,
+        payload: { intro: readString(input.intro, 300) ?? "", stays },
+        ack: { displayed: true, shown: stays.map((entry) => entry.title) }
+      }
+    }
+
+    case "show_stay_date_picker": {
+      const stayId = readString(input.stayId)
+      const entry = stayId ? await findStayEntry(stayId) : undefined
+
+      if (!entry) {
+        return {
+          rendered: false,
+          ack: { error: "No published unit has that stayId. Call search_stays again." }
+        }
+      }
+
+      /*
+        Rate, fee and blocked nights are read from the catalog here rather than
+        taken from the model's arguments, so the calendar a visitor clicks and
+        the total it shows are the stored ones — the assistant cannot render a
+        price it invented, only ask for the widget.
+      */
+      return {
+        rendered: true,
+        name,
+        payload: {
+          prompt,
+          stayId: entry.id,
+          stayTitle: entry.title,
+          nightlyRate: entry.nightlyRate,
+          currency: entry.currency ?? "PHP",
+          cleaningFee: entry.cleaningFee,
+          minimumNights: entry.minimumNights ?? 1,
+          maxGuests: entry.maxGuests,
+          blocks: normalizeBlocks(entry.blocks).map(({ from, to }) => ({ from, to })),
+          availabilityUpdatedAt: entry.availabilityUpdatedAt
+        },
+        ack: { displayed: true, note: "The visitor picks the nights; do not quote a total yourself." }
+      }
+    }
+
     case "show_travel_date_picker":
     case "show_traveller_selector":
       return { rendered: true, name, payload: { prompt }, ack: { displayed: true } }
@@ -246,6 +313,30 @@ async function buildGenUi(
       }
 
       const entry = draft.packageId ? await findCatalogEntry(draft.packageId) : undefined
+      const stay = draft.stayId ? await findStayEntry(draft.stayId) : undefined
+
+      /*
+        The last availability check before a visitor is asked to confirm.
+
+        The assistant is told never to re-offer a window it checked earlier,
+        but a prompt is guidance, not a guarantee — and the owner can block
+        nights at any point in a conversation. Re-checking here means a stale
+        window is caught while the recap is being drawn, rather than after the
+        visitor has clicked Confirm and filled in their details. The inquiry
+        route checks again at submit time; this one exists to fail earlier and
+        more kindly.
+      */
+      if (stay) {
+        const range = checkStayRange(draft.checkIn, draft.checkOut, stay)
+        if (!range.ok) {
+          return {
+            rendered: false,
+            ack: {
+              error: `Those dates are no longer bookable: ${range.error} Call check_stay_availability for a fresh window before showing a summary, and tell the visitor the dates went while you were talking.`
+            }
+          }
+        }
+      }
       // Persisted server-side: the Confirm button submits this, never a body
       // the browser supplies.
       await writeBookingDraft(sessionId, draft)
@@ -253,7 +344,7 @@ async function buildGenUi(
       return {
         rendered: true,
         name,
-        payload: { prompt, draft, packageTitle: entry?.title },
+        payload: { prompt, draft, packageTitle: entry?.title, stayTitle: stay?.title },
         ack: { displayed: true, note: "Awaiting the visitor's Confirm click. You cannot submit it." }
       }
     }
@@ -265,6 +356,22 @@ function describeWidgetResult(tool: string, value: Record<string, unknown>) {
   switch (tool) {
     case "show_package_picker":
       return `[The visitor selected the package "${readString(value.title) ?? "unknown"}" (packageId: ${readString(value.packageId) ?? "unknown"}).]`
+    case "show_stay_picker":
+      return `[The visitor selected the condo unit "${readString(value.title) ?? "unknown"}" (stayId: ${readString(value.stayId) ?? "unknown"}).]`
+    case "show_stay_date_picker": {
+      const checkIn = readIsoDate(value.checkIn) ?? "not given"
+      const checkOut = readIsoDate(value.checkOut) ?? "not given"
+      const nights = readCount(value.nights) ?? 0
+      const guests = readCount(value.guests) ?? 1
+      /*
+        The widget only enables its button for a range its own copy of
+        `checkStayRange` accepted, so these nights were free on the calendar
+        the visitor was looking at. That is still not a hold — the inquiry
+        route re-checks them at submit time — so the model is told what it can
+        and cannot say about them.
+      */
+      return `[The visitor picked ${checkIn} to ${checkOut} — ${nights} night(s), ${guests} guest(s). These were free on the calendar shown, which is the owner's last update rather than a confirmed hold. Do not tell them the unit is reserved.]`
+    }
     case "show_travel_date_picker": {
       const from = readIsoDate(value.travelDateFrom) ?? "not given"
       const to = readIsoDate(value.travelDateTo) ?? "not given"

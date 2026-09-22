@@ -4,6 +4,13 @@ import {
   matchesQuery,
   toModelPackage
 } from "@/lib/ai/catalog"
+import {
+  findStayEntry,
+  loadPublishedStays,
+  matchesStayQuery,
+  toModelStay
+} from "@/lib/ai/stay-catalog"
+import { checkStayRange, quoteStay, todayInManila } from "@/lib/stay-availability"
 import { GEN_UI_TOOL_NAMES, type GenUiToolName } from "@/lib/ai/genui-types"
 import type { AgentToolDefinition } from "@/lib/ai/provider-types"
 import { TRAVEL_TYPES } from "@/lib/inquiry-types"
@@ -55,6 +62,58 @@ const dataTools: AgentToolDefinition[] = [
   }
 ]
 
+/**
+ * Condo stays.
+ *
+ * Kept as their own tools rather than widening the package ones: a unit has a
+ * nightly rate and a calendar, a package has a departure window and an
+ * itinerary, and a single tool covering both would have to describe in prose
+ * which of its fields apply — which is exactly the kind of ambiguity a model
+ * resolves by guessing.
+ */
+const stayTools: AgentToolDefinition[] = [
+  {
+    name: "search_stays",
+    description:
+      "Search the published condo units available for short stays. Use this before mentioning any unit — it is the only source of real titles, rates and capacities. Condo stays are nightly rentals, separate from the tour packages.",
+    parameters: {
+      type: "object",
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Free-text terms such as a city, building or amenity, e.g. 'cebu studio' or 'pool'. All terms must match."
+        },
+        minGuests: {
+          type: "number",
+          description: "Only return units that sleep at least this many guests."
+        },
+        maxNightlyRate: { type: "number", description: "Upper bound on the nightly rate, in PHP." }
+      },
+      additionalProperties: false
+    }
+  },
+  {
+    name: "check_stay_availability",
+    description:
+      "Check whether one unit's calendar currently shows a date range as free, and what those nights would cost. ALWAYS use this instead of reasoning about dates yourself. The answer reflects the owner's last calendar update and is never a confirmed hold — say so when you report it.",
+    parameters: {
+      type: "object",
+      properties: {
+        stayId: { type: "string", description: "The stayId from search_stays." },
+        checkIn: { type: "string", description: "First night, as YYYY-MM-DD." },
+        checkOut: {
+          type: "string",
+          description: "Departure morning, as YYYY-MM-DD. This night is not charged."
+        },
+        guests: { type: "number", description: "How many people will stay." }
+      },
+      required: ["stayId", "checkIn", "checkOut"],
+      additionalProperties: false
+    }
+  }
+]
+
 const bookingDraftProperties = {
   name: { type: "string", description: "Full name of the person travelling." },
   mobile: { type: "string", description: "Mobile number, e.g. +63 917 000 0000." },
@@ -76,7 +135,18 @@ const bookingDraftProperties = {
   children: { type: "number", description: "Number of children." },
   childAges: { type: "string", description: "Free text, e.g. '5, 8 and 11'." },
   travelType: { type: "string", enum: [...TRAVEL_TYPES] },
-  message: { type: "string", description: "Anything else the consultant should know." }
+  message: { type: "string", description: "Anything else the consultant should know." },
+  stayId: {
+    type: "string",
+    description:
+      "stayId from search_stays, when the request is for a condo unit rather than a tour package. Never set both this and packageId."
+  },
+  checkIn: { type: "string", description: "For a condo stay: first night, as YYYY-MM-DD." },
+  checkOut: {
+    type: "string",
+    description: "For a condo stay: departure morning, as YYYY-MM-DD."
+  },
+  guests: { type: "number", description: "For a condo stay: how many people will stay." }
 } as const
 
 const genUiTools: AgentToolDefinition[] = [
@@ -95,6 +165,38 @@ const genUiTools: AgentToolDefinition[] = [
         }
       },
       required: ["intro", "packageIds"],
+      additionalProperties: false
+    }
+  },
+  {
+    name: "show_stay_picker",
+    description:
+      "Render selectable condo cards. Pass stayIds from search_stays; the cards are built from the catalog, so never describe rates in `intro` — the cards carry them.",
+    parameters: {
+      type: "object",
+      properties: {
+        intro: { type: "string", description: "One short line above the cards." },
+        stayIds: {
+          type: "array",
+          items: { type: "string" },
+          description: "Between 1 and 4 stayIds from search_stays."
+        }
+      },
+      required: ["intro", "stayIds"],
+      additionalProperties: false
+    }
+  },
+  {
+    name: "show_stay_date_picker",
+    description:
+      "Render a check-in/check-out calendar for one unit, with nights already booked greyed out and a running total. Use this instead of asking for stay dates in prose, and instead of quoting a total yourself.",
+    parameters: {
+      type: "object",
+      properties: {
+        prompt: { type: "string", description: "One short line of context." },
+        stayId: { type: "string", description: "The stayId from search_stays." }
+      },
+      required: ["prompt", "stayId"],
       additionalProperties: false
     }
   },
@@ -177,7 +279,7 @@ const genUiTools: AgentToolDefinition[] = [
   }
 ]
 
-export const AGENT_TOOLS: AgentToolDefinition[] = [...dataTools, ...genUiTools]
+export const AGENT_TOOLS: AgentToolDefinition[] = [...dataTools, ...stayTools, ...genUiTools]
 
 export function isGenUiTool(name: string): name is GenUiToolName {
   return (GEN_UI_TOOL_NAMES as string[]).includes(name)
@@ -246,6 +348,90 @@ async function runGetPackageDetails(input: Record<string, unknown>) {
   }
 }
 
+async function runSearchStays(input: Record<string, unknown>) {
+  const query = readString(input.query)
+  const minGuests = readNumber(input.minGuests)
+  const maxRate = readNumber(input.maxNightlyRate)
+
+  const stays = await loadPublishedStays()
+
+  const matches = stays
+    .filter((entry) => (query ? matchesStayQuery(entry, query) : true))
+    .filter((entry) => (minGuests === undefined ? true : entry.maxGuests >= minGuests))
+    .filter((entry) => (maxRate === undefined ? true : entry.nightlyRate <= maxRate))
+
+  return {
+    matchCount: matches.length,
+    results: matches.slice(0, MAX_SEARCH_RESULTS).map(toModelStay),
+    truncated: matches.length > MAX_SEARCH_RESULTS
+  }
+}
+
+/**
+ * Answers availability by computing it, never by handing the model a list of
+ * blocked ranges to reason over.
+ *
+ * The `note` is part of the contract rather than decoration. The calendar is
+ * the owner's last save, not a live ledger, and an assistant that reports
+ * "those nights are free" without that caveat is making a promise the business
+ * has not made.
+ */
+async function runCheckStayAvailability(input: Record<string, unknown>) {
+  const stayId = readString(input.stayId)
+  if (!stayId) return { error: "stayId is required." }
+
+  const entry = await findStayEntry(stayId)
+  if (!entry) {
+    return { error: "No published unit has that id. Call search_stays again." }
+  }
+
+  const checkIn = readString(input.checkIn)
+  const checkOut = readString(input.checkOut)
+  const guests = readNumber(input.guests)
+
+  const range = checkStayRange(checkIn, checkOut, entry)
+
+  if (!range.ok) {
+    return {
+      stayId: entry.id,
+      title: entry.title,
+      available: false,
+      reason: range.error,
+      minimumNights: entry.minimumNights ?? 1,
+      maxGuests: entry.maxGuests,
+      today: todayInManila()
+    }
+  }
+
+  if (guests !== undefined && guests > entry.maxGuests) {
+    return {
+      stayId: entry.id,
+      title: entry.title,
+      available: false,
+      reason: `This unit sleeps up to ${entry.maxGuests}.`,
+      maxGuests: entry.maxGuests
+    }
+  }
+
+  const quote = quoteStay(entry, range.nights)
+
+  return {
+    stayId: entry.id,
+    title: entry.title,
+    available: true,
+    checkIn,
+    checkOut,
+    nights: quote.nights,
+    nightlyRate: quote.nightlyRate,
+    accommodation: quote.accommodation,
+    cleaningFee: quote.cleaningFee,
+    estimatedTotal: quote.total,
+    currency: quote.currency,
+    availabilityUpdatedAt: entry.availabilityUpdatedAt?.slice(0, 10),
+    note: "Reflects the owner's last calendar update. This is NOT a confirmed hold — a consultant checks the unit is still free before anything is reserved. Say this when you report the result."
+  }
+}
+
 /**
  * Runs a data tool. GenUI tools are not handled here — the chat route renders
  * those and acknowledges them, because their "result" is the visitor's answer.
@@ -256,6 +442,10 @@ export async function runDataTool(name: string, input: Record<string, unknown>):
       return runSearchPackages(input)
     case "get_package_details":
       return runGetPackageDetails(input)
+    case "search_stays":
+      return runSearchStays(input)
+    case "check_stay_availability":
+      return runCheckStayAvailability(input)
     default:
       return { error: `Unknown tool "${name}".` }
   }

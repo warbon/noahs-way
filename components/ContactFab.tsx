@@ -19,8 +19,21 @@ import { messengerHref, phoneHref } from "@/lib/site-config"
  * admin panel, or with no provider key set anywhere, this falls back to the
  * original Messenger button.
  */
-export default async function ContactFab() {
-  const assistantAvailable = await isAgentAvailable()
+type ContactFabProps = {
+  /**
+   * Drops the assistant on a page that already answers what it would be asked.
+   *
+   * A condo unit's own page carries the live calendar, the price breakdown and
+   * the request form. Offering a chat bubble beside all three invites the
+   * visitor to re-ask, by typing, a question the page has already answered on
+   * screen — and puts a second, slower path next to the one that works. The
+   * phone and Messenger buttons stay; only the assistant is withheld.
+   */
+  hideAssistant?: boolean
+}
+
+export default async function ContactFab({ hideAssistant = false }: ContactFabProps = {}) {
+  const assistantAvailable = (await isAgentAvailable()) && !hideAssistant
 
   return (
     <div className="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-[calc(1.25rem+env(safe-area-inset-right))] z-40 flex flex-col gap-3">

@@ -87,7 +87,8 @@ export default function ChatInvite({
         }}
         className="flex-1 text-[13px] font-medium leading-snug text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
       >
-        Need help finding a trip? I can search our packages and start your booking.
+        Need a trip or a place to stay? I can search our packages and condo units, and start
+        your booking.
       </button>
 
       <button

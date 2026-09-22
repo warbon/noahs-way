@@ -35,6 +35,51 @@ export type PackagePickerPayload = {
   packages: ChatPackageSummary[]
 }
 
+/** Trusted, server-resolved condo fields. Never assembled by the model. */
+export type ChatStaySummary = {
+  id: string
+  title: string
+  slug: string
+  href: string
+  city: string
+  building?: string
+  summary?: string
+  /** e.g. "₱2,462 / night" — formatted server-side from the stored rate. */
+  rateLabel: string
+  /** e.g. "Studio · Sleeps 2". */
+  layoutLabel: string
+  previewImage: string
+  imageAlt: string
+}
+
+export type StayPickerPayload = {
+  intro: string
+  stays: ChatStaySummary[]
+}
+
+/**
+ * The nights a guest is asking about, once they have picked a unit.
+ *
+ * Separate from `show_travel_date_picker` because the two ask different
+ * questions: a trip has a departure and a return, while a stay has a check-in
+ * and a check-out, where the check-out day is not a night paid for. Reusing
+ * the travel picker would have meant relabelling it and then explaining the
+ * difference in prose every time.
+ */
+export type StayDatePickerPayload = {
+  prompt: string
+  stayId: string
+  stayTitle: string
+  nightlyRate: number
+  currency: string
+  cleaningFee?: number
+  minimumNights: number
+  maxGuests: number
+  /** Blocked ranges, so the picker can grey out nights without a round trip. */
+  blocks: { from: string; to: string }[]
+  availabilityUpdatedAt?: string
+}
+
 export type TravelDatePickerPayload = {
   prompt: string
 }
@@ -77,6 +122,16 @@ export type ChatBookingDraft = {
   travelType?: TravelType
   message?: string
   packageId?: string
+  /**
+   * Set instead of `packageId` when the request is for a condo unit. The
+   * booking route hands the whole draft to `submitInquiry`, which re-checks
+   * these dates against the calendar before storing anything — the assistant's
+   * answer is never the one that counts.
+   */
+  stayId?: string
+  checkIn?: string
+  checkOut?: string
+  guests?: number
 }
 
 export type BookingSummaryPayload = {
@@ -84,10 +139,14 @@ export type BookingSummaryPayload = {
   draft: ChatBookingDraft
   /** Server-resolved from `draft.packageId`, so the recap can't misname it. */
   packageTitle?: string
+  /** Server-resolved from `draft.stayId`, for the same reason. */
+  stayTitle?: string
 }
 
 export type GenUiPayloadMap = {
   show_package_picker: PackagePickerPayload
+  show_stay_picker: StayPickerPayload
+  show_stay_date_picker: StayDatePickerPayload
   show_travel_date_picker: TravelDatePickerPayload
   show_traveller_selector: TravellerSelectorPayload
   show_contact_form: ContactFormPayload
@@ -99,6 +158,8 @@ export type GenUiToolName = keyof GenUiPayloadMap
 
 export const GEN_UI_TOOL_NAMES: GenUiToolName[] = [
   "show_package_picker",
+  "show_stay_picker",
+  "show_stay_date_picker",
   "show_travel_date_picker",
   "show_traveller_selector",
   "show_contact_form",
@@ -113,6 +174,13 @@ export function isGenUiToolName(value: unknown): value is GenUiToolName {
 /** What a completed widget hands back. Posted to the chat route as a user turn. */
 export type GenUiResultMap = {
   show_package_picker: { packageId: string; title: string }
+  show_stay_picker: { stayId: string; title: string }
+  show_stay_date_picker: {
+    checkIn: string
+    checkOut: string
+    nights: number
+    guests: number
+  }
   show_travel_date_picker: {
     travelDateFrom?: string
     travelDateTo?: string

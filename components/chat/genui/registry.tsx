@@ -6,6 +6,8 @@ import BookingSummary from "@/components/chat/genui/BookingSummary"
 import ContactFields from "@/components/chat/genui/ContactFields"
 import PackagePicker from "@/components/chat/genui/PackagePicker"
 import QuickReplies from "@/components/chat/genui/QuickReplies"
+import StayDatePicker from "@/components/chat/genui/StayDatePicker"
+import StayPicker from "@/components/chat/genui/StayPicker"
 import TravelDatePicker from "@/components/chat/genui/TravelDatePicker"
 import TravellerSelector from "@/components/chat/genui/TravellerSelector"
 import type { GenUiComponentProps, GenUiToolName } from "@/lib/ai/genui-types"
@@ -21,6 +23,8 @@ const registry: {
   [K in GenUiToolName]: (props: GenUiComponentProps<K>) => JSX.Element
 } = {
   show_package_picker: PackagePicker,
+  show_stay_picker: StayPicker,
+  show_stay_date_picker: StayDatePicker,
   show_travel_date_picker: TravelDatePicker,
   show_traveller_selector: TravellerSelector,
   show_contact_form: ContactFields,
