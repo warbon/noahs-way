@@ -54,7 +54,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return errorResponse("Each blocked range needs a from and a to date", 400)
     }
 
-    const { from, to, note } = raw as Record<string, unknown>
+    const { from, to, note, source, bookingId } = raw as Record<string, unknown>
 
     if (!isDateString(from) || !isDateString(to)) {
       return errorResponse("Blocked dates must be real calendar dates (YYYY-MM-DD)", 400)
@@ -69,6 +69,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       to,
       ...(typeof note === "string" && note.trim()
         ? { note: note.trim().slice(0, MAX_NOTE_LENGTH) }
+        : {}),
+      ...(source === "booking" && typeof bookingId === "string" && bookingId
+        ? { source, bookingId }
         : {})
     })
   }

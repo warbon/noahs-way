@@ -10,7 +10,7 @@ import {
   resolveGallery
 } from "@/lib/stay-gallery"
 import { deleteStay, getStayById, updateStay } from "@/lib/stay-repository"
-import type { UpdateStayPayload } from "@/lib/stay-repository-types"
+import { StayHasBookingsError, type UpdateStayPayload } from "@/lib/stay-repository-types"
 import { deriveSlug } from "@/lib/slug"
 
 function sanitizeText(value: string) {
@@ -182,7 +182,18 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     return errorResponse("Unauthorized", 401)
   }
 
-  const deleted = await deleteStay(params.id)
+  let deleted: Awaited<ReturnType<typeof deleteStay>>
+  try {
+    deleted = await deleteStay(params.id)
+  } catch (error) {
+    if (error instanceof StayHasBookingsError) {
+      return errorResponse(
+        "This unit has accepted bookings and cannot be deleted. Cancel or complete them first.",
+        409
+      )
+    }
+    throw error
+  }
   if (!deleted) {
     return errorResponse("Stay not found", 404)
   }

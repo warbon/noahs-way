@@ -29,6 +29,9 @@ export type AvailabilityBlock = {
   to: string
   /** Why it is blocked — "Booked", "Owner use", "Maintenance". Admin-only. */
   note?: string
+  /** Booking-created blocks stay linked to the record that owns the dates. */
+  source?: "manual" | "booking"
+  bookingId?: string
 }
 
 export type StayUnit = {

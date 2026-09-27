@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
 import {
+  InquiryHasBookingError,
   isInquiryRecord,
   type CreateInquiryPayload,
   type InquiryRecord,
@@ -10,7 +11,8 @@ import {
 } from "@/lib/inquiry-types"
 
 const DATA_DIR_PATH = path.join(process.cwd(), "data")
-const INQUIRIES_JSON_PATH = path.join(DATA_DIR_PATH, "inquiries.json")
+const INQUIRIES_JSON_PATH =
+  process.env.INQUIRY_JSON_PATH || path.join(DATA_DIR_PATH, "inquiries.json")
 
 function createUniqueId() {
   return `inq-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
@@ -29,12 +31,17 @@ async function readInquiries(): Promise<InquiryRecord[]> {
 }
 
 async function writeInquiries(inquiries: InquiryRecord[]) {
-  await mkdir(DATA_DIR_PATH, { recursive: true })
+  await mkdir(path.dirname(INQUIRIES_JSON_PATH), { recursive: true })
   await writeFile(INQUIRIES_JSON_PATH, `${JSON.stringify(inquiries, null, 2)}\n`, "utf8")
 }
 
 async function listInquiries(): Promise<InquiryRecord[]> {
   return readInquiries()
+}
+
+async function getInquiryById(id: string): Promise<InquiryRecord | null> {
+  const inquiries = await readInquiries()
+  return inquiries.find((inquiry) => inquiry.id === id) ?? null
 }
 
 async function createInquiry(payload: CreateInquiryPayload): Promise<InquiryRecord> {
@@ -58,6 +65,15 @@ async function updateInquiry(
   const index = inquiries.findIndex((inquiry) => inquiry.id === id)
   if (index === -1) return null
 
+  if (
+    inquiries[index].bookingId &&
+    updates.status &&
+    updates.status !== "archived" &&
+    !(updates.status === "accepted" && updates.bookingId === inquiries[index].bookingId)
+  ) {
+    throw new InquiryHasBookingError()
+  }
+
   const updated: InquiryRecord = { ...inquiries[index], ...updates }
   inquiries[index] = updated
   await writeInquiries(inquiries)
@@ -70,6 +86,8 @@ async function deleteInquiry(id: string): Promise<InquiryRecord | null> {
   const index = inquiries.findIndex((inquiry) => inquiry.id === id)
   if (index === -1) return null
 
+  if (inquiries[index].bookingId) throw new InquiryHasBookingError()
+
   const [deleted] = inquiries.splice(index, 1)
   await writeInquiries(inquiries)
 
@@ -78,6 +96,7 @@ async function deleteInquiry(id: string): Promise<InquiryRecord | null> {
 
 export const fileInquiryRepository: InquiryRepository = {
   listInquiries,
+  getInquiryById,
   createInquiry,
   updateInquiry,
   deleteInquiry

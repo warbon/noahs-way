@@ -4,6 +4,13 @@ export type StayRecord = StayUnit & {
   id: string
 }
 
+export class StayHasBookingsError extends Error {
+  constructor() {
+    super("A stay with accepted bookings cannot be deleted")
+    this.name = "StayHasBookingsError"
+  }
+}
+
 /**
  * A flat list, unlike the package catalog's category map. Stays have no
  * equivalent of local/international to split on, and inventing one to mirror

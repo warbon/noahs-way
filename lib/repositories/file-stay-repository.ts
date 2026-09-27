@@ -1,19 +1,21 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises"
 import path from "node:path"
 
+import type { StayBookingRecord } from "@/lib/booking-types"
 import { normalizeBlocks } from "@/lib/stay-availability"
 import type { AvailabilityBlock, StayUnit } from "@/lib/stay-data"
-import type {
-  CreateStayPayload,
-  GetStaysOptions,
-  StayRecord,
-  StayRepository,
-  StayStore,
-  UpdateStayPayload
+import {
+  StayHasBookingsError,
+  type CreateStayPayload,
+  type GetStaysOptions,
+  type StayRecord,
+  type StayRepository,
+  type StayStore,
+  type UpdateStayPayload
 } from "@/lib/stay-repository-types"
 
 const DATA_DIR_PATH = path.join(process.cwd(), "data")
-const STAYS_JSON_PATH = path.join(DATA_DIR_PATH, "stays.json")
+const STAYS_JSON_PATH = process.env.STAY_JSON_PATH || path.join(DATA_DIR_PATH, "stays.json")
 
 /**
  * A missing or unreadable store yields an empty list, not sample data.
@@ -62,7 +64,7 @@ function normalizeStayRecord(value: unknown, index: number): StayRecord | null {
 }
 
 async function ensureDataDir() {
-  await mkdir(DATA_DIR_PATH, { recursive: true })
+  await mkdir(path.dirname(STAYS_JSON_PATH), { recursive: true })
 }
 
 async function writeStore(store: StayStore) {
@@ -147,10 +149,80 @@ async function setStayAvailability(
 
   const updated: StayRecord = {
     ...store[index],
-    blocks: normalizeBlocks(blocks),
+    blocks: normalizeBlocks([
+      ...(store[index].blocks ?? []).filter(
+        (block) => block.source === "booking" && Boolean(block.bookingId)
+      ),
+      ...blocks.filter((block) => block.source !== "booking")
+    ]),
     availabilityUpdatedAt: new Date().toISOString()
   }
 
+  store[index] = updated
+  await writeStore(store)
+  return updated
+}
+
+/**
+ * Add or repair a booking-owned block from the trusted acceptance workflow.
+ *
+ * This deliberately is not part of `StayRepository`: the general calendar
+ * endpoint uses `setStayAvailability`, which ignores caller-supplied booking
+ * blocks so an admin form cannot forge or erase booking ownership.
+ */
+export async function ensureFileBookingBlock(
+  booking: Pick<StayBookingRecord, "id" | "stayId" | "checkIn" | "checkOut">
+): Promise<StayRecord | null> {
+  const store = await readStore()
+  const index = store.findIndex((stay) => stay.id === booking.stayId)
+  if (index === -1) return null
+
+  const existing = store[index]
+  const currentBlock = existing.blocks?.find((block) => block.bookingId === booking.id)
+  if (
+    currentBlock?.source === "booking" &&
+    currentBlock.from === booking.checkIn &&
+    currentBlock.to === booking.checkOut
+  ) {
+    return existing
+  }
+
+  const updated: StayRecord = {
+    ...existing,
+    blocks: normalizeBlocks([
+      ...(existing.blocks ?? []).filter((block) => block.bookingId !== booking.id),
+      {
+        from: booking.checkIn,
+        to: booking.checkOut,
+        note: `Booking ${booking.id}`,
+        source: "booking",
+        bookingId: booking.id
+      }
+    ]),
+    availabilityUpdatedAt: new Date().toISOString()
+  }
+
+  store[index] = updated
+  await writeStore(store)
+  return updated
+}
+
+export async function removeFileBookingBlock(
+  stayId: string,
+  bookingId: string
+): Promise<StayRecord | null> {
+  const store = await readStore()
+  const index = store.findIndex((stay) => stay.id === stayId)
+  if (index === -1) return null
+  const existing = store[index]
+  const blocks = (existing.blocks ?? []).filter((block) => block.bookingId !== bookingId)
+  if (blocks.length === (existing.blocks ?? []).length) return existing
+
+  const updated: StayRecord = {
+    ...existing,
+    blocks: normalizeBlocks(blocks),
+    availabilityUpdatedAt: new Date().toISOString()
+  }
   store[index] = updated
   await writeStore(store)
   return updated
@@ -160,6 +232,10 @@ async function deleteStay(id: string): Promise<StayRecord | null> {
   const store = await readStore()
   const index = store.findIndex((stay) => stay.id === id)
   if (index === -1) return null
+
+  if (store[index].blocks?.some((block) => block.source === "booking" && block.bookingId)) {
+    throw new StayHasBookingsError()
+  }
 
   const [deleted] = store.splice(index, 1)
   await writeStore(store)

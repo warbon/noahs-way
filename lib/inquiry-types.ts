@@ -1,4 +1,17 @@
-export type InquiryStatus = "new" | "read" | "responded" | "archived"
+export type InquiryStatus =
+  | "new"
+  | "read"
+  | "responded"
+  | "accepted"
+  | "declined"
+  | "archived"
+
+export class InquiryHasBookingError extends Error {
+  constructor() {
+    super("An inquiry with an accepted booking cannot be changed this way")
+    this.name = "InquiryHasBookingError"
+  }
+}
 
 export type InquirySource = "contact-form" | "package-cta" | "chat-agent" | "stay-cta"
 
@@ -64,6 +77,15 @@ export type InquiryRecord = {
   nights?: number
   guests?: number
 
+  /** Set atomically when a condo inquiry becomes a held booking. */
+  bookingId?: string
+  bookingStatus?: "held" | "confirmed" | "completed" | "cancelled"
+  acceptedAt?: string
+  quotedNightlyRate?: number
+  quotedCleaningFee?: number
+  quotedTotal?: number
+  quotedCurrency?: string
+
   status: InquiryStatus
   source: InquirySource
   /** Free-text note the admin adds while working the lead. */
@@ -79,16 +101,31 @@ export type CreateInquiryPayload = Omit<
 export type UpdateInquiryPayload = {
   status?: InquiryStatus
   adminNote?: string
+  bookingId?: string
+  bookingStatus?: "held" | "confirmed" | "completed" | "cancelled"
+  acceptedAt?: string
+  quotedNightlyRate?: number
+  quotedCleaningFee?: number
+  quotedTotal?: number
+  quotedCurrency?: string
 }
 
 export type InquiryRepository = {
   listInquiries(): Promise<InquiryRecord[]>
+  getInquiryById(id: string): Promise<InquiryRecord | null>
   createInquiry(payload: CreateInquiryPayload): Promise<InquiryRecord>
   updateInquiry(id: string, updates: UpdateInquiryPayload): Promise<InquiryRecord | null>
   deleteInquiry(id: string): Promise<InquiryRecord | null>
 }
 
-export const INQUIRY_STATUSES: InquiryStatus[] = ["new", "read", "responded", "archived"]
+export const INQUIRY_STATUSES: InquiryStatus[] = [
+  "new",
+  "read",
+  "responded",
+  "accepted",
+  "declined",
+  "archived"
+]
 
 export function isInquiryStatus(value: unknown): value is InquiryStatus {
   return typeof value === "string" && (INQUIRY_STATUSES as string[]).includes(value)

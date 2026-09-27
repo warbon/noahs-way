@@ -11,6 +11,8 @@ import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import type { AdminPackageRecord } from "@/lib/admin-package-types"
+import type { AdminStayRecord } from "@/lib/admin-stay-types"
+import type { StayBookingRecord } from "@/lib/booking-types"
 import {
   INQUIRY_STATUSES,
   type InquiryRecord,
@@ -18,13 +20,16 @@ import {
   type InquiryStatus
 } from "@/lib/inquiry-types"
 import { buildPackageHref, derivePackageSlug } from "@/lib/package-slug"
-import { formatDuration, formatPackagePrice } from "@/lib/price"
+import { formatDuration, formatPackagePrice, formatPricePHP } from "@/lib/price"
+import { quoteStay } from "@/lib/stay-availability"
 import { cn } from "@/lib/utils"
 
 const statusLabels: Record<InquiryStatus, string> = {
   new: "New",
   read: "Read",
   responded: "Responded",
+  accepted: "Accepted",
+  declined: "Declined",
   archived: "Archived"
 }
 
@@ -40,6 +45,8 @@ const statusStyles: Record<InquiryStatus, string> = {
   new: "bg-amber-100 text-amber-900",
   read: "bg-sky-100 text-sky-900",
   responded: "bg-emerald-100 text-emerald-900",
+  accepted: "bg-emerald-100 text-emerald-900",
+  declined: "bg-rose-100 text-rose-900",
   archived: "bg-muted text-muted-foreground"
 }
 
@@ -71,9 +78,11 @@ function partySize(inquiry: InquiryRecord) {
 }
 
 function buildReplyHref(inquiry: InquiryRecord) {
-  const subject = inquiry.packageTitle
-    ? `Re: your inquiry about ${inquiry.packageTitle}`
-    : "Re: your travel inquiry"
+  const subject = inquiry.stayTitle
+    ? `Re: your stay request for ${inquiry.stayTitle}`
+    : inquiry.packageTitle
+      ? `Re: your inquiry about ${inquiry.packageTitle}`
+      : "Re: your travel inquiry"
   const body = `Hi ${inquiry.name},\n\nThank you for your booking request with Noah's Way Travel & Tours.\n\n`
   return `mailto:${encodeURIComponent(inquiry.email)}?subject=${encodeURIComponent(
     subject
@@ -89,6 +98,7 @@ function getApiErrorMessage(value: unknown) {
 export default function AdminInquiryInbox() {
   const [inquiries, setInquiries] = useState<InquiryRecord[]>([])
   const [packages, setPackages] = useState<AdminPackageRecord[]>([])
+  const [stays, setStays] = useState<AdminStayRecord[]>([])
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
 
@@ -100,6 +110,8 @@ export default function AdminInquiryInbox() {
   const [noteDraft, setNoteDraft] = useState("")
   const [busy, setBusy] = useState(false)
   const [panelError, setPanelError] = useState<string | null>(null)
+  const [panelNotice, setPanelNotice] = useState<string | null>(null)
+  const [confirmingAcceptId, setConfirmingAcceptId] = useState<string | null>(null)
 
   const loadInquiries = useCallback(async () => {
     setLoading(true)
@@ -109,6 +121,7 @@ export default function AdminInquiryInbox() {
       const payload = (await response.json().catch(() => null)) as {
         inquiries?: InquiryRecord[]
         packages?: AdminPackageRecord[]
+        stays?: AdminStayRecord[]
       } | null
 
       if (!response.ok || !payload) {
@@ -118,6 +131,7 @@ export default function AdminInquiryInbox() {
 
       setInquiries(payload.inquiries ?? [])
       setPackages(payload.packages ?? [])
+      setStays(payload.stays ?? [])
     } catch {
       setLoadError("Network error loading inquiries.")
     } finally {
@@ -137,6 +151,11 @@ export default function AdminInquiryInbox() {
   const selectedPackage = useMemo(
     () => (selected?.packageId ? packages.find((pkg) => pkg.id === selected.packageId) : null),
     [selected, packages]
+  )
+
+  const selectedStay = useMemo(
+    () => (selected?.stayId ? stays.find((stay) => stay.id === selected.stayId) : null),
+    [selected, stays]
   )
 
   /**
@@ -166,13 +185,21 @@ export default function AdminInquiryInbox() {
     const needle = query.trim().toLowerCase()
     return inquiries.filter((inquiry) => {
       if (statusFilter !== "all" && inquiry.status !== statusFilter) return false
-      if (packageFilter === "none" && inquiry.packageId) return false
-      if (packageFilter !== "all" && packageFilter !== "none" && inquiry.packageId !== packageFilter)
+      if (packageFilter === "none" && (inquiry.packageId || inquiry.stayId)) return false
+      if (packageFilter === "stays" && !inquiry.stayId) return false
+      if (
+        packageFilter !== "all" &&
+        packageFilter !== "none" &&
+        packageFilter !== "stays" &&
+        inquiry.packageId !== packageFilter
+      )
         return false
       if (!needle) return true
       return `${inquiry.name} ${inquiry.email} ${inquiry.mobile} ${inquiry.destination ?? ""} ${
         inquiry.message ?? ""
-      } ${inquiry.packageTitle ?? ""}`
+      } ${inquiry.packageTitle ?? ""} ${inquiry.stayTitle ?? ""} ${inquiry.checkIn ?? ""} ${
+        inquiry.checkOut ?? ""
+      } ${inquiry.bookingId ?? ""}`
         .toLowerCase()
         .includes(needle)
     })
@@ -182,6 +209,8 @@ export default function AdminInquiryInbox() {
     setSelectedId(inquiry.id)
     setNoteDraft(inquiry.adminNote ?? "")
     setPanelError(null)
+    setPanelNotice(null)
+    setConfirmingAcceptId(null)
     // Opening a new inquiry marks it read, so the "New" count means untouched.
     if (inquiry.status === "new") void patchInquiry(inquiry.id, { status: "read" })
   }
@@ -213,6 +242,7 @@ export default function AdminInquiryInbox() {
   }
 
   async function removeInquiry(id: string) {
+    if (!window.confirm("Delete this inquiry permanently? This cannot be undone.")) return
     setBusy(true)
     try {
       const response = await fetch(`/api/admin/inquiries/${id}`, { method: "DELETE" })
@@ -224,6 +254,62 @@ export default function AdminInquiryInbox() {
       setSelectedId(null)
     } catch {
       setPanelError("Network error while deleting.")
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function acceptInquiry(inquiry: InquiryRecord) {
+    setBusy(true)
+    setPanelError(null)
+    setPanelNotice(null)
+
+    try {
+      const response = await fetch(`/api/admin/inquiries/${inquiry.id}/accept`, {
+        method: "POST"
+      })
+      const payload = (await response.json().catch(() => null)) as
+        | { inquiry?: InquiryRecord; booking?: StayBookingRecord; created?: boolean; error?: string }
+        | null
+
+      if (!response.ok || !payload?.inquiry || !payload.booking) {
+        setPanelError(payload?.error ?? "The booking could not be accepted.")
+        return
+      }
+
+      setInquiries((current) =>
+        current.map((item) => (item.id === inquiry.id ? payload.inquiry! : item))
+      )
+      setStays((current) =>
+        current.map((stay) =>
+          stay.id === payload.booking!.stayId
+            ? stay.blocks?.some((block) => block.bookingId === payload.booking!.id)
+              ? stay
+              : {
+                  ...stay,
+                  blocks: [
+                    ...(stay.blocks ?? []),
+                    {
+                      from: payload.booking!.checkIn,
+                      to: payload.booking!.checkOut,
+                      note: `Booking ${payload.booking!.id}`,
+                      source: "booking",
+                      bookingId: payload.booking!.id
+                    }
+                  ],
+                  availabilityUpdatedAt: payload.booking!.updatedAt
+                }
+            : stay
+        )
+      )
+      setPanelNotice(
+        payload.created
+          ? `Dates held. Booking reference: ${payload.booking.id}`
+          : `This request was already accepted as ${payload.booking.id}.`
+      )
+      setConfirmingAcceptId(null)
+    } catch {
+      setPanelError("Could not reach the server. No acceptance was confirmed.")
     } finally {
       setBusy(false)
     }
@@ -283,7 +369,7 @@ export default function AdminInquiryInbox() {
 
         <div className="space-y-1.5">
           <label htmlFor="inquiry-package" className="text-sm font-medium">
-            Package
+            Subject
           </label>
           <select
             id="inquiry-package"
@@ -293,6 +379,7 @@ export default function AdminInquiryInbox() {
           >
             <option value="all">All</option>
             <option value="none">General enquiries</option>
+            <option value="stays">Condo stays</option>
             {referencedPackages.map((pkg) => (
               <option key={pkg.id} value={pkg.id}>
                 {pkg.title}
@@ -341,6 +428,11 @@ export default function AdminInquiryInbox() {
                           {inquiry.packageTitle}
                         </span>
                       ) : null}
+                      {inquiry.stayTitle ? (
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                          {inquiry.stayTitle}
+                        </span>
+                      ) : null}
                     </div>
                     <p className="mt-1 truncate text-sm text-muted-foreground">
                       {inquiry.destination
@@ -350,6 +442,9 @@ export default function AdminInquiryInbox() {
                     <p className="mt-1 text-xs text-muted-foreground">
                       {formatDateTime(inquiry.createdAt)}
                       {window ? ` · ${window}` : ""}
+                      {inquiry.checkIn && inquiry.checkOut
+                        ? ` · ${inquiry.checkIn} → ${inquiry.checkOut}`
+                        : ""}
                       {partySize(inquiry) ? ` · ${partySize(inquiry)}` : ""}
                     </p>
                   </div>
@@ -369,10 +464,47 @@ export default function AdminInquiryInbox() {
         footer={
           selected ? (
             <div className="flex flex-wrap gap-2">
+              {isStayLead &&
+              selected.status !== "accepted" &&
+              selected.status !== "declined" &&
+              selected.status !== "archived" ? (
+                confirmingAcceptId === selected.id ? (
+                  <>
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={busy}
+                      onClick={() => void acceptInquiry(selected)}
+                    >
+                      {busy ? "Holding…" : "Confirm hold"}
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      disabled={busy}
+                      onClick={() => setConfirmingAcceptId(null)}
+                    >
+                      Back
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    type="button"
+                    size="sm"
+                    disabled={busy}
+                    onClick={() => setConfirmingAcceptId(selected.id)}
+                  >
+                    Accept &amp; hold dates
+                  </Button>
+                )
+              ) : null}
               <a href={buildReplyHref(selected)} className={cn(buttonVariants({ size: "sm" }))}>
                 Reply by email
               </a>
-              {selected.status !== "responded" ? (
+              {selected.status !== "responded" &&
+              selected.status !== "accepted" &&
+              selected.status !== "declined" ? (
                 <Button
                   type="button"
                   size="sm"
@@ -381,6 +513,20 @@ export default function AdminInquiryInbox() {
                   onClick={() => patchInquiry(selected.id, { status: "responded" })}
                 >
                   Mark responded
+                </Button>
+              ) : null}
+              {isStayLead &&
+              selected.status !== "accepted" &&
+              selected.status !== "declined" &&
+              selected.status !== "archived" ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  disabled={busy}
+                  onClick={() => patchInquiry(selected.id, { status: "declined" })}
+                >
+                  Decline
                 </Button>
               ) : null}
               {selected.status !== "archived" ? (
@@ -394,16 +540,18 @@ export default function AdminInquiryInbox() {
                   Archive
                 </Button>
               ) : null}
-              <Button
-                type="button"
-                size="sm"
-                variant="outline"
-                className="text-destructive"
-                disabled={busy}
-                onClick={() => removeInquiry(selected.id)}
-              >
-                Delete
-              </Button>
+              {!selected.bookingId ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="text-destructive"
+                  disabled={busy}
+                  onClick={() => removeInquiry(selected.id)}
+                >
+                  Delete
+                </Button>
+              ) : null}
             </div>
           ) : null
         }
@@ -413,6 +561,20 @@ export default function AdminInquiryInbox() {
             {panelError ? (
               <p role="alert" className="text-sm font-medium text-destructive">
                 {panelError}
+              </p>
+            ) : null}
+            {panelNotice ? (
+              <p
+                role="status"
+                className="rounded-md bg-emerald-50 p-3 text-sm font-medium text-emerald-800"
+              >
+                {panelNotice}
+              </p>
+            ) : null}
+            {confirmingAcceptId === selected.id ? (
+              <p className="rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-950">
+                Confirming will recheck availability, create a held booking, and immediately block
+                these dates. No payment is recorded at this step.
               </p>
             ) : null}
 
@@ -554,6 +716,33 @@ export default function AdminInquiryInbox() {
                       {selected.guests} guest{selected.guests === 1 ? "" : "s"}
                     </p>
                   ) : null}
+                  {selected.status === "accepted" && selected.bookingId ? (
+                    <div className="mt-3 rounded-lg bg-emerald-50 p-3 text-emerald-950">
+                      <p className="font-semibold">Dates held</p>
+                      <p className="mt-1 text-xs">Reference: {selected.bookingId}</p>
+                      {selected.quotedTotal !== undefined ? (
+                        <p className="mt-1">
+                          Accepted total: {formatPricePHP(
+                            selected.quotedTotal,
+                            selected.quotedCurrency ?? "PHP"
+                          )}
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : selectedStay && selected.nights ? (
+                    <div className="mt-3 rounded-lg bg-muted p-3">
+                      <p className="font-medium">Current catalog estimate</p>
+                      <p className="mt-1">
+                        {formatPricePHP(
+                          quoteStay(selectedStay, selected.nights).total,
+                          selectedStay.currency ?? "PHP"
+                        )}
+                      </p>
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        The server rechecks the dates and snapshots this price before holding them.
+                      </p>
+                    </div>
+                  ) : null}
                   <div className="mt-2 flex flex-wrap gap-3">
                     {selected.staySlug ? (
                       <Link
@@ -564,7 +753,10 @@ export default function AdminInquiryInbox() {
                         View public page
                       </Link>
                     ) : null}
-                    <Link href="/admin/stays" className="text-primary underline">
+                    <Link
+                      href={selected.stayId ? `/admin/stays?dates=${selected.stayId}` : "/admin/stays"}
+                      className="text-primary underline"
+                    >
                       Manage dates
                     </Link>
                   </div>

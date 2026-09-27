@@ -22,6 +22,15 @@ certificates
 # Customer inquiry submissions (PII) — never commit
 /data/inquiries.json
 
+# Accepted condo bookings (customer PII) — never commit
+/data/bookings.json
+
+# Booking and inquiry audit activity (customer PII) — never commit
+/data/activity.json
+
+# Local review exports and backups
+/Claude outputs/
+
 # Admin-managed assistant settings (encrypted API keys) — never commit
 /data/ai-settings.json
 

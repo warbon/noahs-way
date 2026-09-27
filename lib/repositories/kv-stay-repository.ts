@@ -1,14 +1,14 @@
-import { kv } from "@vercel/kv"
-
+import { getRedis } from "@/lib/redis"
 import { normalizeBlocks } from "@/lib/stay-availability"
 import type { AvailabilityBlock } from "@/lib/stay-data"
-import type {
-  CreateStayPayload,
-  GetStaysOptions,
-  StayRecord,
-  StayRepository,
-  StayStore,
-  UpdateStayPayload
+import {
+  StayHasBookingsError,
+  type CreateStayPayload,
+  type GetStaysOptions,
+  type StayRecord,
+  type StayRepository,
+  type StayStore,
+  type UpdateStayPayload
 } from "@/lib/stay-repository-types"
 
 const DEFAULT_STORE_KEY = "stays:catalog"
@@ -45,15 +45,10 @@ function isStayRecord(value: unknown): value is StayRecord {
  * valid state rather than an error.
  */
 async function readStore(): Promise<StayStore> {
-  // @vercel/kv deserializes JSON automatically.
-  const raw = await kv.get<unknown>(getStoreKey())
+  const raw = await getRedis().get<unknown>(getStoreKey())
   if (!Array.isArray(raw)) return []
 
   return raw.filter(isStayRecord).map((stay) => ({ ...stay, blocks: normalizeBlocks(stay.blocks) }))
-}
-
-async function writeStore(store: StayStore) {
-  await kv.set(getStoreKey(), store)
 }
 
 function isPublished(stay: StayRecord) {
@@ -71,7 +66,6 @@ async function getStayById(id: string): Promise<StayRecord | null> {
 }
 
 async function createStay(payload: CreateStayPayload): Promise<StayRecord> {
-  const store = await readStore()
   const stay: StayRecord = {
     ...payload,
     id: createUniqueId(),
@@ -80,57 +74,139 @@ async function createStay(payload: CreateStayPayload): Promise<StayRecord> {
     blocks: normalizeBlocks(payload.blocks)
   }
 
-  await writeStore([stay, ...store])
+  const script = `
+    local raw = redis.call("GET", KEYS[1])
+    local store = raw and cjson.decode(raw) or {}
+    local stay = cjson.decode(ARGV[1])
+    table.insert(store, 1, stay)
+    redis.call("SET", KEYS[1], cjson.encode(store))
+    return 1
+  `
+  await getRedis().eval<[string], number>(script, [getStoreKey()], [JSON.stringify(stay)])
   return stay
 }
 
 async function updateStay(id: string, updates: UpdateStayPayload): Promise<StayRecord | null> {
-  const store = await readStore()
-  const index = store.findIndex((stay) => stay.id === id)
-  if (index === -1) return null
-
-  const existing = store[index]
-  const updated: StayRecord = {
-    ...existing,
-    ...updates,
-    id: existing.id,
-    imagePath: updates.imagePath ?? existing.imagePath,
-    previewImage: updates.previewImage ?? updates.imagePath ?? existing.previewImage,
-    updatedAt: new Date().toISOString()
-  }
-
-  store[index] = updated
-  await writeStore(store)
-  return updated
+  const script = `
+    local raw = redis.call("GET", KEYS[1])
+    if not raw then return nil end
+    local store = cjson.decode(raw)
+    local updates = cjson.decode(ARGV[2])
+    for _, stay in ipairs(store) do
+      if stay["id"] == ARGV[1] then
+        local existingImagePath = stay["imagePath"]
+        local existingPreviewImage = stay["previewImage"]
+        for key, value in pairs(updates) do stay[key] = value end
+        stay["id"] = ARGV[1]
+        stay["imagePath"] = updates["imagePath"] or existingImagePath
+        stay["previewImage"] = updates["previewImage"] or updates["imagePath"] or existingPreviewImage
+        stay["updatedAt"] = ARGV[3]
+        redis.call("SET", KEYS[1], cjson.encode(store))
+        return cjson.encode(stay)
+      end
+    end
+    return nil
+  `
+  const updated = await getRedis().eval<[string, string, string], unknown>(
+    script,
+    [getStoreKey()],
+    [id, JSON.stringify(updates), new Date().toISOString()]
+  )
+  return isStayRecord(updated) ? { ...updated, blocks: normalizeBlocks(updated.blocks) } : null
 }
 
 async function setStayAvailability(
   id: string,
   blocks: AvailabilityBlock[]
 ): Promise<StayRecord | null> {
-  const store = await readStore()
-  const index = store.findIndex((stay) => stay.id === id)
-  if (index === -1) return null
-
-  const updated: StayRecord = {
-    ...store[index],
-    blocks: normalizeBlocks(blocks),
-    availabilityUpdatedAt: new Date().toISOString()
-  }
-
-  store[index] = updated
-  await writeStore(store)
-  return updated
+  const script = `
+    local raw = redis.call("GET", KEYS[1])
+    if not raw then return nil end
+    local store = cjson.decode(raw)
+    local requested = cjson.decode(ARGV[2])
+    for _, stay in ipairs(store) do
+      if stay["id"] == ARGV[1] then
+        local preserved = {}
+        for _, block in ipairs(stay["blocks"] or {}) do
+          if block["source"] == "booking" and block["bookingId"] then
+            table.insert(preserved, block)
+          end
+        end
+        for _, block in ipairs(requested) do
+          if block["source"] ~= "booking" then table.insert(preserved, block) end
+        end
+        stay["blocks"] = preserved
+        stay["availabilityUpdatedAt"] = ARGV[3]
+        redis.call("SET", KEYS[1], cjson.encode(store))
+        return cjson.encode(stay)
+      end
+    end
+    return nil
+  `
+  const updated = await getRedis().eval<[string, string, string], unknown>(
+    script,
+    [getStoreKey()],
+    [id, JSON.stringify(normalizeBlocks(blocks)), new Date().toISOString()]
+  )
+  return isStayRecord(updated) ? { ...updated, blocks: normalizeBlocks(updated.blocks) } : null
 }
 
 async function deleteStay(id: string): Promise<StayRecord | null> {
-  const store = await readStore()
-  const index = store.findIndex((stay) => stay.id === id)
-  if (index === -1) return null
+  const script = `
+    local raw = redis.call("GET", KEYS[1])
+    if not raw then return nil end
+    local store = cjson.decode(raw)
+    for index, stay in ipairs(store) do
+      if stay["id"] == ARGV[1] then
+        for _, block in ipairs(stay["blocks"] or {}) do
+          if block["source"] == "booking" and block["bookingId"] then
+            return {"blocked", ""}
+          end
+        end
+        table.remove(store, index)
+        redis.call("SET", KEYS[1], cjson.encode(store))
+        return {"deleted", cjson.encode(stay)}
+      end
+    end
+    return {"not_found", ""}
+  `
+  const [status, deleted] = await getRedis().eval<[string], [string, unknown]>(
+    script,
+    [getStoreKey()],
+    [id]
+  )
+  if (status === "blocked") throw new StayHasBookingsError()
+  return isStayRecord(deleted) ? { ...deleted, blocks: normalizeBlocks(deleted.blocks) } : null
+}
 
-  const [deleted] = store.splice(index, 1)
-  await writeStore(store)
-  return deleted ?? null
+export async function removeKvBookingBlock(
+  stayId: string,
+  bookingId: string
+): Promise<StayRecord | null> {
+  const script = `
+    local raw = redis.call("GET", KEYS[1])
+    if not raw then return nil end
+    local store = cjson.decode(raw)
+    for _, stay in ipairs(store) do
+      if stay["id"] == ARGV[1] then
+        local kept = {}
+        for _, block in ipairs(stay["blocks"] or {}) do
+          if block["bookingId"] ~= ARGV[2] then table.insert(kept, block) end
+        end
+        stay["blocks"] = kept
+        stay["availabilityUpdatedAt"] = ARGV[3]
+        redis.call("SET", KEYS[1], cjson.encode(store))
+        return cjson.encode(stay)
+      end
+    end
+    return nil
+  `
+  const updated = await getRedis().eval<[string, string, string], unknown>(
+    script,
+    [getStoreKey()],
+    [stayId, bookingId, new Date().toISOString()]
+  )
+  return isStayRecord(updated) ? { ...updated, blocks: normalizeBlocks(updated.blocks) } : null
 }
 
 export const kvStayRepository: StayRepository = {

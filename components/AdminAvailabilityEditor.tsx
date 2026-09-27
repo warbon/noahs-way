@@ -111,12 +111,19 @@ export default function AdminAvailabilityEditor({
                   <p className="text-xs text-muted-foreground">
                     {nights} night{nights === 1 ? "" : "s"}
                     {block.note ? ` · ${block.note}` : ""}
+                    {block.source === "booking" ? " · accepted booking" : ""}
                     {block.to <= today ? " · past" : ""}
                   </p>
                 </div>
-                <Button type="button" variant="outline" onClick={() => removeRow(index)}>
-                  Remove
-                </Button>
+                {block.source === "booking" ? (
+                  <span className="text-xs font-medium text-muted-foreground">
+                    Managed from inquiries
+                  </span>
+                ) : (
+                  <Button type="button" variant="outline" onClick={() => removeRow(index)}>
+                    Remove
+                  </Button>
+                )}
               </li>
             )
           })}

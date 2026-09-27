@@ -70,12 +70,11 @@ export function eachNight(checkIn: string, checkOut: string): string[] {
 }
 
 /**
- * Drops malformed and zero-length ranges, sorts, then merges anything that
- * touches or overlaps.
+ * Drops malformed and zero-length ranges, sorts, then merges ranges belonging
+ * to the same source that touch or overlap.
  *
- * Merging matters beyond tidiness: two adjacent bookings stored separately
- * would otherwise render as two separate blocks with a phantom gap between
- * them in a naive calendar.
+ * Distinct booking blocks intentionally stay separate so their ownership is
+ * never lost; manual ranges and multiple ranges from one booking may merge.
  */
 export function normalizeBlocks(blocks: AvailabilityBlock[] | undefined): AvailabilityBlock[] {
   if (!blocks?.length) return []
@@ -90,7 +89,10 @@ export function normalizeBlocks(blocks: AvailabilityBlock[] | undefined): Availa
 
     // `<=` rather than `<`: a block ending the day the next begins is one
     // continuous unavailable stretch, not two.
-    if (previous && block.from <= previous.to) {
+    const sameBookingOwner =
+      previous?.source === block.source && previous?.bookingId === block.bookingId
+
+    if (previous && block.from <= previous.to && sameBookingOwner) {
       if (block.to > previous.to) previous.to = block.to
       // The merged range covers both reasons, so neither note describes it any
       // more. Admins read the unmerged list in the editor.

@@ -1,5 +1,8 @@
-import { fileStayRepository } from "@/lib/repositories/file-stay-repository"
-import { kvStayRepository } from "@/lib/repositories/kv-stay-repository"
+import {
+  fileStayRepository,
+  removeFileBookingBlock
+} from "@/lib/repositories/file-stay-repository"
+import { kvStayRepository, removeKvBookingBlock } from "@/lib/repositories/kv-stay-repository"
 import type { AvailabilityBlock } from "@/lib/stay-data"
 import type {
   CreateStayPayload,
@@ -75,4 +78,11 @@ export async function setStayAvailability(
   blocks: AvailabilityBlock[]
 ): Promise<StayRecord | null> {
   return getRepository().setStayAvailability(id, blocks)
+}
+
+/** Trusted booking lifecycle operation; never exposed through the calendar payload. */
+export async function removeStayBookingBlock(stayId: string, bookingId: string) {
+  return getRepositoryMode() === "kv"
+    ? removeKvBookingBlock(stayId, bookingId)
+    : removeFileBookingBlock(stayId, bookingId)
 }

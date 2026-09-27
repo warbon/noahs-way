@@ -7,6 +7,7 @@ import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 
 const links = [
+  { href: "/admin/dashboard", label: "Dashboard" },
   { href: "/admin/packages", label: "Packages" },
   { href: "/admin/stays", label: "Stays" },
   { href: "/admin/inquiries", label: "Inquiries" },
@@ -42,7 +43,7 @@ export default function AdminNav() {
   }, [pathname])
 
   return (
-    <nav aria-label="Admin sections" className="flex gap-2">
+    <nav aria-label="Admin sections" className="flex max-w-full flex-wrap gap-2">
       {links.map((link) => {
         const isActive = pathname === link.href
         const showBadge = link.href === "/admin/inquiries" && newCount > 0

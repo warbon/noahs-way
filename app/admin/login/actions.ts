@@ -46,5 +46,5 @@ export async function loginAction(formData: FormData) {
     redirect("/admin/login?error=config")
   }
 
-  redirect("/admin/packages")
+  redirect("/admin/dashboard")
 }
