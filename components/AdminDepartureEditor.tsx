@@ -11,7 +11,7 @@ import {
   createDepartureId,
   defaultEndDate,
   formatDepartureShort,
-  parseLegacyTravelPeriod,
+  parseLegacyTravelPeriods,
   type PackageDeparture,
   type ParsedLegacyPeriod
 } from "@/lib/package-departures"
@@ -97,14 +97,14 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
   const [legacy, setLegacy] = useState<string[]>(() =>
     pkg?.departures?.length ? [] : (pkg?.travelPeriods ?? [])
   )
-  const [needsYearCheck, setNeedsYearCheck] = useState(false)
+  /** Year the last conversion started from, for the "check the year" notice. */
+  const [importYear, setImportYear] = useState<string | null>(null)
   const [unreadable, setUnreadable] = useState<string[]>([])
 
   function importLines(lines: string[], reference: string) {
     const parsed: Row[] = []
     const failed: string[] = []
-    for (const line of lines) {
-      const result = parseLegacyTravelPeriod(line, reference)
+    for (const { line, result } of parseLegacyTravelPeriods(lines, reference)) {
       if (result) parsed.push(rowFromParsed(result))
       else failed.push(line)
     }
@@ -115,7 +115,7 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
     })
     setLegacy([])
     setUnreadable(failed)
-    if (parsed.length > 0) setNeedsYearCheck(true)
+    if (parsed.length > 0) setImportYear(reference.slice(0, 4))
   }
 
   // Latest version in a ref, so the listener below is attached once per form.
@@ -208,13 +208,13 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
         </div>
       ) : null}
 
-      {needsYearCheck ? (
+      {importYear ? (
         <p role="note" className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <span>
-            <strong>Read from the poster text, which has no year.</strong> Every date was set to{" "}
-            {referenceDate.slice(0, 4)} — check each one before saving. Cancel the panel to keep the
-            old text instead.
+            <strong>Read from the poster text, which usually has no year.</strong> Dates start in{" "}
+            {importYear} and move into the next year where the list runs past December — check each
+            one before saving. Cancel the panel to keep the old text instead.
           </span>
         </p>
       ) : null}

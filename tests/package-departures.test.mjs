@@ -10,6 +10,7 @@ import {
   formatDepartureRange,
   normalizeDepartures,
   parseLegacyTravelPeriod,
+  parseLegacyTravelPeriods,
   resolveDepartureSelection,
   upcomingDepartures
 } from "../lib/package-departures.ts"
@@ -47,6 +48,89 @@ test("a window crossing New Year rolls its end into the next year", () => {
     startDate: "2026-12-28",
     endDate: "2027-01-02"
   })
+})
+
+test("a year printed on the line is used instead of the reference year", () => {
+  assert.deepEqual(parseLegacyTravelPeriod("NOV 19-22, 2026", "2025-03-01"), {
+    startDate: "2026-11-19",
+    endDate: "2026-11-22"
+  })
+  assert.deepEqual(parseLegacyTravelPeriod("DEC 11-14, 2026 (+PHP 600)", REFERENCE), {
+    startDate: "2026-12-11",
+    endDate: "2026-12-14",
+    surchargePerPax: 600
+  })
+  // The year belongs to the end date: the window left the December before.
+  assert.deepEqual(parseLegacyTravelPeriod("DEC 30-JAN 02, 2027", REFERENCE), {
+    startDate: "2026-12-30",
+    endDate: "2027-01-02"
+  })
+})
+
+const dates = (entries) => entries.map(({ result }) => result && `${result.startDate}/${result.endDate}`)
+
+test("a winter list running from December into January moves into the next year", () => {
+  // Heartfelt Korea Winter, as stored in production.
+  const parsed = parseLegacyTravelPeriods(
+    ["DEC 03-08", "DEC 24-29", "DEC 31-JAN 05", "JAN 02-07", "JAN 21-26", "FEB 12-17"],
+    "2026-09-10"
+  )
+  assert.deepEqual(dates(parsed), [
+    "2026-12-03/2026-12-08",
+    "2026-12-24/2026-12-29",
+    "2026-12-31/2027-01-05",
+    "2027-01-02/2027-01-07",
+    "2027-01-21/2027-01-26",
+    "2027-02-12/2027-02-17"
+  ])
+})
+
+test("a printed year carries on to the lines after it", () => {
+  const parsed = parseLegacyTravelPeriods(["Nov 03-06", "DEC 30-JAN 02, 2027", "JAN 15-20", "Feb 05-09"], "2026-09-10")
+  assert.deepEqual(dates(parsed), [
+    "2026-11-03/2026-11-06",
+    "2026-12-30/2027-01-02",
+    "2027-01-15/2027-01-20",
+    "2027-02-05/2027-02-09"
+  ])
+})
+
+test("lists in order within one year, or slightly out of order, keep the reference year", () => {
+  // Hanoi + Sapa, as stored in data/packages.json.
+  const hanoi = parseLegacyTravelPeriods(
+    [
+      "Jan 16–20",
+      "Feb 07–10",
+      "Feb 13–17 (+₱5,000/pax)",
+      "Mar 13–17",
+      "Mar 27–30",
+      "Apr 03–07 (+₱5,000/pax)",
+      "Apr 17–20",
+      "Apr 30–May 03 (+₱5,000/pax)",
+      "May 22–25",
+      "Jun 12–15"
+    ],
+    REFERENCE
+  )
+  assert.equal(hanoi.every(({ result }) => result?.startDate.startsWith("2026-")), true)
+  assert.deepEqual(hanoi[7].result, { startDate: "2026-04-30", endDate: "2026-05-03", surchargePerPax: 5000 })
+
+  // A line a few months behind the one before is a listing slip, not a new year.
+  assert.deepEqual(dates(parseLegacyTravelPeriods(["Mar 04–08", "Jan 16–20", "Nov 20–25"], REFERENCE)), [
+    "2026-03-04/2026-03-08",
+    "2026-01-16/2026-01-20",
+    "2026-11-20/2026-11-25"
+  ])
+})
+
+test("an unreadable line is reported in place and does not move the year", () => {
+  const parsed = parseLegacyTravelPeriods(["Dec 03–08", "Every Friday", "Jan 02–07"], REFERENCE)
+  assert.deepEqual(
+    parsed.map(({ line }) => line),
+    ["Dec 03–08", "Every Friday", "Jan 02–07"]
+  )
+  assert.deepEqual(dates(parsed), ["2026-12-03/2026-12-08", null, "2027-01-02/2027-01-07"])
+  assert.deepEqual(dates(parseLegacyTravelPeriods(["Jan 02–07"], "not a date")), [null])
 })
 
 test("unreadable or ambiguous legacy strings are refused rather than guessed", () => {
