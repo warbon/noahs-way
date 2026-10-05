@@ -2,7 +2,8 @@ import {
   findCatalogEntry,
   loadPublishedCatalog,
   matchesQuery,
-  toModelPackage
+  toModelPackage,
+  type CatalogEntry
 } from "@/lib/ai/catalog"
 import {
   findStayEntry,
@@ -14,6 +15,12 @@ import { checkStayRange, quoteStay, todayInManila } from "@/lib/stay-availabilit
 import { GEN_UI_TOOL_NAMES, type GenUiToolName } from "@/lib/ai/genui-types"
 import type { AgentToolDefinition } from "@/lib/ai/provider-types"
 import { TRAVEL_TYPES } from "@/lib/inquiry-types"
+import {
+  departurePrice,
+  formatDepartureRange,
+  upcomingDepartures,
+  usesStructuredDepartures
+} from "@/lib/package-departures"
 import { formatDuration, formatPackagePrice } from "@/lib/price"
 
 /** Keeps a single tool result from swallowing the context window. */
@@ -119,6 +126,11 @@ const bookingDraftProperties = {
   mobile: { type: "string", description: "Mobile number, e.g. +63 917 000 0000." },
   email: { type: "string", description: "Email address." },
   packageId: { type: "string", description: "packageId from search_packages, if one was chosen." },
+  departureId: {
+    type: "string",
+    description:
+      "departureId the visitor picked in show_travel_date_picker. Required whenever the chosen package has open travel periods; its dates replace travelDateFrom and travelDateTo."
+  },
   destination: {
     type: "string",
     description:
@@ -203,10 +215,16 @@ const genUiTools: AgentToolDefinition[] = [
   {
     name: "show_travel_date_picker",
     description:
-      "Render a departure/return date picker with a 'flexible for promo fares' option. Use this instead of asking for dates in prose.",
+      "Ask for package travel dates. With a packageId whose package has open travel periods, it shows that package's travel periods on a small calendar — sold-out ones cannot be picked — and returns the picked departureId. Without one it shows free departure/return date fields. Use this instead of asking for dates in prose.",
     parameters: {
       type: "object",
-      properties: { prompt: { type: "string", description: "One short line of context." } },
+      properties: {
+        prompt: { type: "string", description: "One short line of context." },
+        packageId: {
+          type: "string",
+          description: "The chosen package's packageId. Always pass it once a package is chosen."
+        }
+      },
       required: ["prompt"],
       additionalProperties: false
     }
@@ -328,6 +346,33 @@ async function runSearchPackages(input: Record<string, unknown>) {
   }
 }
 
+/**
+ * Travel periods for the model to answer "is November open?" from. Sold-out
+ * ones are listed as such rather than left out, so it can say a date is gone
+ * instead of guessing it was never offered.
+ */
+function modelTravelPeriods(entry: CatalogEntry) {
+  if (!usesStructuredDepartures(entry)) {
+    return entry.travelPeriods?.length
+      ? {
+          travelPeriodsAsPrinted: entry.travelPeriods,
+          travelPeriodsNote:
+            "Copied from the poster with no year and no availability. Do not say any of them is open; a consultant confirms."
+        }
+      : {}
+  }
+  return {
+    travelPeriods: upcomingDepartures(entry.departures, todayInManila()).map((departure) => ({
+      departureId: departure.id,
+      dates: formatDepartureRange(departure),
+      pricePerPerson: departurePrice(entry.priceAmount, departure),
+      soldOut: Boolean(departure.soldOut)
+    })),
+    travelPeriodsNote:
+      "Sold-out periods cannot be booked; never offer one. The visitor picks a period in show_travel_date_picker."
+  }
+}
+
 async function runGetPackageDetails(input: Record<string, unknown>) {
   const packageId = readString(input.packageId)
   if (!packageId) return { error: "packageId is required." }
@@ -339,6 +384,7 @@ async function runGetPackageDetails(input: Record<string, unknown>) {
 
   return {
     ...toModelPackage(entry),
+    ...modelTravelPeriods(entry),
     duration: formatDuration(entry.durationDays, entry.durationNights),
     priceLabel: formatPackagePrice(entry),
     highlights: entry.highlights,

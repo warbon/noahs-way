@@ -39,8 +39,17 @@ import {
 } from "@/lib/ai/provider-types"
 import { findStayEntry, toChatStaySummary } from "@/lib/ai/stay-catalog"
 import { AGENT_TOOLS, isGenUiTool, runDataTool } from "@/lib/ai/tools"
-import { checkStayRange, normalizeBlocks } from "@/lib/stay-availability"
+import { checkStayRange, normalizeBlocks, todayInManila } from "@/lib/stay-availability"
 import { isTravelType } from "@/lib/inquiry-types"
+import {
+  bookableDepartures,
+  departurePrice,
+  formatDepartureLabel,
+  formatDepartureRange,
+  normalizeDepartures,
+  resolveDepartureSelection,
+  upcomingDepartures
+} from "@/lib/package-departures"
 import { checkChatRateLimit } from "@/lib/rate-limit"
 import { getClientIp } from "@/lib/request-ip"
 
@@ -105,6 +114,11 @@ function readIsoDate(value: unknown) {
   return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value) ? value : undefined
 }
 
+/** Same shape the departure editor generates; anything else never names a real period. */
+function readDepartureId(value: unknown) {
+  return typeof value === "string" && /^[A-Za-z0-9_-]{1,64}$/.test(value) ? value : undefined
+}
+
 /**
  * Drops the oldest messages once the transcript grows too long, then keeps
  * dropping until the first message is a plain user turn. Without that second
@@ -158,6 +172,7 @@ function draftFromToolInput(input: Record<string, unknown>): ChatBookingDraft | 
     mobile,
     email,
     packageId: readString(input.packageId),
+    departureId: readDepartureId(input.departureId),
     stayId: readString(input.stayId),
     checkIn: readIsoDate(input.checkIn),
     checkOut: readIsoDate(input.checkOut),
@@ -274,7 +289,55 @@ async function buildGenUi(
       }
     }
 
-    case "show_travel_date_picker":
+    case "show_travel_date_picker": {
+      /*
+        A chosen package with open travel periods is booked by picking one, so
+        the widget gets the periods — read from the catalog here, prices
+        included, never from the model's arguments.
+      */
+      const packageId = readString(input.packageId)
+      const entry = packageId ? await findCatalogEntry(packageId) : undefined
+      const upcoming = entry ? upcomingDepartures(normalizeDepartures(entry.departures), todayInManila()) : []
+
+      if (entry && upcoming.some((departure) => !departure.soldOut)) {
+        return {
+          rendered: true,
+          name,
+          payload: {
+            prompt,
+            packageTitle: entry.title,
+            currency: entry.currency ?? "PHP",
+            departures: upcoming.map((departure) => ({
+              id: departure.id,
+              startDate: departure.startDate,
+              endDate: departure.endDate,
+              label: formatDepartureRange(departure),
+              price: departurePrice(entry.priceAmount, departure),
+              soldOut: Boolean(departure.soldOut)
+            }))
+          },
+          ack: {
+            displayed: true,
+            note: "The visitor picks one of this package's travel periods; sold-out ones cannot be picked. Their answer carries a departureId — pass it to show_booking_summary."
+          }
+        }
+      }
+
+      if (entry && upcoming.length > 0) {
+        return {
+          rendered: true,
+          name,
+          payload: { prompt, packageTitle: entry.title, allSoldOut: true },
+          ack: {
+            displayed: true,
+            note: "Every travel period of this package is sold out, so the widget asks for preferred dates. Say a consultant will look for the next departure; do not promise one."
+          }
+        }
+      }
+
+      return { rendered: true, name, payload: { prompt }, ack: { displayed: true } }
+    }
+
     case "show_traveller_selector":
       return { rendered: true, name, payload: { prompt }, ack: { displayed: true } }
 
@@ -316,6 +379,38 @@ async function buildGenUi(
       const stay = draft.stayId ? await findStayEntry(draft.stayId) : undefined
 
       /*
+        The travel-period check, for the same reason as the stay one below: fail
+        while the recap is being drawn, not after the visitor has pressed
+        Confirm. The dates in the draft are replaced with the period's own, so
+        the recap cannot show a day the model typed.
+      */
+      let departureLabel: string | undefined
+      if (entry) {
+        const departures = normalizeDepartures(entry.departures)
+        const today = todayInManila()
+        if (draft.departureId || bookableDepartures(departures, today).length > 0) {
+          const selection = resolveDepartureSelection(departures, draft.departureId, today)
+          if (!selection.ok) {
+            return {
+              rendered: false,
+              ack: {
+                error:
+                  selection.reason === "missing"
+                    ? "This package is booked by travel period. Call show_travel_date_picker with its packageId and let the visitor pick one before showing a summary."
+                    : `${selection.error} Call show_travel_date_picker with the packageId again so the visitor can pick an open period, and tell them that one went while you were talking.`
+              }
+            }
+          }
+          draft.travelDateFrom = selection.departure.startDate
+          draft.travelDateTo = selection.departure.endDate
+          draft.flexibleOnPromoDates = false
+          departureLabel = formatDepartureLabel(selection.departure)
+        }
+      } else {
+        draft.departureId = undefined
+      }
+
+      /*
         The last availability check before a visitor is asked to confirm.
 
         The assistant is told never to re-offer a window it checked earlier,
@@ -344,7 +439,7 @@ async function buildGenUi(
       return {
         rendered: true,
         name,
-        payload: { prompt, draft, packageTitle: entry?.title, stayTitle: stay?.title },
+        payload: { prompt, draft, packageTitle: entry?.title, departureLabel, stayTitle: stay?.title },
         ack: { displayed: true, note: "Awaiting the visitor's Confirm click. You cannot submit it." }
       }
     }
@@ -375,6 +470,10 @@ function describeWidgetResult(tool: string, value: Record<string, unknown>) {
     case "show_travel_date_picker": {
       const from = readIsoDate(value.travelDateFrom) ?? "not given"
       const to = readIsoDate(value.travelDateTo) ?? "not given"
+      const departureId = readDepartureId(value.departureId)
+      if (departureId) {
+        return `[The visitor picked a travel period (departureId: ${departureId}), departing ${from} and returning ${to}. Pass this departureId to show_booking_summary and do not ask for dates again.]`
+      }
       const flexible = value.flexibleOnPromoDates === true ? "yes" : "no"
       return `[The visitor chose travel dates — departure: ${from}, return: ${to}, flexible for promo fares: ${flexible}.]`
     }

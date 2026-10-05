@@ -1,7 +1,9 @@
 import Link from "next/link"
 
 import Reveal from "@/components/Reveal"
+import { countOpenDepartures } from "@/lib/package-departures"
 import { getPackagesByCategory } from "@/lib/package-repository"
+import { todayInManila } from "@/lib/stay-availability"
 
 /**
  * Replaces a band of unfalsifiable promises.
@@ -45,7 +47,8 @@ export default async function HowItWorks() {
   const packages = [...international, ...local]
 
   const prices = packages.map((pkg) => pkg.priceAmount).filter((n): n is number => Boolean(n))
-  const departures = packages.reduce((total, pkg) => total + (pkg.travelPeriods?.length ?? 0), 0)
+  const today = todayInManila()
+  const departures = packages.reduce((total, pkg) => total + countOpenDepartures(pkg, today), 0)
   const countries = Array.from(
     new Set(
       packages

@@ -36,7 +36,7 @@ export default function BookingSummary({
   disabled,
   onSubmit
 }: GenUiComponentProps<"show_booking_summary">) {
-  const { prompt, draft, packageTitle, stayTitle } = widget.payload
+  const { prompt, draft, packageTitle, departureLabel, stayTitle } = widget.payload
   const locked = disabled || answered
 
   const travelWindow =
@@ -69,6 +69,7 @@ export default function BookingSummary({
           value={draft.guests ? `${draft.guests} guest(s)` : undefined}
         />
         <Row label="Package" value={packageTitle} />
+        <Row label="Travel period" value={departureLabel} />
         <Row label="Destination" value={draft.destination} />
         <Row label="Travel" value={travelWindow} />
         <Row label="Departing" value={draft.airportOfOrigin} />
