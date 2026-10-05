@@ -1,12 +1,18 @@
 import Image from "next/image"
 import Link from "next/link"
 
-import InquiryForm from "@/components/InquiryForm"
+import PackageBookingSection from "@/components/PackageBookingSection"
 import PaymentMethods from "@/components/PaymentMethods"
 import TripCostCalculator from "@/components/TripCostCalculator"
 import { packageCategoryMeta, type PackageCategory } from "@/lib/package-data"
+import {
+  normalizeDepartures,
+  upcomingDepartures,
+  usesStructuredDepartures
+} from "@/lib/package-departures"
 import type { PackageRecord } from "@/lib/package-repository-types"
 import { formatDuration, formatPackagePrice } from "@/lib/price"
+import { todayInManila } from "@/lib/stay-availability"
 
 type PackageDetailViewProps = {
   pkg: PackageRecord
@@ -32,7 +38,28 @@ export default function PackageDetailView({ pkg, category, preview = false }: Pa
   const duration = formatDuration(pkg.durationDays, pkg.durationNights)
   const hasItinerary = Boolean(pkg.itinerary?.length)
   const hasInclusions = Boolean(pkg.inclusions?.length || pkg.exclusions?.length)
-  const hasTravelPeriods = Boolean(pkg.travelPeriods?.length)
+  const today = todayInManila()
+  const departures = upcomingDepartures(normalizeDepartures(pkg.departures), today)
+  /*
+    With dated departures the calendar is the way in, so it and the booking card
+    take the full width straight under the title. Without any — the poster text
+    only, or every period already past — the page keeps its reading layout with
+    the card in the sidebar, asking for preferred dates instead.
+  */
+  const hasCalendar = departures.length > 0
+  const hasLegacyPeriods = !usesStructuredDepartures(pkg) && Boolean(pkg.travelPeriods?.length)
+
+  const booking = (
+    <PackageBookingSection
+      packageId={pkg.id}
+      packageTitle={pkg.title}
+      basePrice={pkg.priceAmount}
+      currency={pkg.currency ?? "PHP"}
+      departures={departures}
+      today={today}
+      preview={preview}
+    />
+  )
 
   return (
     <main id="main-content" tabIndex={-1} className="px-5 py-12 md:px-8">
@@ -77,9 +104,11 @@ export default function PackageDetailView({ pkg, category, preview = false }: Pa
           <p className="mt-4 max-w-2xl text-muted-foreground">{pkg.summary ?? pkg.details}</p>
         </header>
 
+        {hasCalendar ? <div className="mt-10">{booking}</div> : null}
+
         <div className="mt-10 grid gap-10 lg:grid-cols-[1.4fr_1fr]">
           <div className="space-y-10">
-            {hasTravelPeriods ? (
+            {hasLegacyPeriods ? (
               <section aria-labelledby="travel-periods-heading">
                 <h2 id="travel-periods-heading" className="text-2xl font-bold text-primary">
                   Travel periods
@@ -239,33 +268,8 @@ export default function PackageDetailView({ pkg, category, preview = false }: Pa
           </div>
 
           <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-            <div className="rounded-2xl border border-primary/15 bg-card p-6 shadow-lg">
-              <h2 className="text-xl font-bold text-primary">Book this package</h2>
-              {preview ? (
-                <>
-                  <p className="mt-2 rounded-md bg-amber-100 px-3 py-2 text-xs font-medium text-amber-900">
-                    Preview — the form is shown as customers see it, but cannot be sent from here.
-                  </p>
-                  {/* A disabled fieldset disables every control inside it at the
-                      DOM level, including the ones the client component renders,
-                      so nothing here can file a real inquiry. */}
-                  <fieldset disabled className="contents">
-                    <InquiryForm
-                      packageId={pkg.id}
-                      packageTitle={pkg.title}
-                      intro="Send us your booking details and we'll confirm availability and the final price."
-                    />
-                  </fieldset>
-                </>
-              ) : (
-                <InquiryForm
-                  packageId={pkg.id}
-                  packageTitle={pkg.title}
-                  intro="Send us your booking details and we'll confirm availability and the final price."
-                />
-              )}
-            </div>
-            {/* Sits under the enquiry form, where the price question lands. */}
+            {hasCalendar ? null : booking}
+            {/* Sits beside the content, where the price question lands. */}
             <TripCostCalculator
               priceAmount={pkg.priceAmount}
               durationDays={pkg.durationDays}

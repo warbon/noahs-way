@@ -90,6 +90,8 @@ export type PackageBookingRecord = BookingBase & {
   packageTitle: string
   packageSlug: string
   packageCategory: "local" | "international"
+  /** The travel period the guest picked, when the inquiry came through one. */
+  departureId?: string
   travelDateFrom: string
   travelDateTo: string
   adults: number

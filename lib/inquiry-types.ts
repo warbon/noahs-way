@@ -57,6 +57,15 @@ export type InquiryRecord = {
   packageTitle?: string
   packageSlug?: string
   packageCategory?: "local" | "international"
+  /**
+   * The travel period picked from the package, snapshotted server-side after
+   * it was re-checked as open. When present, `travelDateFrom`/`travelDateTo`
+   * are that period's dates, never ones the customer typed.
+   */
+  departureId?: string
+  /** "Oct 26–31, 2026 (+₱3,000/pax)", as it stood when the request was sent. */
+  departureLabel?: string
+  departureSurchargePerPax?: number
 
   /**
    * Snapshotted server-side when the inquiry came from a condo stay, alongside
