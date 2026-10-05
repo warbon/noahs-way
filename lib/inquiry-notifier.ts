@@ -51,6 +51,8 @@ function formatInquiry(inquiry: InquiryRecord) {
   if (inquiry.destination) lines.push(`Destination: ${inquiry.destination}`)
   if (inquiry.airportOfOrigin) lines.push(`Departing from: ${inquiry.airportOfOrigin}`)
 
+  if (inquiry.departureLabel) lines.push(`Travel period: ${inquiry.departureLabel}`)
+
   if (inquiry.travelDateFrom || inquiry.travelDateTo) {
     lines.push(
       `Travel: ${inquiry.travelDateFrom ?? "?"} to ${inquiry.travelDateTo ?? "?"}` +
@@ -114,6 +116,7 @@ function customerReceipt(inquiry: InquiryRecord) {
     if (inquiry.guests) lines.push(`Guests: ${inquiry.guests}`)
   }
   if (inquiry.destination) lines.push(`Destination: ${inquiry.destination}`)
+  if (inquiry.departureLabel) lines.push(`Travel period: ${inquiry.departureLabel}`)
   if (inquiry.travelDateFrom || inquiry.travelDateTo) {
     lines.push(`Travel dates: ${inquiry.travelDateFrom ?? "?"} to ${inquiry.travelDateTo ?? "?"}`)
   }

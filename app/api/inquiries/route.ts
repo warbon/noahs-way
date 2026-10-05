@@ -38,7 +38,12 @@ export async function POST(request: NextRequest) {
   // lib/inquiry-submission.ts, shared with the chat assistant's booking route.
   const result = await submitInquiry(body)
   if (!result.ok) {
-    return errorResponse(result.error, result.status)
+    // `code` lets the booking form tell "that period just sold out" apart from
+    // a typo, and mark the period sold out on its calendar.
+    return NextResponse.json(
+      { error: result.error, code: result.code, reason: result.reason },
+      { status: result.status }
+    )
   }
 
   revalidatePath("/admin/inquiries")

@@ -1,9 +1,16 @@
 import { createInquiry } from "@/lib/inquiry-repository"
 import { notifyNewInquiry } from "@/lib/inquiry-notifier"
 import { isTravelType, type InquiryRecord, type InquirySource } from "@/lib/inquiry-types"
+import {
+  bookableDepartures,
+  formatDepartureLabel,
+  normalizeDepartures,
+  resolveDepartureSelection
+} from "@/lib/package-departures"
 import { getPackagesByCategory } from "@/lib/package-repository"
+import type { PackageRecord } from "@/lib/package-repository-types"
 import { derivePackageSlug } from "@/lib/package-slug"
-import { checkStayRange } from "@/lib/stay-availability"
+import { checkStayRange, todayInManila } from "@/lib/stay-availability"
 import { getStays } from "@/lib/stay-repository"
 import type { StayRecord } from "@/lib/stay-repository-types"
 import { deriveSlug } from "@/lib/slug"
@@ -71,25 +78,34 @@ function todayIso() {
  * Resolves the package the customer was reading, from the catalog rather than
  * from the request, so a spoofed title can never be stored.
  */
-async function resolvePackageSnapshot(packageId: string | undefined) {
-  if (!packageId) return {}
+async function resolvePackageSnapshot(
+  packageId: string | undefined
+): Promise<{
+  snapshot: Partial<InquiryRecord>
+  resolvedDestination?: string
+  record?: PackageRecord
+}> {
+  if (!packageId) return { snapshot: {} }
 
   for (const category of ["local", "international"] as const) {
     const packages = await getPackagesByCategory(category, { includeDrafts: true })
     const match = packages.find((pkg) => pkg.id === packageId)
     if (match) {
       return {
-        packageId: match.id,
-        packageTitle: match.title,
-        packageSlug: derivePackageSlug(match),
-        packageCategory: category,
+        snapshot: {
+          packageId: match.id,
+          packageTitle: match.title,
+          packageSlug: derivePackageSlug(match),
+          packageCategory: category
+        },
         /** Used only to backfill an empty destination; never stored as-is. */
-        resolvedDestination: match.destination
+        resolvedDestination: match.destination,
+        record: match
       }
     }
   }
 
-  return {}
+  return { snapshot: {} }
 }
 
 /**
@@ -105,7 +121,18 @@ async function resolveStay(stayId: string | undefined): Promise<StayRecord | und
 
 export type InquirySubmissionResult =
   | { ok: true; inquiry: InquiryRecord }
-  | { ok: false; status: 400 | 503; error: string }
+  | {
+      ok: false
+      status: 400 | 503
+      error: string
+      /**
+       * "departure-required": the package has open travel periods and none was
+       * picked. "departure-unavailable": the one picked sold out, left, or was
+       * removed since the page loaded — `reason` says which.
+       */
+      code?: "departure-required" | "departure-unavailable"
+      reason?: string
+    }
 
 export type SubmitInquiryOptions = {
   /**
@@ -147,8 +174,54 @@ export async function submitInquiry(
     return { ok: false, status: 400, error: "Please enter a valid mobile number" }
   }
 
-  const travelDateFrom = readOptionalDate(body.travelDateFrom)
-  const travelDateTo = readOptionalDate(body.travelDateTo)
+  const {
+    snapshot: packageSnapshot,
+    resolvedDestination,
+    record: packageRecord
+  } = await resolvePackageSnapshot(readOptionalString(body.packageId, MAX_PACKAGE_ID_LENGTH))
+
+  /*
+    The travel-period re-check — the package twin of the stay one below.
+
+    A package with open travel periods is booked by picking one, and the dates
+    come from the period as it is stored right now, not from the request: the
+    calendar the customer clicked may be hours old and the period sold out since.
+    A departure named in the request is checked even when nothing is open any
+    more, so the last period selling out is refused rather than quietly filed as
+    a request with no dates.
+  */
+  let travelDateFrom = readOptionalDate(body.travelDateFrom)
+  let travelDateTo = readOptionalDate(body.travelDateTo)
+  let departureSnapshot: Partial<InquiryRecord> = {}
+
+  if (packageRecord) {
+    const departures = normalizeDepartures(packageRecord.departures)
+    const requested = readOptionalString(body.departureId, MAX_PACKAGE_ID_LENGTH)
+
+    if (requested || bookableDepartures(departures, todayInManila()).length > 0) {
+      const selection = resolveDepartureSelection(departures, requested, todayInManila())
+      if (!selection.ok) {
+        return {
+          ok: false,
+          status: 400,
+          error: selection.error,
+          code: selection.reason === "missing" ? "departure-required" : "departure-unavailable",
+          reason: selection.reason
+        }
+      }
+
+      travelDateFrom = selection.departure.startDate
+      travelDateTo = selection.departure.endDate
+      departureSnapshot = {
+        departureId: selection.departure.id,
+        departureLabel: formatDepartureLabel(selection.departure),
+        ...(selection.departure.surchargePerPax
+          ? { departureSurchargePerPax: selection.departure.surchargePerPax }
+          : {})
+      }
+    }
+  }
+
   const today = todayIso()
 
   // ISO dates compare correctly as strings, so no Date parsing is needed.
@@ -165,10 +238,6 @@ export async function submitInquiry(
     typeof body.message === "string"
       ? sanitizeMultiline(body.message).slice(0, MAX_MESSAGE_LENGTH) || undefined
       : undefined
-
-  const { resolvedDestination, ...packageSnapshot } = await resolvePackageSnapshot(
-    readOptionalString(body.packageId, MAX_PACKAGE_ID_LENGTH)
-  )
 
   /**
    * A lead that names a package but no destination leaves the consultant's
@@ -245,6 +314,7 @@ export async function submitInquiry(
       childAges: readOptionalString(body.childAges, MAX_FREEFORM_LENGTH),
       travelType: isTravelType(body.travelType) ? body.travelType : undefined,
       ...packageSnapshot,
+      ...departureSnapshot,
       ...staySnapshot,
       source
     })

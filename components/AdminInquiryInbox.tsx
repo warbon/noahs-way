@@ -636,6 +636,17 @@ export default function AdminInquiryInbox() {
                     <dd>{selected.airportOfOrigin ?? "Not given"}</dd>
                   </div>
                 ) : null}
+                {selected.departureLabel ? (
+                  <div className="flex gap-2">
+                    <dt className="w-28 shrink-0 text-muted-foreground">Travel period</dt>
+                    <dd>
+                      <span className="font-semibold text-foreground">{selected.departureLabel}</span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        Picked from the package and checked open when sent — the dates below come from it.
+                      </span>
+                    </dd>
+                  </div>
+                ) : null}
                 {!isStayLead || travelWindow(selected) ? (
                   <div className="flex gap-2">
                     <dt className="w-28 shrink-0 text-muted-foreground">Travel dates</dt>

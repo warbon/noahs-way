@@ -207,6 +207,7 @@ export async function acceptPackageInquiry(
     packageTitle: inquiry.packageTitle,
     packageSlug: inquiry.packageSlug ?? derivePackageSlug(pkg),
     packageCategory: inquiry.packageCategory ?? pkg.category,
+    ...(inquiry.departureId ? { departureId: inquiry.departureId } : {}),
     guestName: inquiry.name,
     guestEmail: inquiry.email,
     guestMobile: inquiry.mobile,
