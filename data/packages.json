@@ -396,6 +396,61 @@
           "basis": "per-person",
           "required": false
         }
+      ],
+      "departures": [
+        {
+          "id": "dep-muvsrrka-i4uoiv",
+          "startDate": "2026-01-16",
+          "endDate": "2026-01-20"
+        },
+        {
+          "id": "dep-muvsrrka-vmwj73",
+          "startDate": "2026-02-07",
+          "endDate": "2026-02-10"
+        },
+        {
+          "id": "dep-muvsrrka-xvyar3",
+          "startDate": "2026-02-13",
+          "endDate": "2026-02-17",
+          "surchargePerPax": 5000
+        },
+        {
+          "id": "dep-muvsrrka-obzbsl",
+          "startDate": "2026-03-13",
+          "endDate": "2026-03-17"
+        },
+        {
+          "id": "dep-muvsrrka-4i3emx",
+          "startDate": "2026-03-27",
+          "endDate": "2026-03-30"
+        },
+        {
+          "id": "dep-muvsrrka-bwwwxc",
+          "startDate": "2026-04-03",
+          "endDate": "2026-04-07",
+          "surchargePerPax": 5000
+        },
+        {
+          "id": "dep-muvsrrka-a40k4r",
+          "startDate": "2026-04-17",
+          "endDate": "2026-04-20"
+        },
+        {
+          "id": "dep-muvsrrka-n74e2c",
+          "startDate": "2026-04-30",
+          "endDate": "2026-05-03",
+          "surchargePerPax": 5000
+        },
+        {
+          "id": "dep-muvsrrka-bdaymr",
+          "startDate": "2026-05-22",
+          "endDate": "2026-05-25"
+        },
+        {
+          "id": "dep-muvsrrka-9kwlam",
+          "startDate": "2026-06-12",
+          "endDate": "2026-06-15"
+        }
       ]
     },
     {
@@ -547,6 +602,68 @@
           "basis": "per-person",
           "required": true,
           "note": "Mandatory — amount depends on the policy you choose"
+        }
+      ],
+      "departures": [
+        {
+          "id": "dep-muvsrrkc-4487h5",
+          "startDate": "2026-05-07",
+          "endDate": "2026-05-12",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-m4awxk",
+          "startDate": "2026-05-16",
+          "endDate": "2026-05-21",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-3ut00m",
+          "startDate": "2026-06-16",
+          "endDate": "2026-06-21",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-jirx9z",
+          "startDate": "2026-06-24",
+          "endDate": "2026-06-28",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-qsg2zu",
+          "startDate": "2026-07-09",
+          "endDate": "2026-07-14",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-yu6bf0",
+          "startDate": "2026-07-18",
+          "endDate": "2026-07-23",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-y2u61t",
+          "startDate": "2026-08-08",
+          "endDate": "2026-08-13",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-08x91p",
+          "startDate": "2026-08-25",
+          "endDate": "2026-08-30",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-79kvb4",
+          "startDate": "2026-09-08",
+          "endDate": "2026-09-13",
+          "surchargePerPax": 6000
+        },
+        {
+          "id": "dep-muvsrrkc-ecdhgu",
+          "startDate": "2026-09-12",
+          "endDate": "2026-09-17",
+          "surchargePerPax": 6000
         }
       ]
     },
@@ -710,6 +827,84 @@
           "required": false,
           "note": "Subject to quotation"
         }
+      ],
+      "departures": [
+        {
+          "id": "dep-muvsrrkd-wjskky",
+          "startDate": "2026-10-14",
+          "endDate": "2026-10-19"
+        },
+        {
+          "id": "dep-muvsrrkd-4zi1pi",
+          "startDate": "2026-10-15",
+          "endDate": "2026-10-20",
+          "surchargePerPax": 1000
+        },
+        {
+          "id": "dep-muvsrrkd-jiohe0",
+          "startDate": "2026-10-16",
+          "endDate": "2026-10-21",
+          "surchargePerPax": 1000
+        },
+        {
+          "id": "dep-muvsrrkd-f7c3t7",
+          "startDate": "2026-10-26",
+          "endDate": "2026-10-31",
+          "surchargePerPax": 3000
+        },
+        {
+          "id": "dep-muvsrrkd-7cqkxu",
+          "startDate": "2026-10-27",
+          "endDate": "2026-11-01",
+          "surchargePerPax": 5000
+        },
+        {
+          "id": "dep-muvsrrkd-to61vo",
+          "startDate": "2026-11-01",
+          "endDate": "2026-11-06",
+          "surchargePerPax": 5000
+        },
+        {
+          "id": "dep-muvsrrkd-xinjlv",
+          "startDate": "2026-11-05",
+          "endDate": "2026-11-10",
+          "surchargePerPax": 1000
+        },
+        {
+          "id": "dep-muvsrrkd-27hwn6",
+          "startDate": "2026-11-06",
+          "endDate": "2026-11-11",
+          "surchargePerPax": 1000
+        },
+        {
+          "id": "dep-muvsrrkd-v86qi7",
+          "startDate": "2026-11-12",
+          "endDate": "2026-11-17",
+          "surchargePerPax": 1000
+        },
+        {
+          "id": "dep-muvsrrkd-msznjz",
+          "startDate": "2026-11-13",
+          "endDate": "2026-11-18",
+          "surchargePerPax": 1000
+        },
+        {
+          "id": "dep-muvsrrkd-81ig1i",
+          "startDate": "2026-11-19",
+          "endDate": "2026-11-24",
+          "surchargePerPax": 1000
+        },
+        {
+          "id": "dep-muvsrrkd-5yxq48",
+          "startDate": "2026-11-20",
+          "endDate": "2026-11-25"
+        },
+        {
+          "id": "dep-muvsrrkd-2vjjyh",
+          "startDate": "2026-11-22",
+          "endDate": "2026-11-27",
+          "surchargePerPax": 1000
+        }
       ]
     },
     {
@@ -854,6 +1049,23 @@
           "required": false,
           "note": "Han River cruise, Vietnamese massage and Ao Dai show"
         }
+      ],
+      "departures": [
+        {
+          "id": "dep-muvsrrkd-b6lr6q",
+          "startDate": "2026-02-28",
+          "endDate": "2026-03-03"
+        },
+        {
+          "id": "dep-muvsrrkd-l3ak8p",
+          "startDate": "2026-03-28",
+          "endDate": "2026-03-31"
+        },
+        {
+          "id": "dep-muvsrrkd-ijatvr",
+          "startDate": "2026-04-25",
+          "endDate": "2026-04-28"
+        }
       ]
     },
     {
@@ -993,6 +1205,18 @@
           "currency": "PHP",
           "basis": "per-person",
           "required": true
+        }
+      ],
+      "departures": [
+        {
+          "id": "dep-muvsrrkd-hjw2jb",
+          "startDate": "2026-03-04",
+          "endDate": "2026-03-08"
+        },
+        {
+          "id": "dep-muvsrrkd-di4upy",
+          "startDate": "2026-03-18",
+          "endDate": "2026-03-22"
         }
       ]
     },
