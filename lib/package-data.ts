@@ -1,3 +1,4 @@
+import type { PackageDeparture } from "@/lib/package-departures"
 import type { PackageFee } from "@/lib/package-fees"
 
 export type PackageCategory = "local" | "international"
@@ -34,8 +35,13 @@ export type TravelPackage = {
   durationDays?: number
   durationNights?: number
   highlights?: string[]
-  /** Departure windows as printed on the poster, e.g. "Mar 04–08 (+₱5,000/pax)". */
+  /**
+   * Departure windows as printed on the poster, e.g. "Mar 04–08 (+₱5,000/pax)".
+   * Legacy: no year and no sold-out flag. Shown only while `departures` is empty.
+   */
   travelPeriods?: string[]
+  /** Dated departures a customer picks from when booking; see lib/package-departures.ts. */
+  departures?: PackageDeparture[]
   itinerary?: ItineraryDay[]
   inclusions?: string[]
   exclusions?: string[]
