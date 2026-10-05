@@ -1,4 +1,5 @@
 import type { ItineraryDay, PackageStatus, TravelPackage } from "@/lib/package-data"
+import { normalizeDepartures, type PackageDeparture } from "@/lib/package-departures"
 import type { FeeBasis, PackageFee } from "@/lib/package-fees"
 
 const FEE_BASES: FeeBasis[] = [
@@ -83,6 +84,25 @@ export function parseFees(value: unknown): PackageFee[] | undefined {
   return fees.length > 0 ? fees : undefined
 }
 
+/**
+ * The departure editor submits its rows as one JSON field. Anything that does
+ * not survive `normalizeDepartures` is dropped, so a hand-crafted request
+ * cannot store a departure with an impossible date or a negative surcharge.
+ */
+export function parseDepartures(value: unknown): PackageDeparture[] | undefined {
+  if (typeof value !== "string" || !value.trim()) return undefined
+
+  let raw: unknown
+  try {
+    raw = JSON.parse(value)
+  } catch {
+    return undefined
+  }
+
+  const departures = normalizeDepartures(raw)
+  return departures.length > 0 ? departures : undefined
+}
+
 export function parseOptionalNumber(value: unknown): number | undefined {
   if (typeof value !== "string" || !value.trim()) return undefined
   const parsed = Number.parseFloat(value.replace(/,/g, ""))
@@ -110,6 +130,7 @@ type StructuredFields = Pick<
   | "durationNights"
   | "highlights"
   | "travelPeriods"
+  | "departures"
   | "itinerary"
   | "inclusions"
   | "exclusions"
@@ -139,6 +160,7 @@ export function readStructuredFields(formData: FormData): StructuredFields {
     durationNights: parseOptionalNumber(formData.get("durationNights")),
     highlights: parseLines(formData.get("highlights")),
     travelPeriods: parseLines(formData.get("travelPeriods")),
+    departures: parseDepartures(formData.get("departures")),
     itinerary: parseItinerary(formData.get("itinerary")),
     inclusions: parseLines(formData.get("inclusions")),
     exclusions: parseLines(formData.get("exclusions")),

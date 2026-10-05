@@ -6,7 +6,7 @@
     "dev": "next dev",
     "dev:https": "next dev --hostname 127.0.0.1 --port 3000 --experimental-https",
     "build": "next build",
-    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --test tests/*.test.mjs",
+    "test": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --import ./tests/register-alias.mjs --test tests/*.test.mjs",
     "start": "next start",
     "lint": "next lint",
     "seed:kv": "node --env-file=.env.local scripts/seed-kv-from-json.mjs",

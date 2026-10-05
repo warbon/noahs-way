@@ -24,6 +24,7 @@ type PackageEditableFields = Pick<
   | "durationNights"
   | "highlights"
   | "travelPeriods"
+  | "departures"
   | "itinerary"
   | "inclusions"
   | "exclusions"

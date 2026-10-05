@@ -1,4 +1,5 @@
 import type { ItineraryDay, PackageCategory, PackageStatus } from "@/lib/package-data"
+import type { PackageDeparture } from "@/lib/package-departures"
 import type { PackageFee } from "@/lib/package-fees"
 
 /** Shape the admin API returns for a single package. */
@@ -20,6 +21,7 @@ export type AdminPackageRecord = {
   durationNights?: number
   highlights?: string[]
   travelPeriods?: string[]
+  departures?: PackageDeparture[]
   itinerary?: ItineraryDay[]
   inclusions?: string[]
   exclusions?: string[]

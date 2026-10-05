@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 
+import { WEEKDAY_LABELS, addMonths, monthCells, monthLabel, monthStart } from "@/lib/calendar-grid"
 import {
   blockedNightsBetween,
   isRangeAvailable,
@@ -19,43 +20,6 @@ type AvailabilityCalendarProps = {
   onSelect: (checkIn: string | null, checkOut: string | null) => void
   /** Rendered under the grid — when the owner last touched these dates. */
   updatedLabel?: string
-}
-
-const WEEKDAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
-
-/** First of the month containing `date`. */
-function monthStart(date: string) {
-  return `${date.slice(0, 7)}-01`
-}
-
-function addMonths(monthFirst: string, count: number) {
-  const [year, month] = monthFirst.split("-").map(Number)
-  const shifted = new Date(Date.UTC(year, month - 1 + count, 1, 12))
-  return shifted.toISOString().slice(0, 10)
-}
-
-function monthLabel(monthFirst: string) {
-  const [year, month] = monthFirst.split("-").map(Number)
-  return new Intl.DateTimeFormat("en-PH", {
-    month: "long",
-    year: "numeric",
-    timeZone: "UTC"
-  }).format(new Date(Date.UTC(year, month - 1, 1, 12)))
-}
-
-/**
- * The days of one month, padded at the front with nulls so the 1st lands under
- * the right weekday.
- */
-function monthCells(monthFirst: string): (string | null)[] {
-  const [year, month] = monthFirst.split("-").map(Number)
-  const firstWeekday = new Date(Date.UTC(year, month - 1, 1, 12)).getUTCDay()
-  const daysInMonth = new Date(Date.UTC(year, month, 0, 12)).getUTCDate()
-
-  return [
-    ...Array.from({ length: firstWeekday }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, index) => `${monthFirst.slice(0, 7)}-${String(index + 1).padStart(2, "0")}`)
-  ]
 }
 
 export default function AvailabilityCalendar({
@@ -159,7 +123,7 @@ export default function AvailabilityCalendar({
               {monthLabel(month)}
             </p>
             <div className="grid grid-cols-7 gap-1" role="grid" aria-label={monthLabel(month)}>
-              {WEEKDAYS.map((day) => (
+              {WEEKDAY_LABELS.map((day) => (
                 <div
                   key={day}
                   className="pb-1 text-center text-[11px] font-semibold uppercase text-muted-foreground"
