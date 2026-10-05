@@ -1,6 +1,6 @@
 "use client"
 
-import { ExternalLink, Eye, Facebook, Pencil, Plus, Search, Trash2 } from "lucide-react"
+import { CalendarDays, ExternalLink, Eye, Facebook, Pencil, Plus, Search, Trash2 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -15,6 +15,7 @@ import {
   type FormEvent
 } from "react"
 
+import AdminDepartureQuickToggle from "@/components/AdminDepartureQuickToggle"
 import AdminListSkeleton from "@/components/AdminListSkeleton"
 import AdminPackageFormFields from "@/components/AdminPackageFormFields"
 import AdminSidePanel from "@/components/AdminSidePanel"
@@ -25,7 +26,14 @@ import { postPackageToFacebook, type PostOutcome } from "@/lib/admin-facebook-cl
 import type { AdminPackageCatalog, AdminPackageRecord } from "@/lib/admin-package-types"
 import type { PublicFacebookSettings } from "@/lib/facebook/settings-types"
 import type { PackageCategory } from "@/lib/package-data"
+import {
+  bookableDepartures,
+  upcomingDepartures,
+  usesStructuredDepartures,
+  type PackageDeparture
+} from "@/lib/package-departures"
 import { formatPackagePrice } from "@/lib/price"
+import { todayInManila } from "@/lib/stay-availability"
 
 type CategoryFilter = "all" | PackageCategory
 type StatusFilter = "all" | "published" | "draft"
@@ -75,6 +83,17 @@ function normalizeCatalog(payload: unknown): AdminPackageCatalog | null {
 
 function isDraft(pkg: AdminPackageRecord) {
   return pkg.status === "draft"
+}
+
+/** One line on the row, so a package quietly running out of dates is visible from the list. */
+function departureSummary(pkg: AdminPackageRecord, today: string) {
+  if (!usesStructuredDepartures(pkg)) {
+    return pkg.travelPeriods?.length ? "Travel periods from the poster — not bookable yet" : null
+  }
+  const upcoming = upcomingDepartures(pkg.departures, today).length
+  if (upcoming === 0) return "No upcoming travel periods"
+  const open = bookableDepartures(pkg.departures, today).length
+  return `${open} open · ${upcoming - open} sold out`
 }
 
 /** The date only — the hour a package was announced is not something anyone acts on. */
@@ -140,6 +159,8 @@ export default function AdminPackageManagerPanel() {
   const [notice, setNotice] = useState<string | null>(null)
   const [noticeHref, setNoticeHref] = useState<string | null>(null)
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [datesOpenId, setDatesOpenId] = useState<string | null>(null)
+  const [today] = useState(todayInManila)
   const [busyId, setBusyId] = useState<string | null>(null)
 
   const [facebook, setFacebook] = useState<PublicFacebookSettings | null>(null)
@@ -372,6 +393,14 @@ export default function AdminPackageManagerPanel() {
     }
   }
 
+  /** Keeps the list in step after a quick sold-out switch, without refetching everything. */
+  function applyDepartures(id: string, departures: PackageDeparture[]) {
+    const patch = (list: AdminPackageRecord[]) =>
+      list.map((item) => (item.id === id ? { ...item, departures } : item))
+    setCatalog((prev) => ({ local: patch(prev.local), international: patch(prev.international) }))
+    startTransition(() => router.refresh())
+  }
+
   /** Publishes one package to the Page straight from its row. */
   async function shareToFacebook(pkg: AdminPackageRecord) {
     setSharingId(pkg.id)
@@ -565,6 +594,9 @@ export default function AdminPackageManagerPanel() {
                     <p className="mt-1 text-sm font-medium text-primary">
                       {formatPackagePrice(pkg)}
                     </p>
+                    {departureSummary(pkg, today) ? (
+                      <p className="mt-1 text-xs text-muted-foreground">{departureSummary(pkg, today)}</p>
+                    ) : null}
                   </div>
 
                   <div className="flex shrink-0 items-center gap-2">
@@ -627,6 +659,21 @@ export default function AdminPackageManagerPanel() {
                           <span>Preview</span>
                           <span className="sr-only"> {pkg.title}</span>
                         </Link>
+                        {usesStructuredDepartures(pkg) ? (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="outline"
+                            aria-expanded={datesOpenId === pkg.id}
+                            aria-controls={`dates-${pkg.id}`}
+                            title="Mark travel periods sold out or open"
+                            onClick={() => setDatesOpenId((current) => (current === pkg.id ? null : pkg.id))}
+                          >
+                            <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+                            <span>Dates</span>
+                            <span className="sr-only"> for {pkg.title}</span>
+                          </Button>
+                        ) : null}
                         <Button
                           type="button"
                           size="sm"
@@ -669,6 +716,18 @@ export default function AdminPackageManagerPanel() {
                       </>
                     )}
                   </div>
+
+                  {datesOpenId === pkg.id ? (
+                    <AdminDepartureQuickToggle
+                      id={`dates-${pkg.id}`}
+                      pkg={pkg}
+                      onChanged={(departures) => applyDepartures(pkg.id, departures)}
+                      onEdit={() => {
+                        setDatesOpenId(null)
+                        setPanel({ mode: "edit", pkg })
+                      }}
+                    />
+                  ) : null}
                 </li>
               ))}
             </ul>
