@@ -11,7 +11,8 @@
     "lint": "next lint",
     "seed:kv": "node --env-file=.env.local scripts/seed-kv-from-json.mjs",
     "seed:kv:stays": "node --env-file=.env.local scripts/seed-kv-stays.mjs",
-    "reset:inquiries": "node --env-file=.env.local scripts/reset-inquiries.mjs"
+    "reset:inquiries": "node --env-file=.env.local scripts/reset-inquiries.mjs",
+    "convert:travel-periods": "node --env-file-if-exists=.env.local --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --experimental-strip-types --import ./tests/register-alias.mjs scripts/convert-travel-periods.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.118.0",
