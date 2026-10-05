@@ -376,7 +376,7 @@ export default function PackageBookingForm({
   )
 
   const form = (
-    <form ref={formRef} onSubmit={onSubmit} className="mt-5 flex flex-wrap gap-6 lg:gap-8">
+    <form ref={formRef} onSubmit={onSubmit} className="mt-5 flex flex-wrap gap-x-6 gap-y-4 lg:gap-x-8">
       <div className="min-w-0 flex-[1_1_280px]">{tripColumn}</div>
 
       <div className="min-w-0 flex-[2_1_380px]">
@@ -424,7 +424,7 @@ export default function PackageBookingForm({
             <Button
               type="button"
               onClick={goToContactStep}
-              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 sm:w-auto sm:min-w-[220px]"
+              className="w-full bg-accent text-accent-foreground hover:bg-accent/90 sm:w-auto sm:min-w-[220px] lg:w-full"
             >
               Continue
             </Button>
@@ -439,7 +439,8 @@ export default function PackageBookingForm({
             </label>
             <Input id={`${fieldId}-name`} name="name" autoComplete="name" required maxLength={120} />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+          {/* One column again in the desktop sidebar, where an email address needs the full width. */}
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
             <div className="space-y-1.5">
               <label htmlFor={`${fieldId}-mobile`} className={labelClass}>
                 Mobile number
