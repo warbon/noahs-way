@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import type { PosterExtraction } from "@/lib/ai/poster-extraction"
+import { POSTER_TRAVEL_PERIODS_EVENT } from "@/lib/package-departures"
 
 /**
  * Fills the package form from the attached poster.
@@ -37,8 +38,11 @@ const TEXT_FIELDS: (keyof PosterExtraction)[] = [
   "imageAlt"
 ]
 
+/*
+  Travel periods are not here: the departure editor holds them as rows in React
+  state, so they are handed over with POSTER_TRAVEL_PERIODS_EVENT instead.
+*/
 const LINE_FIELDS: (keyof PosterExtraction)[] = [
-  "travelPeriods",
   "highlights",
   "inclusions",
   "exclusions"
@@ -151,6 +155,11 @@ export default function AdminPosterReader({ disabled }: { disabled?: boolean }) 
     const feesTextValue = feesToText(fields.fees)
     if (feesTextValue && setFieldValue(form, "fees", feesTextValue)) {
       filled.push(`fees (${fields.fees?.length})`)
+    }
+
+    if (Array.isArray(fields.travelPeriods) && fields.travelPeriods.length > 0) {
+      form.dispatchEvent(new CustomEvent(POSTER_TRAVEL_PERIODS_EVENT, { detail: fields.travelPeriods }))
+      filled.push(`travel periods (${fields.travelPeriods.length})`)
     }
 
     setState({

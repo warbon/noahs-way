@@ -1,5 +1,6 @@
 "use client"
 
+import AdminDepartureEditor from "@/components/AdminDepartureEditor"
 import AdminPosterField from "@/components/AdminPosterField"
 import AdminPosterReader from "@/components/AdminPosterReader"
 import { Input } from "@/components/ui/input"
@@ -224,39 +225,23 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className={fieldClass}>
-            <label htmlFor="travelPeriods" className={labelClass}>
-              Travel periods
-            </label>
-            <Textarea
-              id="travelPeriods"
-              name="travelPeriods"
-              rows={4}
-              defaultValue={linesOf(pkg?.travelPeriods)}
-              placeholder={"Mar 04–08\nMar 18–22 (+₱5,000/pax)"}
-            />
-            <p className={hintClass}>
-              One departure window per line, copied from the poster. Add any surcharge in
-              brackets.
-            </p>
-          </div>
-          <div className={fieldClass}>
-            <label htmlFor="highlights" className={labelClass}>
-              Highlights
-            </label>
-            <Textarea
-              id="highlights"
-              name="highlights"
-              rows={4}
-              defaultValue={linesOf(pkg?.highlights)}
-              placeholder={"Fansipan Summit two-way cable car\nHoi An Ancient Town"}
-            />
-            <p className={hintClass}>
-              One per line. The booking assistant uses these when matching a trip to what a
-              customer asks for.
-            </p>
-          </div>
+        <AdminDepartureEditor pkg={pkg} disabled={disabled} />
+
+        <div className={fieldClass}>
+          <label htmlFor="highlights" className={labelClass}>
+            Highlights
+          </label>
+          <Textarea
+            id="highlights"
+            name="highlights"
+            rows={4}
+            defaultValue={linesOf(pkg?.highlights)}
+            placeholder={"Fansipan Summit two-way cable car\nHoi An Ancient Town"}
+          />
+          <p className={hintClass}>
+            One per line. The booking assistant uses these when matching a trip to what a
+            customer asks for.
+          </p>
         </div>
 
         <div className={fieldClass}>
