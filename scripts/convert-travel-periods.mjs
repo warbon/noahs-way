@@ -7,12 +7,13 @@
  *   npm run convert:travel-periods -- --apply           # write it
  *   npm run convert:travel-periods -- --kv              # preview the live KV catalogue
  *   npm run convert:travel-periods -- --kv --apply      # write it
- *   npm run convert:travel-periods -- --year=2027       # date every window in 2027
+ *   npm run convert:travel-periods -- --year=2027       # date the lists from 2027
  *
- * The poster text has no year. Like the button, each window is dated in the
- * year the package was last edited unless --year says otherwise — so read the
- * preview, and check the weekdays look like the operator's departure days
- * before applying.
+ * The poster text rarely has a year. Like the button, a line that prints one
+ * keeps it; otherwise the list is dated from the year the package was last
+ * edited (or --year), moving into the next year where it runs past December —
+ * so read the preview, and check the weekdays look like the operator's
+ * departure days before applying.
  *
  * The old strings are kept beside the new departures. The site stops showing
  * them as soon as departures exist, and keeping them means a site still
@@ -28,7 +29,7 @@ import path from "node:path"
 import {
   createDepartureId,
   normalizeDepartures,
-  parseLegacyTravelPeriod
+  parseLegacyTravelPeriods
 } from "../lib/package-departures.ts"
 import { todayInManila } from "../lib/stay-availability.ts"
 
@@ -97,10 +98,10 @@ for (const category of ["local", "international"]) {
     if (Array.isArray(pkg.departures) && pkg.departures.length > 0) continue
 
     const reference = YEAR ? `${YEAR}-01-01` : (pkg.updatedAt ?? pkg.createdAt ?? today).slice(0, 10)
-    const parsed = pkg.travelPeriods.map((line) => ({ line, result: parseLegacyTravelPeriod(line, reference) }))
+    const parsed = parseLegacyTravelPeriods(pkg.travelPeriods, reference)
     const unreadable = parsed.filter((entry) => !entry.result).map((entry) => entry.line)
 
-    console.log(`${pkg.title} (${pkg.status ?? "published"}) — dated in ${reference.slice(0, 4)}`)
+    console.log(`${pkg.title} (${pkg.status ?? "published"}) — dated from ${reference.slice(0, 4)}`)
     for (const { line, result } of parsed) {
       if (!result) {
         console.log(`  ${line.padEnd(30)} could not be read`)

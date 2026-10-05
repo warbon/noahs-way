@@ -219,24 +219,21 @@ const MONTH_NUMBERS: Record<string, number> = {
 }
 
 const LEGACY_PERIOD = /^\s*([A-Za-z]{3,9})\.?\s*(\d{1,2})\s*[–—-]\s*(?:([A-Za-z]{3,9})\.?\s*)?(\d{1,2})\b(.*)$/
+const LEGACY_YEAR = /^\s*,?\s*((?:19|20)\d{2})\b/
 const LEGACY_SURCHARGE = /\+\s*(?:₱|PHP|Php|P)\s*([\d,]+)/
 
 export type ParsedLegacyPeriod = Omit<PackageDeparture, "id">
+
+export type ParsedLegacyLine = { line: string; result: ParsedLegacyPeriod | null }
 
 function isoDate(year: number, month: number, day: number) {
   return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`
 }
 
-/**
- * Reads one poster-style window: "Jan 16–20", "Apr 30–May 03 (+₱5,000/pax)",
- * "Sept 08–13". The strings carry no year, so the year comes from
- * `referenceDate` (when the package was last edited) and the admin is asked to
- * check it; a window whose end month comes before its start month rolls into
- * the next year. Returns null for anything it cannot read with confidence.
- */
-export function parseLegacyTravelPeriod(text: string, referenceDate: string): ParsedLegacyPeriod | null {
+/** The parts of one poster line, before any year is decided. */
+function readLegacyLine(text: string) {
   const match = LEGACY_PERIOD.exec(text)
-  if (!match || !isDateString(referenceDate)) return null
+  if (!match) return null
 
   const [, startMonthName, startDayText, endMonthName, endDayText, rest] = match
   const startMonth = MONTH_NUMBERS[startMonthName.toLowerCase()]
@@ -249,20 +246,74 @@ export function parseLegacyTravelPeriod(text: string, referenceDate: string): Pa
   // window in front of customers, so the admin enters it by hand.
   if (endMonth === startMonth && endDay < startDay) return null
 
-  const startYear = parts(referenceDate).year
-  const endYear = endMonth < startMonth ? startYear + 1 : startYear
-  const startDate = isoDate(startYear, startMonth, startDay)
-  const endDate = isoDate(endYear, endMonth, endDay)
-  if (!isDateString(startDate) || !isDateString(endDate)) return null
-
+  const yearMatch = LEGACY_YEAR.exec(rest)
   const surchargeMatch = LEGACY_SURCHARGE.exec(rest)
   const surcharge = surchargeMatch ? Number(surchargeMatch[1].replace(/,/g, "")) : 0
 
   return {
-    startDate,
-    endDate,
-    ...(surcharge > 0 ? { surchargePerPax: surcharge } : {})
+    startMonth,
+    startDay,
+    endMonth,
+    endDay,
+    // The year printed after the end day: "NOV 19-22, 2026", "DEC 30-JAN 02, 2027".
+    endYear: yearMatch ? Number(yearMatch[1]) : undefined,
+    surcharge
   }
+}
+
+/**
+ * Reads a package's poster-style windows: "Jan 16–20", "Apr 30–May 03
+ * (+₱5,000/pax)", "Sept 08–13", "NOV 19-22, 2026".
+ *
+ * A year printed on the line is used as is. Most lines carry none, so the
+ * first is dated in the year of `referenceDate` (when the package was last
+ * edited) and the admin is asked to check it. Posters list their windows in
+ * order, so a line whose month falls half a year or more behind the line
+ * before it — December's departures followed by January's — has run into the
+ * next year, and so has a window whose end month comes before its start month.
+ *
+ * An entry's result is null for a line that cannot be read with confidence.
+ */
+export function parseLegacyTravelPeriods(lines: string[], referenceDate: string): ParsedLegacyLine[] {
+  if (!isDateString(referenceDate)) return lines.map((line) => ({ line, result: null }))
+
+  let year = parts(referenceDate).year
+  let previousStartMonth: number | undefined
+
+  return lines.map((line) => {
+    const read = readLegacyLine(line)
+    if (!read) return { line, result: null }
+
+    const crossesNewYear = read.endMonth < read.startMonth
+    let startYear: number
+    if (read.endYear !== undefined) {
+      startYear = crossesNewYear ? read.endYear - 1 : read.endYear
+    } else {
+      if (previousStartMonth !== undefined && previousStartMonth - read.startMonth >= 6) year += 1
+      startYear = year
+    }
+    const endYear = crossesNewYear ? startYear + 1 : startYear
+
+    const startDate = isoDate(startYear, read.startMonth, read.startDay)
+    const endDate = isoDate(endYear, read.endMonth, read.endDay)
+    if (!isDateString(startDate) || !isDateString(endDate)) return { line, result: null }
+
+    year = startYear
+    previousStartMonth = read.startMonth
+    return {
+      line,
+      result: {
+        startDate,
+        endDate,
+        ...(read.surcharge > 0 ? { surchargePerPax: read.surcharge } : {})
+      }
+    }
+  })
+}
+
+/** One poster line on its own, dated as the first line of a list would be. */
+export function parseLegacyTravelPeriod(text: string, referenceDate: string): ParsedLegacyPeriod | null {
+  return parseLegacyTravelPeriods([text], referenceDate)[0].result
 }
 
 /** True when the package has moved to structured departures, whatever their dates. */
