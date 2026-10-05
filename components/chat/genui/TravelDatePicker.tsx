@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 
+import DeparturePicker from "@/components/chat/genui/DeparturePicker"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import WidgetShell from "@/components/chat/genui/WidgetShell"
@@ -12,11 +13,19 @@ function today() {
 }
 
 /**
+ * Package travel dates. A package with open travel periods gets those to pick
+ * from; anything else gets free departure and return dates.
+ */
+export default function TravelDatePicker(props: GenUiComponentProps<"show_travel_date_picker">) {
+  return props.widget.payload.departures?.length ? <DeparturePicker {...props} /> : <FreeDatePicker {...props} />
+}
+
+/**
  * Mirrors the date fields in InquiryForm, with the two checks that form is
  * missing: departures cannot be in the past and a return cannot precede a
  * departure. The server enforces both again in lib/inquiry-submission.ts.
  */
-export default function TravelDatePicker({
+function FreeDatePicker({
   widget,
   answered,
   disabled,
@@ -31,6 +40,12 @@ export default function TravelDatePicker({
 
   return (
     <WidgetShell prompt={widget.payload.prompt} answered={answered}>
+      {widget.payload.allSoldOut ? (
+        <p className="mb-3 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
+          Every listed travel period{widget.payload.packageTitle ? ` of ${widget.payload.packageTitle}` : ""} is
+          sold out. Tell us the dates you&apos;d like and a consultant will look for the next departure.
+        </p>
+      ) : null}
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1 text-xs font-medium text-muted-foreground">
           Departure

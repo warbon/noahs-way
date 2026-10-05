@@ -80,8 +80,30 @@ export type StayDatePickerPayload = {
   availabilityUpdatedAt?: string
 }
 
+/** One of a package's travel periods as the date picker shows it. Server-resolved. */
+export type ChatDepartureOption = {
+  id: string
+  startDate: string
+  endDate: string
+  /** "Oct 26–31, 2026" */
+  label: string
+  /** Package price plus this period's surcharge, per person, when the package has a numeric price. */
+  price?: number
+  soldOut: boolean
+}
+
+/**
+ * Without a package this asks for free departure and return dates. With one
+ * that has open travel periods, it offers those instead — the dates then come
+ * from the period, so the assistant cannot book a day the tour does not run.
+ */
 export type TravelDatePickerPayload = {
   prompt: string
+  packageTitle?: string
+  currency?: string
+  departures?: ChatDepartureOption[]
+  /** The package lists travel periods but every one is sold out; the picker asks for dates. */
+  allSoldOut?: boolean
 }
 
 export type TravellerSelectorPayload = {
@@ -123,6 +145,11 @@ export type ChatBookingDraft = {
   message?: string
   packageId?: string
   /**
+   * The travel period picked in the date widget. Re-checked against the package
+   * before the recap is drawn and again at submit; its dates replace any typed.
+   */
+  departureId?: string
+  /**
    * Set instead of `packageId` when the request is for a condo unit. The
    * booking route hands the whole draft to `submitInquiry`, which re-checks
    * these dates against the calendar before storing anything — the assistant's
@@ -139,6 +166,8 @@ export type BookingSummaryPayload = {
   draft: ChatBookingDraft
   /** Server-resolved from `draft.packageId`, so the recap can't misname it. */
   packageTitle?: string
+  /** Server-resolved from `draft.departureId`: "Oct 26–31, 2026 (+₱3,000/pax)". */
+  departureLabel?: string
   /** Server-resolved from `draft.stayId`, for the same reason. */
   stayTitle?: string
 }
@@ -185,6 +214,8 @@ export type GenUiResultMap = {
     travelDateFrom?: string
     travelDateTo?: string
     flexibleOnPromoDates: boolean
+    /** Set when a package travel period was picked; the dates above are its dates. */
+    departureId?: string
   }
   show_traveller_selector: { adults: number; children: number; childAges?: string }
   show_contact_form: { name: string; mobile: string; email: string }

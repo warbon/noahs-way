@@ -2,7 +2,9 @@ import type { ChatPackageSummary } from "@/lib/ai/genui-types"
 import type { PackageCategory } from "@/lib/package-data"
 import { getPackagesByCategory, type PackageRecord } from "@/lib/package-repository"
 import { buildPackageHref, resolveSlugCollisions } from "@/lib/package-slug"
+import { bookableDepartures, formatDepartureRange, usesStructuredDepartures } from "@/lib/package-departures"
 import { formatDuration, formatPackagePrice, parseDurationFromDetails } from "@/lib/price"
+import { todayInManila } from "@/lib/stay-availability"
 
 const CATEGORIES: PackageCategory[] = ["local", "international"]
 
@@ -72,7 +74,18 @@ export function toModelPackage(entry: CatalogEntry) {
     currency: entry.currency ?? "PHP",
     durationDays: days,
     durationNights: nights,
-    href: buildPackageHref(entry.category, entry.slug)
+    href: buildPackageHref(entry.category, entry.slug),
+    ...openTravelPeriodSummary(entry)
+  }
+}
+
+/** Enough to steer a search; get_package_details lists every period. */
+function openTravelPeriodSummary(entry: CatalogEntry) {
+  if (!usesStructuredDepartures(entry)) return {}
+  const open = bookableDepartures(entry.departures, todayInManila())
+  return {
+    openTravelPeriods: open.length,
+    nextOpenTravelPeriod: open[0] ? formatDepartureRange(open[0]) : undefined
   }
 }
 

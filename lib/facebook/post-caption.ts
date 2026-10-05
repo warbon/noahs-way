@@ -1,6 +1,8 @@
+import { departureDisplayList } from "@/lib/package-departures"
 import type { PackageRecord } from "@/lib/package-repository-types"
 import { formatDuration, formatPackagePrice } from "@/lib/price"
 import { siteConfig } from "@/lib/site-config"
+import { todayInManila } from "@/lib/stay-availability"
 
 /**
  * Turns a stored package into the text of a Facebook post.
@@ -86,7 +88,9 @@ export function buildPackageCaption(
   const highlights = bulletList(pkg.highlights, MAX_HIGHLIGHTS)
   if (highlights) sections.push("", "✨ Highlights", highlights)
 
-  const travelPeriods = bulletList(pkg.travelPeriods, MAX_TRAVEL_PERIODS)
+  // Upcoming departures only, sold-out ones marked: a post announcing a date
+  // that has already gone is the first thing a commenter points out.
+  const travelPeriods = bulletList(departureDisplayList(pkg, todayInManila()), MAX_TRAVEL_PERIODS)
   if (travelPeriods) sections.push("", "📅 Travel dates", travelPeriods)
 
   const inclusions = bulletList(pkg.inclusions, MAX_INCLUSIONS)
