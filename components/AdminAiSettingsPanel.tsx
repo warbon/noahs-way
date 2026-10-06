@@ -6,10 +6,11 @@ import { useCallback, useEffect, useState, type FormEvent } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
+  AI_MODEL_OPTIONS,
   AI_PROVIDER_LABELS,
   AI_PROVIDER_NAMES,
   DEFAULT_AI_MODELS,
-  SUGGESTED_AI_MODELS,
+  aiModelLabel,
   type AiProviderName
 } from "@/lib/ai/models"
 import type { PublicAiSettings } from "@/lib/ai/settings-types"
@@ -37,6 +38,13 @@ function emptyPerProvider(): PerProvider<string> {
   return { anthropic: "", openai: "" }
 }
 
+/** The dropdown entry that reveals a text box for a model id not in the list. */
+const CUSTOM_MODEL = "__custom"
+
+function isListedModel(provider: AiProviderName, model: string) {
+  return AI_MODEL_OPTIONS[provider].some((option) => option.id === model)
+}
+
 export default function AdminAiSettingsPanel() {
   const [settings, setSettings] = useState<PublicAiSettings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -44,7 +52,13 @@ export default function AdminAiSettingsPanel() {
 
   const [enabled, setEnabled] = useState(true)
   const [provider, setProvider] = useState<ProviderChoice>("auto")
+  // Blank means "the default", which the server resolves; it is not pinned to
+  // today's default, so a default that changes later is picked up.
   const [models, setModels] = useState<PerProvider<string>>(emptyPerProvider)
+  const [customModel, setCustomModel] = useState<PerProvider<boolean>>({
+    anthropic: false,
+    openai: false
+  })
   // Blank means "leave the stored key alone" — the panel can never read one
   // back, so it must not be able to overwrite one by accident.
   const [keyDrafts, setKeyDrafts] = useState<PerProvider<string>>(emptyPerProvider)
@@ -65,6 +79,10 @@ export default function AdminAiSettingsPanel() {
     setEnabled(next.enabled)
     setProvider(next.provider ?? "auto")
     setModels({ anthropic: next.anthropic.model ?? "", openai: next.openai.model ?? "" })
+    setCustomModel({
+      anthropic: Boolean(next.anthropic.model) && !isListedModel("anthropic", next.anthropic.model ?? ""),
+      openai: Boolean(next.openai.model) && !isListedModel("openai", next.openai.model ?? "")
+    })
     setKeyDrafts(emptyPerProvider())
     setClearedKeys({ anthropic: false, openai: false })
   }, [])
@@ -282,6 +300,9 @@ export default function AdminAiSettingsPanel() {
       {AI_PROVIDER_NAMES.map((name) => {
         const stored = settings[name]
         const isActive = resolved.provider === name
+        // What "Default" runs for this provider. For the provider in use the
+        // server's answer counts, since an AI_MODEL variable can override it.
+        const defaultModel = isActive && !stored.model ? resolved.model : DEFAULT_AI_MODELS[name]
 
         return (
           <section
@@ -350,26 +371,50 @@ export default function AdminAiSettingsPanel() {
               <label htmlFor={`${name}-model`} className="text-sm font-medium">
                 Model
               </label>
-              <Input
+              <select
                 id={`${name}-model`}
-                list={`${name}-model-options`}
-                autoComplete="off"
-                spellCheck={false}
-                value={models[name]}
+                value={customModel[name] ? CUSTOM_MODEL : models[name]}
                 onChange={(event) => {
                   const value = event.target.value
+                  if (value === CUSTOM_MODEL) {
+                    // Keeps the current id in the box, as a starting point to edit.
+                    setCustomModel((current) => ({ ...current, [name]: true }))
+                    return
+                  }
+                  setCustomModel((current) => ({ ...current, [name]: false }))
                   setModels((current) => ({ ...current, [name]: value }))
                 }}
-                placeholder={DEFAULT_AI_MODELS[name]}
-              />
-              <datalist id={`${name}-model-options`}>
-                {SUGGESTED_AI_MODELS[name].map((option) => (
-                  <option key={option} value={option} />
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="">Default — {aiModelLabel(name, defaultModel)}</option>
+                {AI_MODEL_OPTIONS[name].map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label} — {option.note}
+                  </option>
                 ))}
-              </datalist>
+                <option value={CUSTOM_MODEL}>Other model id…</option>
+              </select>
+              {customModel[name] ? (
+                <Input
+                  id={`${name}-model-custom`}
+                  aria-label={`${AI_PROVIDER_LABELS[name]} model id`}
+                  autoComplete="off"
+                  spellCheck={false}
+                  value={models[name]}
+                  onChange={(event) => {
+                    const value = event.target.value
+                    setModels((current) => ({ ...current, [name]: value }))
+                  }}
+                  placeholder={DEFAULT_AI_MODELS[name]}
+                />
+              ) : null}
               <p className="text-sm text-muted-foreground">
-                Leave blank to use <code>{DEFAULT_AI_MODELS[name]}</code>. Any model id the provider
-                accepts works — the list is only a shortcut.
+                {customModel[name]
+                  ? "Any model id the provider accepts. Leave it blank for the default. "
+                  : null}
+                Sets the chat assistant&apos;s model. Reading posters keeps its own model, chosen
+                for transcribing flyers. After changing it, save and press{" "}
+                <strong>Test connection</strong>.
               </p>
             </div>
           </section>
