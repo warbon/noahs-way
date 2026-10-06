@@ -123,7 +123,7 @@ FIELD SHAPES
 
   Read the basis from the wording: "per pax" is per-person, "per pax per way" is per-person-per-way, "per pax per day" is per-person-per-day. Mark required true when the poster calls it mandatory or it is unavoidable, and false for add-ons such as extra baggage or an optional tour.
 • "travelPeriods": each departure window as printed, surcharge included.
-• "airlines": every airline the poster names or shows as a logo — often a logo near the price or beside the flight details — by its name, e.g. "Cebu Pacific". Include the airline of any printed flight number (5J is Cebu Pacific, 7C is Jeju Air). Leave it empty when the poster shows no airline; never guess one from the destination.`
+• "airlines": every airline the poster names or shows as a logo — often a logo near the price or beside the flight details — by its name, e.g. "Cebu Pacific". Include the airline of any printed flight number (5J is Cebu Pacific, 7C is Jeju Air). Name each airline exactly as printed or as its logo reads. If you are not sure which airline a logo belongs to, leave it out and note it in "unreadable" — never substitute a similar-looking or similarly named airline. Leave it empty when the poster shows no airline; never guess one from the destination.`
 
 /**
  * The canonical schema. Every field is optional except the three composed
