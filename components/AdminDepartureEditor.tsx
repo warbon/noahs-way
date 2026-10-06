@@ -101,10 +101,10 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
   const [importYear, setImportYear] = useState<string | null>(null)
   const [unreadable, setUnreadable] = useState<string[]>([])
 
-  function importLines(lines: string[], reference: string) {
+  function importLines(lines: string[], reference: string, options?: { upcoming?: boolean }) {
     const parsed: Row[] = []
     const failed: string[] = []
-    for (const { line, result } of parseLegacyTravelPeriods(lines, reference)) {
+    for (const { line, result } of parseLegacyTravelPeriods(lines, reference, options)) {
       if (result) parsed.push(rowFromParsed(result))
       else failed.push(line)
     }
@@ -115,7 +115,7 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
     })
     setLegacy([])
     setUnreadable(failed)
-    if (parsed.length > 0) setImportYear(reference.slice(0, 4))
+    if (parsed.length > 0) setImportYear(parsed[0].startDate.slice(0, 4))
   }
 
   // Latest version in a ref, so the listener below is attached once per form.
@@ -130,8 +130,8 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
       const detail = (event as CustomEvent<unknown>).detail
       if (!Array.isArray(detail)) return
       const lines = detail.filter((line): line is string => typeof line === "string" && Boolean(line.trim()))
-      // A poster read is a fresh transcription, dated from today.
-      if (lines.length > 0) importRef.current(lines, todayInManila())
+      // A poster read is a fresh transcription of dates still on sale, dated from today.
+      if (lines.length > 0) importRef.current(lines, todayInManila(), { upcoming: true })
     }
 
     form.addEventListener(POSTER_TRAVEL_PERIODS_EVENT, onPosterPeriods)

@@ -123,6 +123,21 @@ test("lists in order within one year, or slightly out of order, keep the referen
   ])
 })
 
+test("a poster read today that opens in the new year is dated next year", () => {
+  const read = (lines) => dates(parseLegacyTravelPeriods(lines, "2026-10-06", { upcoming: true }))
+
+  assert.deepEqual(read(["JAN 14-19", "FEB 04-09"]), ["2027-01-14/2027-01-19", "2027-02-04/2027-02-09"])
+  // A month or two behind is a poster still on the wall, not next year's.
+  assert.deepEqual(read(["SEP 16-20", "OCT 07-11"]), ["2026-09-16/2026-09-20", "2026-10-07/2026-10-11"])
+  // December into January moves on at the list's own turn of the year, as before.
+  assert.deepEqual(read(["DEC 03-08", "JAN 02-07"]), ["2026-12-03/2026-12-08", "2027-01-02/2027-01-07"])
+  // A printed year is never second-guessed.
+  assert.deepEqual(read(["JAN 14-19, 2026", "FEB 04-09"]), ["2026-01-14/2026-01-19", "2026-02-04/2026-02-09"])
+
+  // Stored lines are not assumed to be upcoming: Convert keeps the year the package was edited in.
+  assert.deepEqual(dates(parseLegacyTravelPeriods(["JAN 14-19"], "2026-10-06")), ["2026-01-14/2026-01-19"])
+})
+
 test("an unreadable line is reported in place and does not move the year", () => {
   const parsed = parseLegacyTravelPeriods(["Dec 03–08", "Every Friday", "Jan 02–07"], REFERENCE)
   assert.deepEqual(
