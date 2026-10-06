@@ -225,8 +225,6 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
           </p>
         </div>
 
-        <AdminDepartureEditor pkg={pkg} disabled={disabled} />
-
         <div className={fieldClass}>
           <label htmlFor="highlights" className={labelClass}>
             Highlights
@@ -292,6 +290,19 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
         </div>
       </fieldset>
 
+      {/*
+        Last, in a section of its own: the list grows to dozens of rows for a
+        busy season, and in the middle of the page content it pushed the
+        highlights and inclusions out of reach. It is also what gets edited
+        most once a package is up — dates added, periods marked sold out.
+      */}
+      <fieldset className="space-y-4" disabled={disabled}>
+        <legend className="mb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          Travel dates
+        </legend>
+
+        <AdminDepartureEditor pkg={pkg} disabled={disabled} />
+      </fieldset>
     </div>
   )
 }

@@ -274,7 +274,9 @@ function readLegacyLine(text: string) {
  *
  * With `upcoming`, the lines were just read off a current poster, dated from
  * today, and the same rule starts at today's month. A poster read in October
- * that opens with January is selling next January, not the one gone by. Lines
+ * that opens with January is selling next January, not the one gone by. And
+ * since a poster on sale does not list dates more than a year out, a line
+ * that lands there was pasted after later ones and goes back a year. Lines
  * already stored are read without it: their windows may well have passed, and
  * moving them a year on would turn a past season into a bookable one.
  *
@@ -287,8 +289,10 @@ export function parseLegacyTravelPeriods(
 ): ParsedLegacyLine[] {
   if (!isDateString(referenceDate)) return lines.map((line) => ({ line, result: null }))
 
-  let year = parts(referenceDate).year
-  let previousStartMonth: number | undefined = upcoming ? parts(referenceDate).month : undefined
+  const reference = parts(referenceDate)
+  let year = reference.year
+  let previousStartMonth: number | undefined = upcoming ? reference.month : undefined
+  const yearAfterReference = isoDate(reference.year + 1, reference.month, reference.day)
 
   return lines.map((line) => {
     const read = readLegacyLine(line)
@@ -301,6 +305,7 @@ export function parseLegacyTravelPeriods(
     } else {
       if (previousStartMonth !== undefined && previousStartMonth - read.startMonth >= 6) year += 1
       startYear = year
+      if (upcoming && isoDate(startYear, read.startMonth, read.startDay) > yearAfterReference) startYear -= 1
     }
     const endYear = crossesNewYear ? startYear + 1 : startYear
 
