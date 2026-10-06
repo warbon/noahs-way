@@ -47,6 +47,18 @@ test("ordinary words that resemble airlines are not read as airlines", () => {
   assert.deepEqual(findAirlinesInText("Travel period DEC 30-JAN 02, 2027"), [])
 })
 
+test("airlines on the China, Taiwan, Thailand and local routes are listed", () => {
+  assert.deepEqual(resolveAirline("Juneyao Air"), { code: "HO", name: "Juneyao Air" })
+  assert.deepEqual(resolveAirline("HO"), { code: "HO", name: "Juneyao Air" })
+  // Juneyao and Jeju are different airlines: Shanghai's and Korea's.
+  assert.notEqual(resolveAirline("Juneyao Air").code, resolveAirline("Jeju Air").code)
+  assert.deepEqual(findAirlinesInText("Flight HO 1636 MNL-PVG, 13:05 – 16:10"), ["HO"])
+  assert.deepEqual(findAirlinesInText("Roundtrip via PAL Express"), ["2P"])
+  assert.deepEqual(findAirlinesInText("Spring Airlines 9C 8810 / Tigerair Taiwan"), ["9C", "IT"])
+  assert.deepEqual(findAirlinesInText("Lantern spring festival in Taipei"), [])
+  assert.deepEqual(findAirlinesInText("Pay for it 2026 onwards; Tiger Kingdom visit"), [])
+})
+
 test("logos are requested at twice the drawn size", () => {
   assert.equal(airlineLogoUrl("5J", 60, 24), "https://pics.avs.io/120/48/5J.png")
 })
