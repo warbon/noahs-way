@@ -1,12 +1,15 @@
+import { Plane } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
+import AirlineLogo from "@/components/AirlineLogo"
 import PackageBookingSection, {
   PackageBookingCalendar,
   PackageBookingCard
 } from "@/components/PackageBookingSection"
 import PaymentMethods from "@/components/PaymentMethods"
 import TripCostCalculator from "@/components/TripCostCalculator"
+import { resolveAirlines } from "@/lib/airlines"
 import { packageCategoryMeta, type PackageCategory } from "@/lib/package-data"
 import {
   normalizeDepartures,
@@ -52,6 +55,7 @@ export default function PackageDetailView({ pkg, category, preview = false }: Pa
     dates instead.
   */
   const hasCalendar = departures.length > 0
+  const airlines = resolveAirlines(pkg.airlines)
   const hasLegacyPeriods = !usesStructuredDepartures(pkg) && Boolean(pkg.travelPeriods?.length)
 
   return (
@@ -93,6 +97,16 @@ export default function PackageDetailView({ pkg, category, preview = false }: Pa
                 {pkg.destination}
               </span>
             ) : null}
+            {airlines.map((airline) => (
+              <span
+                key={airline.code ?? airline.name}
+                className="inline-flex items-center gap-2 rounded-full bg-muted py-1 pl-3 pr-4 text-sm font-medium"
+              >
+                <Plane className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                <span className="sr-only">Airline: </span>
+                <AirlineLogo airline={airline} height={18} />
+              </span>
+            ))}
           </div>
           <p className="mt-4 max-w-2xl text-muted-foreground">{pkg.summary ?? pkg.details}</p>
         </header>
@@ -103,6 +117,7 @@ export default function PackageDetailView({ pkg, category, preview = false }: Pa
           basePrice={pkg.priceAmount}
           currency={pkg.currency ?? "PHP"}
           departures={departures}
+          airlines={airlines}
           today={today}
           preview={preview}
         >

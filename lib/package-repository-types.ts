@@ -17,6 +17,7 @@ type PackageEditableFields = Pick<
   | "slug"
   | "status"
   | "destination"
+  | "airlines"
   | "summary"
   | "priceAmount"
   | "currency"

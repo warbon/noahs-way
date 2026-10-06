@@ -4,6 +4,7 @@ import { useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import type { PosterExtraction } from "@/lib/ai/poster-extraction"
+import { POSTER_AIRLINES_EVENT, findAirlinesInText, normalizeAirlines } from "@/lib/airlines"
 import { POSTER_TRAVEL_PERIODS_EVENT } from "@/lib/package-departures"
 
 /**
@@ -160,6 +161,21 @@ export default function AdminPosterReader({ disabled }: { disabled?: boolean }) 
     if (Array.isArray(fields.travelPeriods) && fields.travelPeriods.length > 0) {
       form.dispatchEvent(new CustomEvent(POSTER_TRAVEL_PERIODS_EVENT, { detail: fields.travelPeriods }))
       filled.push(`travel periods (${fields.travelPeriods.length})`)
+    }
+
+    // The airlines the reader named, plus any its own transcription of the
+    // flights gives away ("5J 188"), in case it read a flight but not the logo.
+    const flightText = (fields.itinerary ?? [])
+      .flatMap((day) => [day.title, day.description, ...(day.activities ?? [])])
+      .filter(Boolean)
+      .join("\n")
+    const airlines = normalizeAirlines([
+      ...(Array.isArray(fields.airlines) ? fields.airlines : []),
+      ...findAirlinesInText(flightText)
+    ])
+    if (airlines.length > 0) {
+      form.dispatchEvent(new CustomEvent(POSTER_AIRLINES_EVENT, { detail: airlines }))
+      filled.push(`airlines (${airlines.length})`)
     }
 
     setState({

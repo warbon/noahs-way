@@ -14,6 +14,7 @@ export type AdminPackageRecord = {
   slug?: string
   status?: PackageStatus
   destination?: string
+  airlines?: string[]
   summary?: string
   priceAmount?: number
   currency?: string

@@ -29,6 +29,11 @@ export type TravelPackage = {
   /** Absent means "published" — legacy records stay visible by default. */
   status?: PackageStatus
   destination?: string
+  /**
+   * Airlines the package flies: a listed airline's IATA code ("5J"), or the
+   * name of one not on the list. See lib/airlines.ts.
+   */
+  airlines?: string[]
   summary?: string
   priceAmount?: number
   currency?: string

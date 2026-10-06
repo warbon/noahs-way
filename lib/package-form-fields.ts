@@ -1,3 +1,4 @@
+import { normalizeAirlines } from "@/lib/airlines"
 import type { ItineraryDay, PackageStatus, TravelPackage } from "@/lib/package-data"
 import { normalizeDepartures, type PackageDeparture } from "@/lib/package-departures"
 import type { FeeBasis, PackageFee } from "@/lib/package-fees"
@@ -115,6 +116,12 @@ export function parseOptionalText(value: unknown): string | undefined {
   return trimmed || undefined
 }
 
+/** One airline per line, as the admin picker sends them; stored as codes where listed. */
+export function parseAirlines(value: unknown): string[] | undefined {
+  const airlines = normalizeAirlines(parseLines(value) ?? [])
+  return airlines.length > 0 ? airlines : undefined
+}
+
 export function parseStatus(value: unknown): PackageStatus | undefined {
   return value === "draft" || value === "published" ? value : undefined
 }
@@ -123,6 +130,7 @@ type StructuredFields = Pick<
   TravelPackage,
   | "status"
   | "destination"
+  | "airlines"
   | "summary"
   | "priceAmount"
   | "currency"
@@ -153,6 +161,7 @@ export function readStructuredFields(formData: FormData): StructuredFields {
   const fields: StructuredFields = {
     status: parseStatus(formData.get("status")),
     destination: parseOptionalText(formData.get("destination")),
+    airlines: parseAirlines(formData.get("airlines")),
     summary: parseOptionalText(formData.get("summary")),
     priceAmount: parseOptionalNumber(formData.get("priceAmount")),
     currency: parseOptionalText(formData.get("currency")) ?? undefined,

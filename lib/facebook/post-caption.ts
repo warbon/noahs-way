@@ -1,3 +1,4 @@
+import { resolveAirlines } from "@/lib/airlines"
 import { departureDisplayList } from "@/lib/package-departures"
 import type { PackageRecord } from "@/lib/package-repository-types"
 import { formatDuration, formatPackagePrice } from "@/lib/price"
@@ -74,10 +75,12 @@ export function buildPackageCaption(
 ) {
   const duration = formatDuration(pkg.durationDays, pkg.durationNights)
   const whereAndHowLong = [pkg.destination, duration].filter(Boolean).join(" · ")
+  const airlines = resolveAirlines(pkg.airlines).map((airline) => airline.name)
 
   const sections: (string | null)[] = [
     `🌏 ${pkg.title}`,
     whereAndHowLong ? `📍 ${whereAndHowLong}` : null,
+    airlines.length > 0 ? `✈️ Via ${airlines.join(" / ")}` : null,
     `💸 ${formatPackagePrice(pkg)}`,
     "",
     // `details` is the one-line teaser every record has; `summary` is the fuller

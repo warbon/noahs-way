@@ -1,10 +1,13 @@
 "use client"
 
+import { Plane } from "lucide-react"
 import { FormEvent, useId, useRef, useState } from "react"
 
+import AirlineLogo from "@/components/AirlineLogo"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import type { ResolvedAirline } from "@/lib/airlines"
 import { TRAVEL_TYPES } from "@/lib/inquiry-types"
 import {
   departurePrice,
@@ -36,6 +39,8 @@ type Props = {
   onUnavailable: (departureId: string) => void
   /** Admin preview: shown exactly as customers see it, but it cannot file an inquiry. */
   preview?: boolean
+  /** Airlines the package flies, named under the heading so the booking says who flies you. */
+  airlines?: ResolvedAirline[]
 }
 
 function readError(payload: unknown) {
@@ -122,7 +127,8 @@ export default function PackageBookingForm({
   selected,
   onSelect,
   onUnavailable,
-  preview = false
+  preview = false,
+  airlines = []
 }: Props) {
   const fieldId = useId()
   const formRef = useRef<HTMLFormElement | null>(null)
@@ -505,6 +511,23 @@ export default function PackageBookingForm({
       className="scroll-mt-24 rounded-2xl border border-primary/15 bg-card p-5 shadow-lg sm:p-6"
     >
       {heading}
+
+      {airlines.length > 0 ? (
+        <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5">
+            <Plane className="h-4 w-4" aria-hidden="true" />
+            {airlines.length === 1 ? "Airline" : "Airlines"}
+          </span>
+          {airlines.map((airline) => (
+            <AirlineLogo
+              key={airline.code ?? airline.name}
+              airline={airline}
+              height={16}
+              className="font-medium text-foreground"
+            />
+          ))}
+        </p>
+      ) : null}
 
       {unavailableNotice ? (
         <p
