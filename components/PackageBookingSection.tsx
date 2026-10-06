@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useRef, useState, type R
 
 import PackageBookingForm from "@/components/PackageBookingForm"
 import TravelPeriodCalendar from "@/components/TravelPeriodCalendar"
+import type { ResolvedAirline } from "@/lib/airlines"
 import {
   departurePrice,
   formatDepartureDay,
@@ -21,6 +22,8 @@ type Props = {
   /** Manila date the server rendered for, so server and browser agree on "past". */
   today: string
   preview?: boolean
+  /** Airlines the package flies, already resolved, for the card to name. */
+  airlines?: ResolvedAirline[]
   /** The page between and around the calendar and the card. */
   children: ReactNode
 }
@@ -156,8 +159,18 @@ export function PackageBookingCalendar() {
 
 /** The "Book this package" card, filled from whatever the calendar has picked. */
 export function PackageBookingCard() {
-  const { packageId, packageTitle, basePrice, currency, departures, selected, select, markUnavailable, preview } =
-    useBooking()
+  const {
+    packageId,
+    packageTitle,
+    basePrice,
+    currency,
+    departures,
+    selected,
+    select,
+    markUnavailable,
+    preview,
+    airlines
+  } = useBooking()
 
   return (
     <PackageBookingForm
@@ -170,6 +183,7 @@ export function PackageBookingCard() {
       onSelect={select}
       onUnavailable={markUnavailable}
       preview={preview}
+      airlines={airlines}
     />
   )
 }

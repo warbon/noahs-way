@@ -16,6 +16,8 @@ import type { ItineraryDay } from "@/lib/package-data"
 export type PosterExtraction = {
   title?: string
   destination?: string
+  /** Airline names as printed or shown as logos, e.g. "Cebu Pacific". */
+  airlines?: string[]
   summary?: string
   details?: string
   price?: string
@@ -120,7 +122,8 @@ FIELD SHAPES
   - "Korean Visa Processing Fee (subject for quotation)" → no amount, basis per-person, required false, note "Subject to quotation".
 
   Read the basis from the wording: "per pax" is per-person, "per pax per way" is per-person-per-way, "per pax per day" is per-person-per-day. Mark required true when the poster calls it mandatory or it is unavoidable, and false for add-ons such as extra baggage or an optional tour.
-• "travelPeriods": each departure window as printed, surcharge included.`
+• "travelPeriods": each departure window as printed, surcharge included.
+• "airlines": every airline the poster names or shows as a logo — often a logo near the price or beside the flight details — by its name, e.g. "Cebu Pacific". Include the airline of any printed flight number (5J is Cebu Pacific, 7C is Jeju Air). Leave it empty when the poster shows no airline; never guess one from the destination.`
 
 /**
  * The canonical schema. Every field is optional except the three composed
@@ -135,6 +138,11 @@ export const EXTRACTION_SCHEMA = {
   properties: {
     title: { type: "string", description: "Package name as printed, e.g. 'Hanoi + Sapa, Vietnam'" },
     destination: { type: "string", description: "Places visited, e.g. 'Hanoi & Sapa, Vietnam'" },
+    airlines: {
+      type: "array",
+      description: "Every airline the poster names or shows as a logo, by name, e.g. 'Cebu Pacific'",
+      items: { type: "string" }
+    },
     summary: { type: "string", description: "Two sentences of plain prose" },
     details: { type: "string", description: "One-line card summary with • separators" },
     price: { type: "string", description: "Normalised, e.g. 'from PHP 32,999'" },

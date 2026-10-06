@@ -1,4 +1,5 @@
 import type { ChatPackageSummary } from "@/lib/ai/genui-types"
+import { resolveAirlines } from "@/lib/airlines"
 import type { PackageCategory } from "@/lib/package-data"
 import { getPackagesByCategory, type PackageRecord } from "@/lib/package-repository"
 import { buildPackageHref, resolveSlugCollisions } from "@/lib/package-slug"
@@ -68,6 +69,8 @@ export function toModelPackage(entry: CatalogEntry) {
     title: entry.title,
     category: entry.category,
     destination: entry.destination,
+    // Named, so "which airline?" is answered from the record rather than guessed.
+    airlines: entry.airlines?.length ? resolveAirlines(entry.airlines).map((airline) => airline.name) : undefined,
     summary: entry.summary ?? entry.details,
     price: formatPackagePrice(entry),
     priceAmount: entry.priceAmount,
@@ -95,7 +98,8 @@ export function matchesQuery(entry: CatalogEntry, query: string) {
     entry.destination,
     entry.summary,
     entry.details,
-    ...(entry.highlights ?? [])
+    ...(entry.highlights ?? []),
+    ...resolveAirlines(entry.airlines).map((airline) => airline.name)
   ]
     .filter(Boolean)
     .join(" ")

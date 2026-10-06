@@ -4,7 +4,9 @@ import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 
+import AirlineLogo from "@/components/AirlineLogo"
 import Reveal from "@/components/Reveal"
+import { resolveAirlines } from "@/lib/airlines"
 import { cn } from "@/lib/utils"
 import type { TravelPackage } from "@/lib/package-data"
 import { buildPackageHref, derivePackageSlug } from "@/lib/package-slug"
@@ -287,6 +289,16 @@ export default function PackageGallery({
         <span className="absolute left-4 top-4 rounded-full border border-white/50 bg-black/35 px-3 py-1 text-xs font-semibold uppercase tracking-[0.15em] text-white">
           {formatPackagePrice(pkg)}
         </span>
+        {pkg.airlines?.length ? (
+          // Two at most: a narrow carousel card has the price pill on the same line.
+          <span className="absolute right-4 top-4 flex items-center gap-1.5">
+            {resolveAirlines(pkg.airlines)
+              .slice(0, 2)
+              .map((airline) => (
+                <AirlineLogo key={airline.code ?? airline.name} airline={airline} height={18} showName={false} />
+              ))}
+          </span>
+        ) : null}
         {/*
           The posters are promotional flyers with their own typography baked in,
           so a light scrim leaves the card title sitting on top of print. The

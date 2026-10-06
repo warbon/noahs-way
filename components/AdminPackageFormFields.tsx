@@ -1,5 +1,6 @@
 "use client"
 
+import AdminAirlinePicker from "@/components/AdminAirlinePicker"
 import AdminDepartureEditor from "@/components/AdminDepartureEditor"
 import AdminPosterField from "@/components/AdminPosterField"
 import AdminPosterReader from "@/components/AdminPosterReader"
@@ -193,6 +194,8 @@ export default function AdminPackageFormFields({ pkg, disabled }: Props) {
             />
           </div>
         </div>
+
+        <AdminAirlinePicker pkg={pkg} disabled={disabled} />
       </fieldset>
 
       <fieldset className="space-y-4" disabled={disabled}>
