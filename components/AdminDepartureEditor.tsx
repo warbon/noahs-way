@@ -1,10 +1,11 @@
 "use client"
 
-import { AlertTriangle, Plus, Trash2 } from "lucide-react"
+import { AlertTriangle, ClipboardPaste, Plus, Trash2 } from "lucide-react"
 import { useEffect, useRef, useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import type { AdminPackageRecord } from "@/lib/admin-package-types"
 import {
   POSTER_TRAVEL_PERIODS_EVENT,
@@ -39,6 +40,12 @@ function rowFromDeparture(departure: PackageDeparture): Row {
 
 function rowFromParsed(parsed: ParsedLegacyPeriod): Row {
   return rowFromDeparture({ ...parsed, id: createDepartureId() })
+}
+
+/** Date order, rows still waiting for a date last. */
+function byStartDate(a: Row, b: Row) {
+  if (!a.startDate || !b.startDate) return Number(!a.startDate) - Number(!b.startDate)
+  return a.startDate.localeCompare(b.startDate)
 }
 
 function rowProblem(row: Row) {
@@ -97,11 +104,25 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
   const [legacy, setLegacy] = useState<string[]>(() =>
     pkg?.departures?.length ? [] : (pkg?.travelPeriods ?? [])
   )
-  /** Year the last conversion started from, for the "check the year" notice. */
-  const [importYear, setImportYear] = useState<string | null>(null)
+  /** For the "check the year" notice: the year read dates start in, and whether they replaced the old text. */
+  const [importNotice, setImportNotice] = useState<{ year: string; fromLegacy: boolean } | null>(null)
   const [unreadable, setUnreadable] = useState<string[]>([])
+  const [pasteOpen, setPasteOpen] = useState(false)
+  const [pasteText, setPasteText] = useState("")
+  const [pasteMessage, setPasteMessage] = useState<string | null>(null)
+  /** A row just added by hand, to put the cursor in once it is on screen. */
+  const [focusRowId, setFocusRowId] = useState<string | null>(null)
 
-  function importLines(lines: string[], reference: string, options?: { upcoming?: boolean }) {
+  /**
+   * Turns poster-style lines into rows, merged into the list in date order.
+   * A window already listed is not added twice. Returns how many rows were
+   * added and the lines that could not be read, for the caller to show.
+   */
+  function importLines(
+    lines: string[],
+    reference: string,
+    options: { upcoming?: boolean; replacesLegacy?: boolean } = {}
+  ) {
     const parsed: Row[] = []
     const failed: string[] = []
     for (const { line, result } of parseLegacyTravelPeriods(lines, reference, options)) {
@@ -109,13 +130,31 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
       else failed.push(line)
     }
 
-    setRows((current) => {
-      const existing = new Set(current.map((row) => `${row.startDate}|${row.endDate}`))
-      return [...current, ...parsed.filter((row) => !existing.has(`${row.startDate}|${row.endDate}`))]
-    })
-    setLegacy([])
-    setUnreadable(failed)
-    if (parsed.length > 0) setImportYear(parsed[0].startDate.slice(0, 4))
+    const existing = new Set(rows.map((row) => `${row.startDate}|${row.endDate}`))
+    const added = parsed.filter((row) => !existing.has(`${row.startDate}|${row.endDate}`))
+    setRows([...rows, ...added].sort(byStartDate))
+    if (options.replacesLegacy) setLegacy([])
+    if (parsed.length > 0) {
+      const earliest = parsed.map((row) => row.startDate).sort()[0]
+      setImportNotice({ year: earliest.slice(0, 4), fromLegacy: Boolean(options.replacesLegacy) })
+    }
+    return { added: added.length, failed }
+  }
+
+  function addPasted() {
+    const lines = pasteText.split("\n").map((line) => line.trim()).filter(Boolean)
+    if (lines.length === 0) return
+    // Pasted from a poster on sale now, so dated forward from today like a poster read.
+    const { added, failed } = importLines(lines, todayInManila(), { upcoming: true })
+    // Unread lines stay in the box to be fixed there; the rest are done with.
+    setPasteText(failed.join("\n"))
+    if (failed.length === 0) setPasteOpen(false)
+    setPasteMessage(
+      `${added} travel period${added === 1 ? "" : "s"} added` +
+        (failed.length > 0
+          ? `. ${failed.length} line${failed.length === 1 ? "" : "s"} could not be read: fix ${failed.length === 1 ? "it" : "them"} below or add by hand.`
+          : ".")
+    )
   }
 
   // Latest version in a ref, so the listener below is attached once per form.
@@ -131,7 +170,9 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
       if (!Array.isArray(detail)) return
       const lines = detail.filter((line): line is string => typeof line === "string" && Boolean(line.trim()))
       // A poster read is a fresh transcription of dates still on sale, dated from today.
-      if (lines.length > 0) importRef.current(lines, todayInManila(), { upcoming: true })
+      if (lines.length > 0) {
+        setUnreadable(importRef.current(lines, todayInManila(), { upcoming: true, replacesLegacy: true }).failed)
+      }
     }
 
     form.addEventListener(POSTER_TRAVEL_PERIODS_EVENT, onPosterPeriods)
@@ -153,11 +194,20 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
   }
 
   function addRow() {
-    setRows((current) => [
-      ...current,
-      { id: createDepartureId(), startDate: "", endDate: "", surcharge: "", soldOut: false }
-    ])
+    const id = createDepartureId()
+    setRows((current) => [...current, { id, startDate: "", endDate: "", surcharge: "", soldOut: false }])
+    setFocusRowId(id)
   }
+
+  // A new row lands at the end of what can be a long list: bring it into view
+  // with the cursor in its date, ready to type.
+  useEffect(() => {
+    if (!focusRowId) return
+    const input = document.getElementById(`departure-${focusRowId}-start`)
+    input?.scrollIntoView({ block: "center" })
+    input?.focus()
+    setFocusRowId(null)
+  }, [focusRowId])
 
   const openCount = rows.filter((row) => !rowProblem(row) && row.startDate >= today && !row.soldOut).length
 
@@ -201,20 +251,21 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
             variant="outline"
             className="mt-3"
             disabled={disabled}
-            onClick={() => importLines(legacy, referenceDate)}
+            onClick={() => setUnreadable(importLines(legacy, referenceDate, { replacesLegacy: true }).failed)}
           >
             Convert to bookable travel periods
           </Button>
         </div>
       ) : null}
 
-      {importYear ? (
+      {importNotice ? (
         <p role="note" className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
           <span>
             <strong>Read from the poster text, which usually has no year.</strong> Dates start in{" "}
-            {importYear} and move into the next year where the list runs past December — check each
-            one before saving. Cancel the panel to keep the old text instead.
+            {importNotice.year} and move into the next year where the list runs past December — check
+            each one before saving.
+            {importNotice.fromLegacy ? " Cancel the panel to keep the old text instead." : null}
           </span>
         </p>
       ) : null}
@@ -252,6 +303,7 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
                   <label className="space-y-1 text-xs font-medium text-muted-foreground">
                     Leaves
                     <Input
+                      id={`departure-${row.id}-start`}
                       type="date"
                       value={row.startDate}
                       disabled={disabled}
@@ -310,11 +362,71 @@ export default function AdminDepartureEditor({ pkg, disabled }: Props) {
         </ul>
       ) : null}
 
+      {pasteOpen ? (
+        <div className="space-y-2 rounded-lg border border-border bg-muted/40 p-3">
+          <label htmlFor="departures-paste" className="text-sm font-medium text-foreground">
+            Paste travel dates, one per line
+          </label>
+          <Textarea
+            id="departures-paste"
+            rows={5}
+            value={pasteText}
+            disabled={disabled}
+            onChange={(event) => setPasteText(event.target.value)}
+            placeholder={"DEC 03-08 (+PHP 5,000)\nDEC 31-JAN 05 (+PHP 18,000)\nJAN 14-19"}
+            className="font-mono text-xs"
+          />
+          <p className={hintClass}>
+            Written as on the poster, with any surcharge. A list that runs past December carries on
+            into the next year.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" size="sm" disabled={disabled || !pasteText.trim()} onClick={addPasted}>
+              Add these dates
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant="ghost"
+              disabled={disabled}
+              onClick={() => {
+                setPasteOpen(false)
+                setPasteText("")
+                setPasteMessage(null)
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </div>
+      ) : null}
+
+      {pasteMessage ? (
+        <p role="status" className="text-sm font-medium text-primary">
+          {pasteMessage}
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-3">
         <Button type="button" variant="outline" size="sm" disabled={disabled} onClick={addRow}>
           <Plus className="h-4 w-4" aria-hidden="true" />
           Add travel period
         </Button>
+        {pasteOpen ? null : (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            disabled={disabled}
+            onClick={() => {
+              setPasteOpen(true)
+              setPasteMessage(null)
+            }}
+          >
+            <ClipboardPaste className="h-4 w-4" aria-hidden="true" />
+            Paste several dates
+          </Button>
+        )}
         <span className={hintClass}>The return date fills in from the Days field — change it if the poster differs.</span>
       </div>
     </div>

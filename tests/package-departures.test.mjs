@@ -133,6 +133,12 @@ test("a poster read today that opens in the new year is dated next year", () => 
   assert.deepEqual(read(["DEC 03-08", "JAN 02-07"]), ["2026-12-03/2026-12-08", "2027-01-02/2027-01-07"])
   // A printed year is never second-guessed.
   assert.deepEqual(read(["JAN 14-19, 2026", "FEB 04-09"]), ["2026-01-14/2026-01-19", "2026-02-04/2026-02-09"])
+  // Pasted out of order: December after January is not the December a year on.
+  assert.deepEqual(read(["JAN 02-07", "DEC 31-JAN 05", "FEB 12-17"]), [
+    "2027-01-02/2027-01-07",
+    "2026-12-31/2027-01-05",
+    "2027-02-12/2027-02-17"
+  ])
 
   // Stored lines are not assumed to be upcoming: Convert keeps the year the package was edited in.
   assert.deepEqual(dates(parseLegacyTravelPeriods(["JAN 14-19"], "2026-10-06")), ["2026-01-14/2026-01-19"])
